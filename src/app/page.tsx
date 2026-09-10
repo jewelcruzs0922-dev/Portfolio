@@ -381,16 +381,17 @@ function ContactSection() {
   return (
     <section id="contact" className="py-24 px-6 lg:px-12">
       <div ref={ref}>
-        <R className="mb-8">
+        <div className="mb-8" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)" }}>
           <span className="glass-pill inline-block px-4 py-1.5 t-micro text-[#5B9BD5] mb-3">Contact</span>
           <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-tight text-[#1E3A5F]">
-            <SplitReveal text="Get" /> <span className="gradient-text"><SplitReveal text="in" delay={150} /></span><br />
-            <SplitReveal text="touch" delay={300} />
+            <SplitReveal text="Get" delay={200} /> <span className="gradient-text"><SplitReveal text="in" delay={400} /></span><br />
+            <SplitReveal text="touch" delay={600} />
           </h2>
-          <p className="text-sm text-[#1E3A5F]/40 mt-4 max-w-md leading-relaxed">
+          <p className="text-sm text-[#1E3A5F]/40 mt-4 max-w-md leading-relaxed"
+            style={{ opacity: isVisible ? 1 : 0, transition: "opacity 0.6s ease 0.5s" }}>
             Have a project in mind? Need a developer who cares about the details? Or just want to say hi? I&apos;d love to hear from you.
           </p>
-        </R>
+        </div>
 
         <div className="grid sm:grid-cols-3 gap-3" style={{ opacity: isVisible ? 1 : 0, transition: "opacity 0.6s ease 0.3s" }}>
           <MagBtn href="mailto:jewel@example.com" className="glass-strong p-6 rounded-2xl text-left hover:bg-white/70 transition-all group">
