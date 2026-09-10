@@ -83,13 +83,15 @@ function Hero() {
 
   return (
     <section id="home" className="min-h-screen flex items-end px-6 lg:px-12 pb-20 pt-32 relative overflow-hidden">
-      {/* Floating orbs */}
-      <div className="absolute top-20 right-[8%] w-[400px] h-[400px] opacity-40 pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(139,92,246,0.4), transparent 70%)", borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%", animation: "drift1 14s ease-in-out infinite" }} />
-      <div className="absolute bottom-[15%] left-[5%] w-[350px] h-[350px] opacity-30 pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(6,182,212,0.4), transparent 70%)", borderRadius: "30% 60% 70% 40% / 50% 60% 30% 60%", animation: "drift2 17s ease-in-out infinite" }} />
-      <div className="absolute top-[50%] left-[40%] w-[250px] h-[250px] opacity-20 pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(244,114,182,0.4), transparent 70%)", animation: "drift3 12s ease-in-out infinite" }} />
+      {/* Floating orbs — vivid for glass to blur */}
+      <div className="absolute top-10 right-[5%] w-[600px] h-[600px] pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(139,92,246,0.7) 0%, rgba(139,92,246,0.2) 40%, transparent 70%)", borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%", animation: "drift1 14s ease-in-out infinite" }} />
+      <div className="absolute bottom-[10%] left-[0%] w-[550px] h-[550px] pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(6,182,212,0.6) 0%, rgba(6,182,212,0.15) 40%, transparent 70%)", borderRadius: "30% 60% 70% 40% / 50% 60% 30% 60%", animation: "drift2 17s ease-in-out infinite" }} />
+      <div className="absolute top-[40%] left-[35%] w-[400px] h-[400px] pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(244,114,182,0.5) 0%, rgba(244,114,182,0.1) 40%, transparent 70%)", borderRadius: "40% 60% 50% 50% / 60% 40% 60% 40%", animation: "drift3 12s ease-in-out infinite" }} />
+      <div className="absolute top-[60%] right-[20%] w-[300px] h-[300px] pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(52,211,153,0.4) 0%, transparent 70%)", borderRadius: "50%", animation: "drift1 20s ease-in-out infinite reverse" }} />
 
       <div className="max-w-7xl mx-auto w-full relative z-10">
         <div className="glass-pill inline-flex items-center gap-3 px-5 py-2.5 mb-10"
