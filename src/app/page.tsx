@@ -177,9 +177,9 @@ function HeroSection() {
         </div>
 
         <div className="mt-8" style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(15px)", transition: "all 0.6s ease 0.6s" }}>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#5B9BD5] mb-3">Web Designer &amp; Frontend Developer</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#5B9BD5] mb-3">Designer &amp; Developer</p>
           <p className="t-body text-[#1E3A5F]/45 max-w-md">
-            From the Philippines. I design interfaces and write the code that powers them. Fast, tested, accessible — every pixel intentional, every function tested.
+            I turn ideas into interfaces that people actually enjoy using. Based in the Philippines, building for the world.
           </p>
         </div>
 
@@ -414,8 +414,22 @@ function ContactSection() {
 
 function Footer() {
   return (
-    <footer className="py-8 px-6 lg:px-12 border-t border-[#5B9BD5]/10">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#1E3A5F]/20 text-center">&copy; 2026 Jewel Cruz &middot; Hand-coded</p>
+    <footer className="py-12 px-6 lg:px-12 border-t border-[#5B9BD5]/10">
+      <div className="flex flex-col items-center gap-4">
+        <div className="glass-pill px-5 py-2.5 inline-flex items-center gap-2">
+          <span className="text-sm font-bold text-[#1E3A5F]">J</span>
+          <span className="text-[#5B9BD5]">.</span>
+          <span className="text-sm font-bold text-[#1E3A5F]">C</span>
+        </div>
+        <p className="text-[11px] text-[#1E3A5F]/30 text-center max-w-xs">
+          Designed &amp; built by Jewel Cruz. Every pixel, every line of code — mine.
+        </p>
+        <div className="flex gap-4">
+          <MagBtn href="https://github.com/jewelcruzs0922-dev" className="text-[10px] font-semibold uppercase tracking-wider text-[#1E3A5F]/20 hover:text-[#5B9BD5] transition-colors">GitHub</MagBtn>
+          <MagBtn href="https://linkedin.com" className="text-[10px] font-semibold uppercase tracking-wider text-[#1E3A5F]/20 hover:text-[#5B9BD5] transition-colors">LinkedIn</MagBtn>
+          <MagBtn href="mailto:jewel@example.com" className="text-[10px] font-semibold uppercase tracking-wider text-[#1E3A5F]/20 hover:text-[#5B9BD5] transition-colors">Email</MagBtn>
+        </div>
+      </div>
     </footer>
   );
 }
