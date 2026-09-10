@@ -146,12 +146,29 @@ function HeroSection() {
 
   return (
     <section id="hero" className="min-h-screen flex items-center px-6 lg:px-12 relative">
-      <div className="absolute top-[20%] right-[10%] w-[250px] h-[250px] pointer-events-none opacity-30"
-        style={{ background: "radial-gradient(circle, rgba(126,200,227,0.5), transparent 70%)", borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%", animation: "float1 12s ease-in-out infinite" }} />
-      <div className="absolute bottom-[25%] right-[30%] w-[180px] h-[180px] pointer-events-none opacity-20"
-        style={{ background: "radial-gradient(circle, rgba(184,201,232,0.5), transparent 70%)", borderRadius: "50%", animation: "float2 15s ease-in-out infinite" }} />
+      {/* Glowing orbs */}
+      <div className="absolute top-[15%] right-[5%] w-[300px] h-[300px] pointer-events-none opacity-40"
+        style={{ background: "radial-gradient(circle, rgba(126,200,227,0.6), transparent 70%)", borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%", animation: "float1 12s ease-in-out infinite, pulse 6s ease-in-out infinite" }} />
+      <div className="absolute bottom-[20%] right-[25%] w-[200px] h-[200px] pointer-events-none opacity-30"
+        style={{ background: "radial-gradient(circle, rgba(184,201,232,0.5), transparent 70%)", borderRadius: "50%", animation: "float2 15s ease-in-out infinite, breathe 8s ease-in-out infinite" }} />
+      <div className="absolute top-[45%] right-[15%] w-[150px] h-[150px] pointer-events-none opacity-25"
+        style={{ background: "radial-gradient(circle, rgba(91,155,213,0.4), transparent 70%)", borderRadius: "40% 60% 50% 50%", animation: "float3 10s ease-in-out infinite" }} />
+
+      {/* Decorative hexagons */}
+      <div className="absolute top-[20%] right-[18%] w-16 h-16 pointer-events-none opacity-[0.07]"
+        style={{ clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)", background: "var(--color-blue)", animation: "float2 20s ease-in-out infinite, spin 30s linear infinite" }} />
+      <div className="absolute bottom-[30%] right-[10%] w-10 h-10 pointer-events-none opacity-[0.05]"
+        style={{ clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)", background: "var(--color-cyan)", animation: "float1 16s ease-in-out infinite" }} />
 
       <div className="w-full max-w-2xl relative z-10">
+        {/* Shimmer badge */}
+        <div className="glass-pill inline-flex items-center gap-2 px-4 py-2 mb-6 relative overflow-hidden"
+          style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(15px)", transition: "all 0.6s ease 0.1s" }}>
+          <div className="h-1.5 w-1.5 rounded-full bg-[#5B9BD5] animate-pulse" />
+          <span className="t-micro text-[#5B9BD5]">Available for work</span>
+          <div className="absolute inset-0 shimmer" />
+        </div>
+
         <div style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.6s ease 0.2s" }}>
           <h1 className="text-[clamp(2.5rem,7vw,5.5rem)] font-black tracking-tight leading-[0.9] text-[#1E3A5F]">
             <SplitReveal text="Jewel" delay={100} /><br />
@@ -168,7 +185,7 @@ function HeroSection() {
 
         <div className="flex gap-2 mt-8" style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.6s ease 0.8s" }}>
           {["Next.js", "React", "TypeScript", "Tailwind", "Figma"].map((t, i) => (
-            <span key={t} className="glass-subtle px-3 py-1.5 text-[10px] font-semibold text-[#1E3A5F]/35 rounded-lg"
+            <span key={t} className="glass-subtle px-3 py-1.5 text-[10px] font-semibold text-[#1E3A5F]/35 rounded-lg hover:bg-white/50 hover:text-[#5B9BD5] transition-all cursor-default"
               style={{ opacity: loaded ? 1 : 0, transition: `all 0.5s ease ${0.8 + i * 0.05}s` }}>{t}</span>
           ))}
         </div>
@@ -403,12 +420,69 @@ function Footer() {
   );
 }
 
+/* ── Floating particles ── */
+function Particles() {
+  const [particles] = useState(() =>
+    Array.from({ length: 20 }, (_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      size: 3 + Math.random() * 5,
+      duration: 15 + Math.random() * 20,
+      delay: Math.random() * 15,
+      color: ["rgba(91,155,213,0.3)", "rgba(126,200,227,0.3)", "rgba(184,201,232,0.3)", "rgba(255,255,255,0.5)"][Math.floor(Math.random() * 4)],
+    }))
+  );
+  return (
+    <div className="particles">
+      {particles.map((p) => (
+        <div key={p.id} className="particle" style={{
+          left: p.left, width: p.size, height: p.size, background: p.color,
+          animationDuration: `${p.duration}s`, animationDelay: `${p.delay}s`,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+/* ── Floating shapes (decorative) ── */
+function FloatingShapes() {
+  return (
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+      {/* Large orbs */}
+      <div className="absolute w-[500px] h-[500px] opacity-20"
+        style={{ top: "5%", right: "-5%", background: "radial-gradient(circle, rgba(126,200,227,0.5), transparent 70%)", borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%", animation: "float1 18s ease-in-out infinite" }} />
+      <div className="absolute w-[400px] h-[400px] opacity-15"
+        style={{ bottom: "10%", left: "-3%", background: "radial-gradient(circle, rgba(184,201,232,0.5), transparent 70%)", borderRadius: "30% 60% 70% 40% / 50% 60% 30% 60%", animation: "float2 22s ease-in-out infinite" }} />
+      <div className="absolute w-[300px] h-[300px] opacity-10"
+        style={{ top: "40%", left: "30%", background: "radial-gradient(circle, rgba(91,155,213,0.4), transparent 70%)", borderRadius: "50%", animation: "float3 15s ease-in-out infinite" }} />
+
+      {/* Hexagons */}
+      <div className="absolute w-20 h-20 opacity-[0.06]"
+        style={{ top: "15%", right: "12%", clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)", background: "var(--color-blue)", animation: "float2 20s ease-in-out infinite" }} />
+      <div className="absolute w-12 h-12 opacity-[0.04]"
+        style={{ top: "55%", right: "8%", clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)", background: "var(--color-cyan)", animation: "float1 16s ease-in-out infinite" }} />
+      <div className="absolute w-16 h-16 opacity-[0.05]"
+        style={{ bottom: "20%", right: "20%", clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)", background: "var(--color-lavender)", animation: "float3 24s ease-in-out infinite" }} />
+
+      {/* Circles */}
+      <div className="absolute w-6 h-6 rounded-full opacity-[0.08] border border-[#5B9BD5]/20"
+        style={{ top: "30%", left: "15%", animation: "float1 12s ease-in-out infinite" }} />
+      <div className="absolute w-4 h-4 rounded-full opacity-[0.06] border border-[#7EC8E3]/20"
+        style={{ top: "65%", left: "60%", animation: "float2 14s ease-in-out infinite" }} />
+      <div className="absolute w-8 h-8 rounded-full opacity-[0.05] border border-[#B8C9E8]/20"
+        style={{ bottom: "35%", left: "40%", animation: "float3 18s ease-in-out infinite" }} />
+    </div>
+  );
+}
+
 /* ── Main ── */
 export default function Home() {
   return (
     <>
       <div className="sky-backdrop" />
       <div className="grid-bg" />
+      <FloatingShapes />
+      <Particles />
       <MobileNav />
       <div className="relative z-10 flex">
         <Sidebar />
