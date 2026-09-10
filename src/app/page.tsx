@@ -139,10 +139,29 @@ function Marquee() {
     <div className="py-6 border-y border-white/[0.06] overflow-hidden">
       <div className="flex whitespace-nowrap" style={{ animation: "marquee 22s linear infinite" }}>
         {[...items, ...items].map((item, i) => (
-          <span key={i} className="mx-6 text-[clamp(1.2rem,3vw,2.5rem)] font-bold tracking-tight text-white/[0.06] hover:text-white/20 transition-colors duration-500">{item}</span>
+          <span key={i} className="mx-6 text-[clamp(1.2rem,3vw,2.5rem)] font-bold tracking-tight text-white/15 hover:text-white/40 transition-colors duration-500">{item}</span>
         ))}
       </div>
     </div>
+  );
+}
+
+/* ── Statement ── */
+function Statement() {
+  const { ref, isVisible } = useInView();
+  return (
+    <section ref={ref} className="py-32 px-6 lg:px-12">
+      <div className="max-w-5xl mx-auto text-center" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(40px)", transition: "all 1s cubic-bezier(0.16, 1, 0.3, 1)" }}>
+        <div className="glass-heavy p-12 lg:p-16 rounded-3xl">
+          <blockquote className="text-[clamp(1.3rem,3.5vw,2.8rem)] font-bold tracking-tight leading-[1.25] text-white/70">
+            I don&apos;t believe in templates.<br />
+            Every project deserves its own <span className="text-[#8B5CF6]">identity</span>,<br />
+            its own <span className="text-[#06B6D4]">rhythm</span>,<br />
+            its own <span className="text-[#F472B6]">soul</span>.
+          </blockquote>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -209,14 +228,18 @@ function Work() {
                 </div>
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <div className="absolute inset-0 flex flex-col p-6 transition-transform duration-700 group-hover:scale-105" style={{ background: projects[0].mockBg }}>
-                    <div className="flex items-center gap-2 mb-6"><div className="w-4 h-4 rounded" style={{ background: projects[0].accent }} /><div className="h-2 w-20 rounded-full bg-white/10" /></div>
-                    <div className="flex-1 flex items-center"><div>
-                      <div className="h-4 w-48 bg-white/10 rounded mb-3" />
-                      <div className="h-2 w-64 bg-white/5 rounded mb-2" />
-                      <div className="h-2 w-48 bg-white/5 rounded mb-6" />
-                      <div className="h-8 w-28 rounded" style={{ background: projects[0].accent }} />
+                    <div className="flex items-center gap-2 mb-4"><div className="w-4 h-4 rounded" style={{ background: projects[0].accent }} /><div className="h-2 w-20 rounded-full bg-white/15" /></div>
+                    <div className="h-2 w-32 rounded-full bg-white/8 mb-4" />
+                    <div className="flex-1 flex items-center"><div className="w-full">
+                      <div className="h-5 w-56 bg-white/15 rounded mb-3" />
+                      <div className="h-2.5 w-72 bg-white/8 rounded mb-2" />
+                      <div className="h-2.5 w-56 bg-white/6 rounded mb-6" />
+                      <div className="flex gap-3">
+                        <div className="h-9 w-32 rounded-lg" style={{ background: projects[0].accent }} />
+                        <div className="h-9 w-24 rounded-lg border border-white/15" />
+                      </div>
                     </div></div>
-                    <div className="grid grid-cols-3 gap-2">{[1,2,3].map(i => <div key={i} className="h-16 rounded-lg bg-white/[0.04] border border-white/[0.04]" />)}</div>
+                    <div className="grid grid-cols-3 gap-2.5 mt-4">{[1,2,3].map(i => <div key={i} className="h-20 rounded-xl bg-white/[0.05] border border-white/[0.06] p-2.5"><div className="h-full rounded-lg" style={{ background: `${projects[0].accent}10` }} /></div>)}</div>
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
@@ -240,17 +263,21 @@ function Work() {
                 </div>
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <div className="absolute inset-0 flex flex-col p-6 transition-transform duration-700 group-hover:scale-105" style={{ background: projects[1].mockBg }}>
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-2"><div className="w-4 h-4 rounded" style={{ background: projects[1].accent }} /><div className="h-2 w-24 rounded-full bg-white/10" /></div>
-                      <div className="h-6 w-20 rounded-full" style={{ background: projects[1].accent }} />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2"><div className="w-4 h-4 rounded" style={{ background: projects[1].accent }} /><div className="h-2 w-24 rounded-full bg-white/15" /></div>
+                      <div className="h-7 w-24 rounded-full" style={{ background: projects[1].accent }} />
                     </div>
-                    <div className="flex-1 flex items-center"><div>
-                      <div className="h-4 w-40 bg-white/10 rounded mb-3" />
-                      <div className="h-2 w-56 bg-white/5 rounded mb-2" />
-                      <div className="h-2 w-40 bg-white/5 rounded mb-6" />
-                      <div className="flex gap-2"><div className="h-8 w-24 rounded" style={{ background: projects[1].accent }} /><div className="h-8 w-20 rounded border border-white/10" /></div>
+                    <div className="h-2 w-28 rounded-full bg-white/8 mb-4" />
+                    <div className="flex-1 flex items-center"><div className="w-full">
+                      <div className="h-5 w-48 bg-white/15 rounded mb-3" />
+                      <div className="h-2.5 w-64 bg-white/8 rounded mb-2" />
+                      <div className="h-2.5 w-48 bg-white/6 rounded mb-6" />
+                      <div className="flex gap-3">
+                        <div className="h-9 w-28 rounded-lg" style={{ background: projects[1].accent }} />
+                        <div className="h-9 w-24 rounded-lg border border-white/15" />
+                      </div>
                     </div></div>
-                    <div className="grid grid-cols-2 gap-2">{[1,2].map(i => <div key={i} className="h-20 rounded-lg bg-white/[0.04] border border-white/[0.04]" />)}</div>
+                    <div className="grid grid-cols-2 gap-2.5 mt-4">{[1,2].map(i => <div key={i} className="h-24 rounded-xl bg-white/[0.05] border border-white/[0.06] p-2.5"><div className="h-full rounded-lg" style={{ background: `${projects[1].accent}10` }} /></div>)}</div>
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
@@ -445,6 +472,7 @@ export default function Home() {
       <Hero />
       <Marquee />
       <Work />
+      <Statement />
       <Services />
       <Skills />
       <About />

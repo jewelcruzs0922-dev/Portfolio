@@ -85,6 +85,15 @@ body {
   transform: translateY(-2px);
 }
 
+.glass-card {
+  background: rgba(255, 255, 255, 0.06);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass, .glass-sm, .glass-heavy, .glass-pill, .glass-btn, .glass-ghost {
     background: rgba(8, 8, 26, 0.9);
