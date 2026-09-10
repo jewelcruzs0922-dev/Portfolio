@@ -146,7 +146,6 @@ function HeroSection() {
 
   return (
     <section id="hero" className="min-h-screen flex items-center px-6 lg:px-12 relative">
-      {/* Decorative */}
       <div className="absolute top-[20%] right-[10%] w-[250px] h-[250px] pointer-events-none opacity-30"
         style={{ background: "radial-gradient(circle, rgba(126,200,227,0.5), transparent 70%)", borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%", animation: "float1 12s ease-in-out infinite" }} />
       <div className="absolute bottom-[25%] right-[30%] w-[180px] h-[180px] pointer-events-none opacity-20"
@@ -155,15 +154,15 @@ function HeroSection() {
       <div className="w-full max-w-2xl relative z-10">
         <div style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.6s ease 0.2s" }}>
           <h1 className="text-[clamp(2.5rem,7vw,5.5rem)] font-black tracking-tight leading-[0.9] text-[#1E3A5F]">
-            <SplitReveal text="I design" delay={100} /><br />
-            <SplitReveal text="&&" className="gradient-text" delay={400} /><br />
-            <SplitReveal text="build" delay={550} />
+            <SplitReveal text="Jewel" delay={100} /><br />
+            <SplitReveal text="Cruz" className="gradient-text" delay={400} />
           </h1>
         </div>
 
         <div className="mt-8" style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(15px)", transition: "all 0.6s ease 0.6s" }}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#5B9BD5] mb-3">Web Designer &amp; Frontend Developer</p>
           <p className="t-body text-[#1E3A5F]/45 max-w-md">
-            Web designer &amp; frontend developer from the Philippines. I build things that feel right — fast, beautiful, production-ready.
+            From the Philippines. I design interfaces and write the code that powers them. Fast, tested, accessible — every pixel intentional, every function tested.
           </p>
         </div>
 
@@ -188,17 +187,17 @@ function HeroSection() {
 function WorkSection() {
   const projects = [
     {
-      num: "01", title: "Redwood Retreats", tag: "Cabin Rental",
-      desc: "Canvas grass with wind physics, PS5 particles, 3D tilt cards, dynamic booking. Lighthouse 100.",
-      tech: ["Next.js", "TypeScript", "Canvas API", "Vitest"],
+      num: "01", title: "Redwood Retreats", tag: "Cabin Rental Platform",
+      desc: "A luxury cabin rental platform where the experience starts before you even book. The grass on the homepage is rendered on a real-time canvas that responds to wind. Particles float like fireflies at dusk. Every card tilts in 3D when you hover. The booking system calculates pricing dynamically based on season, guests, and dates.",
+      tech: ["Next.js 16", "TypeScript", "Canvas API", "Vitest", "Tailwind"],
       stats: { tests: "41", perf: "100", a11y: "91" },
       live: "https://redwood-retreats.vercel.app", code: "https://github.com/jewelcruzs0922-dev/redwood-retreats",
       accent: "#5B9BD5",
     },
     {
-      num: "02", title: "Cosmic Ray Solar", tag: "Solar Platform",
-      desc: "Stripe payments, Sanity CMS, scheduling, savings calculator. 59 tests, 35 pages.",
-      tech: ["Next.js", "Stripe", "Sanity", "Playwright"],
+      num: "02", title: "Cosmic Ray Solar", tag: "Solar Company Platform",
+      desc: "A complete business platform for a solar energy company. Customers can browse plans, calculate savings based on their electricity bill, schedule appointments, and pay through Stripe. Content is managed through Sanity CMS so the client can update plans and pricing without touching code.",
+      tech: ["Next.js 16", "Stripe", "Sanity", "Playwright", "Tailwind"],
       stats: { tests: "59", pages: "35", apis: "5" },
       live: "https://cosmicray-solar.netlify.app", code: "https://github.com/jewelcruzs0922-dev/cosmicray-solar",
       accent: "#3A7CC8",
@@ -210,22 +209,20 @@ function WorkSection() {
       <R className="mb-12">
         <span className="glass-pill inline-block px-4 py-1.5 t-micro text-[#5B9BD5] mb-3">Portfolio</span>
         <h2 className="text-[clamp(1.8rem,4vw,3.5rem)] font-black tracking-tight text-[#1E3A5F]"><SplitReveal text="Selected work" /></h2>
+        <p className="text-sm text-[#1E3A5F]/35 mt-3 max-w-md">Two production apps. Designed, built, tested, deployed. Every line of code written by hand.</p>
       </R>
 
       <div className="space-y-8">
         {projects.map((p, i) => (
           <R key={p.num} delay={i * 0.15}>
             <div className="glass-strong rounded-2xl overflow-hidden group">
-              {/* Browser chrome */}
               <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/40">
                 <div className="flex gap-1.5"><div className="w-2 h-2 rounded-full bg-[#5B9BD5]/20" /><div className="w-2 h-2 rounded-full bg-[#5B9BD5]/20" /><div className="w-2 h-2 rounded-full bg-[#5B9BD5]/20" /></div>
                 <div className="flex-1 flex justify-center"><div className="px-3 py-1 text-[9px] text-[#1E3A5F]/25 font-mono bg-white/40 rounded border border-white/50">{p.live.replace("https://", "")}</div></div>
                 <div className="w-6" />
               </div>
 
-              {/* Content — side by side inside the card */}
               <div className="grid lg:grid-cols-5 gap-0">
-                {/* Mockup */}
                 <div className="lg:col-span-3 aspect-[16/10] lg:aspect-auto relative overflow-hidden" style={{ background: "linear-gradient(135deg, #F5F9FF, #EDF4FC)" }}>
                   <div className="absolute inset-0 flex flex-col p-5 transition-transform duration-700 group-hover:scale-[1.02]">
                     <div className="flex items-center justify-between mb-4">
@@ -245,7 +242,6 @@ function WorkSection() {
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </div>
 
-                {/* Info */}
                 <div className="lg:col-span-2 p-6 lg:p-8 flex flex-col justify-center">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-[10px] font-bold text-[#1E3A5F]/25">{p.num}</span>
@@ -336,18 +332,21 @@ function AboutSection() {
       <div ref={ref} className="grid sm:grid-cols-2 gap-3">
         <div className="glass-strong p-6 rounded-2xl" style={{ opacity: isVisible ? 1 : 0, transition: "opacity 0.6s ease 0.1s" }}>
           <p className="text-sm text-[#1E3A5F]/50 leading-relaxed mb-3">
-            I&apos;m Jewel Cruz from the Philippines. I design and build web applications — fast, tested, and genuinely enjoyable to use.
+            I&apos;m Jewel Cruz, a web designer and frontend developer from the Philippines. I don&apos;t just build websites — I build experiences. Every project starts with a question: how do I make this feel alive?
+          </p>
+          <p className="text-sm text-[#1E3A5F]/50 leading-relaxed mb-3">
+            Over the past two years, I&apos;ve shipped a luxury rental platform with real-time canvas animations, a full-stack solar company with Stripe payments and CMS integration, and this portfolio you&apos;re looking at right now.
           </p>
           <p className="text-sm text-[#1E3A5F]/35 leading-relaxed">
-            Two years in. Canvas animations, Stripe payments, Sanity CMS. Everything hand-coded. No templates.
+            I believe great web design is invisible — users shouldn&apos;t notice it, they should just find what they need, fast. That&apos;s what I build.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3" style={{ opacity: isVisible ? 1 : 0, transition: "opacity 0.6s ease 0.2s" }}>
           {[
-            { num: "2+", label: "Years", color: "#5B9BD5" },
-            { num: "100+", label: "Tests", color: "#7EC8E3" },
-            { num: "100", label: "Lighthouse", color: "#5B9BD5" },
-            { num: "0", label: "Templates", color: "#3A7CC8" },
+            { num: "2+", label: "Years building", color: "#5B9BD5" },
+            { num: "100+", label: "Tests written", color: "#7EC8E3" },
+            { num: "100", label: "Lighthouse score", color: "#5B9BD5" },
+            { num: "0", label: "Templates used", color: "#3A7CC8" },
           ].map((s) => (
             <div key={s.label} className="glass p-4 text-center">
               <div className="text-xl font-black" style={{ color: s.color }}>{s.num}</div>
@@ -369,22 +368,26 @@ function ContactSection() {
           <span className="glass-pill inline-block px-4 py-1.5 t-micro text-[#5B9BD5] mb-3">Contact</span>
           <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-tight text-[#1E3A5F]">
             <SplitReveal text="Let's" /><br />
-            <span className="gradient-text"><SplitReveal text="talk" delay={200} /></span>
+            <span className="gradient-text"><SplitReveal text="work" delay={200} /></span> <SplitReveal text="together" delay={400} />
           </h2>
+          <p className="text-sm text-[#1E3A5F]/35 mt-4 max-w-md">I&apos;m open to freelance projects, full-time remote positions, and interesting collaborations. If you have an idea that needs building, let&apos;s talk.</p>
         </R>
 
         <div className="grid sm:grid-cols-3 gap-3" style={{ opacity: isVisible ? 1 : 0, transition: "opacity 0.6s ease 0.3s" }}>
           <MagBtn href="mailto:jewel@example.com" className="glass-strong p-6 rounded-2xl text-left hover:bg-white/70 transition-all group">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-[#5B9BD5] mb-2">Email</div>
             <div className="text-sm font-bold text-[#1E3A5F] group-hover:text-[#5B9BD5] transition-colors">jewel@example.com</div>
+            <p className="text-[11px] text-[#1E3A5F]/25 mt-2">Best way to reach me. I reply within 24 hours.</p>
           </MagBtn>
           <MagBtn href="https://github.com/jewelcruzs0922-dev" className="glass-strong p-6 rounded-2xl text-left hover:bg-white/70 transition-all group">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-[#5B9BD5] mb-2">GitHub</div>
             <div className="text-sm font-bold text-[#1E3A5F] group-hover:text-[#5B9BD5] transition-colors">jewelcruzs0922-dev</div>
+            <p className="text-[11px] text-[#1E3A5F]/25 mt-2">All my code is open source. See how I work.</p>
           </MagBtn>
           <MagBtn href="https://linkedin.com" className="glass-strong p-6 rounded-2xl text-left hover:bg-white/70 transition-all group">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-[#5B9BD5] mb-2">LinkedIn</div>
             <div className="text-sm font-bold text-[#1E3A5F] group-hover:text-[#5B9BD5] transition-colors">Jewel Cruz</div>
+            <p className="text-[11px] text-[#1E3A5F]/25 mt-2">Connect with me professionally.</p>
           </MagBtn>
         </div>
       </div>
