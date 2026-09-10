@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Jewel Cruz — Frontend Developer",
   description:
-    "Frontend developer specializing in Next.js, React, and TypeScript. Building beautiful, performant web experiences.",
+    "Frontend developer who builds with passion. Next.js, React, TypeScript — every line of code carries emotion.",
 };
 
 export default function RootLayout({
