@@ -1,13 +1,14 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-bg: #fafafa;
-  --color-surface: #ffffff;
-  --color-text: #111111;
-  --color-text-muted: #666666;
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
-  --color-border: #e5e5e5;
+  --color-bg: #e0e5ec;
+  --color-surface: #e0e5ec;
+  --color-text: #2d3436;
+  --color-text-muted: #636e72;
+  --color-accent: #6c5ce7;
+  --color-accent-hover: #5a4bd1;
+  --color-shadow-dark: #a3b1c6;
+  --color-shadow-light: #ffffff;
 }
 
 html {
@@ -18,9 +19,122 @@ body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   background: var(--color-bg);
   color: var(--color-text);
+  overflow-x: hidden;
 }
 
 ::selection {
   background: var(--color-accent);
   color: white;
+}
+
+/* Neumorphic utilities */
+.neu-raised {
+  background: var(--color-bg);
+  border-radius: 20px;
+  box-shadow:
+    9px 9px 18px var(--color-shadow-dark),
+    -9px -9px 18px var(--color-shadow-light);
+}
+
+.neu-raised-sm {
+  background: var(--color-bg);
+  border-radius: 14px;
+  box-shadow:
+    6px 6px 12px var(--color-shadow-dark),
+    -6px -6px 12px var(--color-shadow-light);
+}
+
+.neu-inset {
+  background: var(--color-bg);
+  border-radius: 14px;
+  box-shadow:
+    inset 4px 4px 8px var(--color-shadow-dark),
+    inset -4px -4px 8px var(--color-shadow-light);
+}
+
+.neu-flat {
+  background: var(--color-bg);
+  border-radius: 12px;
+  box-shadow:
+    4px 4px 8px var(--color-shadow-dark),
+    -4px -4px 8px var(--color-shadow-light);
+  transition: all 0.2s ease;
+}
+
+.neu-flat:hover {
+  box-shadow:
+    2px 2px 4px var(--color-shadow-dark),
+    -2px -2px 4px var(--color-shadow-light);
+}
+
+.neu-flat:active {
+  box-shadow:
+    inset 3px 3px 6px var(--color-shadow-dark),
+    inset -3px -3px 6px var(--color-shadow-light);
+}
+
+.neu-button {
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 16px 32px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow:
+    6px 6px 12px var(--color-shadow-dark),
+    -6px -6px 12px var(--color-shadow-light);
+  transition: all 0.2s ease;
+}
+
+.neu-button:hover {
+  box-shadow:
+    4px 4px 8px var(--color-shadow-dark),
+    -4px -4px 8px var(--color-shadow-light);
+}
+
+.neu-button:active {
+  box-shadow:
+    inset 4px 4px 8px rgba(0, 0, 0, 0.2),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.1);
+}
+
+/* Animated gradient background */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Smooth float animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Fade in animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Pulse glow */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(108, 92, 231, 0.2); }
+  50% { box-shadow: 0 0 40px rgba(108, 92, 231, 0.4); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
