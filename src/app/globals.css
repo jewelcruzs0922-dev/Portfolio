@@ -11,9 +11,7 @@
   --color-shadow-light: #ffffff;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
@@ -22,115 +20,139 @@ body {
   overflow-x: hidden;
 }
 
-::selection {
-  background: var(--color-accent);
-  color: white;
-}
+::selection { background: var(--color-accent); color: white; }
 
-/* Neumorphic utilities */
+/* ── Neumorphic shapes ── */
 .neu-raised {
   background: var(--color-bg);
-  border-radius: 20px;
-  box-shadow:
-    9px 9px 18px var(--color-shadow-dark),
-    -9px -9px 18px var(--color-shadow-light);
+  border-radius: 24px 8px 24px 8px;
+  box-shadow: 9px 9px 18px var(--color-shadow-dark), -9px -9px 18px var(--color-shadow-light);
 }
 
 .neu-raised-sm {
   background: var(--color-bg);
-  border-radius: 14px;
-  box-shadow:
-    6px 6px 12px var(--color-shadow-dark),
-    -6px -6px 12px var(--color-shadow-light);
+  border-radius: 16px 6px 16px 6px;
+  box-shadow: 6px 6px 12px var(--color-shadow-dark), -6px -6px 12px var(--color-shadow-light);
 }
 
 .neu-inset {
   background: var(--color-bg);
-  border-radius: 14px;
-  box-shadow:
-    inset 4px 4px 8px var(--color-shadow-dark),
-    inset -4px -4px 8px var(--color-shadow-light);
+  border-radius: 12px;
+  box-shadow: inset 4px 4px 8px var(--color-shadow-dark), inset -4px -4px 8px var(--color-shadow-light);
 }
 
 .neu-flat {
   background: var(--color-bg);
   border-radius: 12px;
-  box-shadow:
-    4px 4px 8px var(--color-shadow-dark),
-    -4px -4px 8px var(--color-shadow-light);
+  box-shadow: 4px 4px 8px var(--color-shadow-dark), -4px -4px 8px var(--color-shadow-light);
   transition: all 0.2s ease;
 }
-
-.neu-flat:hover {
-  box-shadow:
-    2px 2px 4px var(--color-shadow-dark),
-    -2px -2px 4px var(--color-shadow-light);
-}
-
-.neu-flat:active {
-  box-shadow:
-    inset 3px 3px 6px var(--color-shadow-dark),
-    inset -3px -3px 6px var(--color-shadow-light);
-}
+.neu-flat:hover { box-shadow: 2px 2px 4px var(--color-shadow-dark), -2px -2px 4px var(--color-shadow-light); }
+.neu-flat:active { box-shadow: inset 3px 3px 6px var(--color-shadow-dark), inset -3px -3px 6px var(--color-shadow-light); }
 
 .neu-button {
   background: var(--color-accent);
   color: white;
   border: none;
-  border-radius: 14px;
+  border-radius: 16px 6px 16px 6px;
   padding: 16px 32px;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  box-shadow:
-    6px 6px 12px var(--color-shadow-dark),
-    -6px -6px 12px var(--color-shadow-light);
+  box-shadow: 6px 6px 12px var(--color-shadow-dark), -6px -6px 12px var(--color-shadow-light);
   transition: all 0.2s ease;
 }
+.neu-button:hover { box-shadow: 4px 4px 8px var(--color-shadow-dark), -4px -4px 8px var(--color-shadow-light); transform: translateY(-2px); }
+.neu-button:active { box-shadow: inset 4px 4px 8px rgba(0,0,0,0.2), inset -4px -4px 8px rgba(255,255,255,0.1); transform: translateY(0); }
 
-.neu-button:hover {
-  box-shadow:
-    4px 4px 8px var(--color-shadow-dark),
-    -4px -4px 8px var(--color-shadow-light);
+/* ── Creative shapes ── */
+.neu-hexagon {
+  background: var(--color-bg);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  box-shadow: none;
+}
+.neu-hexagon-shadow {
+  filter: drop-shadow(4px 4px 6px var(--color-shadow-dark)) drop-shadow(-4px -4px 6px var(--color-shadow-light));
 }
 
-.neu-button:active {
-  box-shadow:
-    inset 4px 4px 8px rgba(0, 0, 0, 0.2),
-    inset -4px -4px 8px rgba(255, 255, 255, 0.1);
+.neu-diamond {
+  background: var(--color-bg);
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
 }
 
-/* Animated gradient background */
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+.neu-wave-bottom {
+  background: var(--color-bg);
+  border-radius: 24px 24px 0 0;
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 95%, 70% 88%, 55% 95%, 40% 88%, 25% 95%, 10% 88%, 0 95%);
 }
 
-/* Smooth float animation */
+.neu-pill {
+  background: var(--color-bg);
+  border-radius: 50px;
+  box-shadow: 4px 4px 8px var(--color-shadow-dark), -4px -4px 8px var(--color-shadow-light);
+}
+
+.neu-circle {
+  background: var(--color-bg);
+  border-radius: 50%;
+  box-shadow: 6px 6px 12px var(--color-shadow-dark), -6px -6px 12px var(--color-shadow-light);
+}
+
+.neu-circle-inset {
+  background: var(--color-bg);
+  border-radius: 50%;
+  box-shadow: inset 4px 4px 8px var(--color-shadow-dark), inset -4px -4px 8px var(--color-shadow-light);
+}
+
+.neu-arch {
+  background: var(--color-bg);
+  border-radius: 50% 50% 0 0;
+  box-shadow: 6px 6px 12px var(--color-shadow-dark), -6px -6px 12px var(--color-shadow-light);
+}
+
+.neu-shield {
+  background: var(--color-bg);
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+}
+
+.neu-leaf {
+  background: var(--color-bg);
+  border-radius: 0 50% 0 50%;
+  box-shadow: 4px 4px 8px var(--color-shadow-dark), -4px -4px 8px var(--color-shadow-light);
+}
+
+/* ── Animations ── */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
 }
 
-/* Fade in animations */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Pulse glow */
 @keyframes pulseGlow {
   0%, 100% { box-shadow: 0 0 20px rgba(108, 92, 231, 0.2); }
   50% { box-shadow: 0 0 40px rgba(108, 92, 231, 0.4); }
 }
 
-/* Reduced motion */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes morphBlob {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+}
+
+@keyframes rotateHex {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slideInDiagonal {
+  from { opacity: 0; transform: translate(-30px, 30px); }
+  to { opacity: 1; transform: translate(0, 0); }
+}
+
+/* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -139,12 +161,6 @@ body {
   }
 }
 
-/* Scrollbar hide */
+/* ── Scrollbar ── */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* Shimmer effect for progress bar */
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
