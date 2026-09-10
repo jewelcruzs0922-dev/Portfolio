@@ -1,78 +1,81 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-bg: #0C0C0C;
-  --color-ink: #E8E0D4;
-  --color-dim: rgba(232, 224, 212, 0.45);
-  --color-accent: #C4956A;
+  --color-paper: #F5F3EF;
+  --color-ink: #1A1A1A;
+  --color-dim: #6B6B6B;
+  --color-line: rgba(26, 26, 26, 0.1);
+  --color-accent: #0055FF;
 }
 
 html { scroll-behavior: smooth; }
 
 body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background: var(--color-bg);
+  background: var(--color-paper);
   color: var(--color-ink);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-::selection { background: var(--color-accent); color: var(--color-bg); }
+::selection { background: var(--color-accent); color: white; }
 
-/* ── Giant display type ── */
-.display {
-  font-size: clamp(4rem, 14vw, 12rem);
-  font-weight: 900;
-  line-height: 0.85;
-  letter-spacing: -0.05em;
-  color: var(--color-ink);
+/* ── Type scale ── */
+.t-display {
+  font-size: clamp(3rem, 9vw, 8rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
 }
 
-.display-outline {
-  font-size: clamp(4rem, 14vw, 12rem);
-  font-weight: 900;
-  line-height: 0.85;
-  letter-spacing: -0.05em;
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--color-ink);
+.t-heading {
+  font-size: clamp(1.75rem, 4vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
 }
 
-/* ── Divider ── */
-.rule {
+.t-body { font-size: 1rem; line-height: 1.65; }
+.t-small { font-size: 0.8125rem; line-height: 1.6; }
+.t-micro {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ── Rules ── */
+.rule { width: 100%; height: 1px; background: var(--color-line); }
+.rule-thick { width: 100%; height: 2px; background: var(--color-ink); }
+.rule-accent { width: 48px; height: 2px; background: var(--color-accent); }
+
+/* ── Tag ── */
+.tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid var(--color-line);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-dim);
+}
+
+/* ── Link underline ── */
+.link { color: var(--color-accent); text-decoration: none; position: relative; }
+.link::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
   width: 100%;
   height: 1px;
-  background: var(--color-ink);
-  opacity: 0.12;
-}
-
-.rule-accent {
-  width: 60px;
-  height: 2px;
   background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-/* ── Tilted frame ── */
-.tilted {
-  transform: rotate(-2deg);
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.tilted:hover { transform: rotate(0deg); }
-
-/* ── Animations ── */
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
+.link:hover::after { transform: scaleX(1); transform-origin: left; }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {

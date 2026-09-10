@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState } from "react";
 
-/* ── Hooks ── */
+/* ── Hook ── */
 function useInView(t = 0.15) {
   const [r, setR] = useState<HTMLElement | null>(null);
   const [v, setV] = useState(false);
@@ -16,27 +16,21 @@ function useInView(t = 0.15) {
 
 /* ── Nav ── */
 function Nav() {
-  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const h = () => setScrolled(scrollY > 40);
+    addEventListener("scroll", h, { passive: true }); return () => removeEventListener("scroll", h);
+  }, []);
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 mix-blend-difference">
-      <div className="flex items-center justify-between px-6 lg:px-12 py-6">
-        <a href="#home" className="text-sm font-bold tracking-widest uppercase text-[#E8E0D4]">J.C</a>
-        <button onClick={() => setOpen(!open)} className="flex flex-col gap-1.5 cursor-pointer z-50" aria-label="Menu">
-          <span className={`block w-6 h-[1.5px] bg-[#E8E0D4] transition-all duration-300 ${open ? "rotate-45 translate-y-[4.5px]" : ""}`} />
-          <span className={`block w-6 h-[1.5px] bg-[#E8E0D4] transition-all duration-300 ${open ? "-rotate-45 -translate-y-[1.5px]" : ""}`} />
-        </button>
-      </div>
-      {/* Full-screen menu */}
-      <div className={`fixed inset-0 bg-[#0C0C0C] z-40 flex items-center justify-center transition-all duration-700 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
-        <div className="flex flex-col items-center gap-8">
-          {["Work", "About", "Contact"].map((item, i) => (
-            <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setOpen(false)}
-              className="text-[clamp(2rem,8vw,6rem)] font-black tracking-tight text-[#E8E0D4] hover:text-[#C4956A] transition-colors duration-300"
-              style={{ transitionDelay: open ? `${i * 100}ms` : "0ms", opacity: open ? 1 : 0, transform: open ? "translateY(0)" : "translateY(30px)", transition: `all 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${open ? i * 0.08 : 0}s` }}>
-              {item}
-            </a>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-[#F5F3EF]/90 backdrop-blur-sm border-b border-[#1A1A1A]/5" : ""}`}>
+      <div className="max-w-6xl mx-auto px-6 lg:px-12 flex items-center justify-between h-16">
+        <a href="#home" className="text-sm font-bold tracking-tight text-[#1A1A1A]">Jewel Cruz</a>
+        <div className="hidden sm:flex items-center gap-8">
+          {["Work", "Services", "About", "Contact"].map((item) => (
+            <a key={item} href={`#${item.toLowerCase()}`} className="text-xs font-semibold tracking-wider uppercase text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors">{item}</a>
           ))}
         </div>
+        <a href="#contact" className="text-xs font-semibold tracking-wider uppercase text-[#0055FF] hover:underline">Hire me</a>
       </div>
     </nav>
   );
@@ -45,31 +39,28 @@ function Nav() {
 /* ── Hero ── */
 function Hero() {
   const [loaded, setLoaded] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setLoaded(true), 200); return () => clearTimeout(t); }, []);
+  useEffect(() => { const t = setTimeout(() => setLoaded(true), 100); return () => clearTimeout(t); }, []);
 
   return (
-    <section id="home" className="min-h-screen flex flex-col justify-end px-6 lg:px-12 pb-16 relative">
-      {/* Giant decorative letter */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
-        style={{ fontSize: "clamp(20rem, 50vw, 45rem)", fontWeight: 900, lineHeight: 0.8, color: "rgba(232,224,212,0.025)", letterSpacing: "-0.05em" }}>
-        J
-      </div>
+    <section id="home" className="min-h-screen flex flex-col justify-end px-6 lg:px-12 pb-20 pt-32">
+      <div className="max-w-6xl mx-auto w-full">
+        <div className="rule-accent mb-8" style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.6s ease 0.1s" }} />
 
-      <div className="relative z-10">
-        <div className="rule-accent mb-8" style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.8s ease 0.2s" }} />
+        <div style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(40px)", transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s" }}>
+          <p className="t-micro text-[#0055FF] mb-4">Web Designer &amp; Developer</p>
+          <h1 className="t-display max-w-4xl">
+            I build websites<br />that work.
+          </h1>
+        </div>
 
-        <h1 className="display" style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(60px)", transition: "all 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s" }}>
-          Jewel<br />Cruz
-        </h1>
-
-        <div className="mt-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-8"
-          style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.8s" }}>
-          <p className="text-[#E8E0D4]/50 text-base max-w-sm leading-relaxed">
-            Web designer &amp; developer from the Philippines. I build things that feel right.
+        <div className="mt-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-8"
+          style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(20px)", transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s" }}>
+          <p className="t-body text-[#6B6B6B] max-w-md">
+            Frontend developer from the Philippines. I build fast, tested, production-ready web applications. Currently available for remote work.
           </p>
-          <div className="flex items-center gap-4 text-xs tracking-widest uppercase text-[#E8E0D4]/30">
-            <span>Available for work</span>
-            <div className="w-8 h-[1px] bg-[#C4956A]" />
+          <div className="flex items-center gap-6">
+            <a href="#work" className="link t-small font-semibold">See work</a>
+            <a href="#contact" className="link t-small font-semibold">Get in touch</a>
           </div>
         </div>
       </div>
@@ -77,153 +68,223 @@ function Hero() {
   );
 }
 
-/* ── Marquee ── */
-function Marquee() {
-  const items = ["Redwood Retreats", "\u2014", "Cosmic Ray Solar", "\u2014", "Web Designer", "\u2014", "Frontend Developer", "\u2014", "UI/UX", "\u2014"];
+/* ── Stats bar ── */
+function StatsBar() {
+  const { ref, isVisible } = useInView();
+  const stats = [
+    { value: "2+", label: "Years experience" },
+    { value: "100+", label: "Tests written" },
+    { value: "100", label: "Lighthouse score" },
+    { value: "2", label: "Production apps" },
+  ];
   return (
-    <div className="py-8 border-y border-[#E8E0D4]/10 overflow-hidden">
-      <div className="flex whitespace-nowrap" style={{ animation: "marquee 20s linear infinite" }}>
-        {[...items, ...items].map((item, i) => (
-          <span key={i} className="mx-6 text-[clamp(1.5rem,4vw,3rem)] font-black tracking-tight text-[#E8E0D4]/10">{item}</span>
+    <div ref={ref} className="border-y border-[#1A1A1A]/10">
+      <div className="max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-4">
+        {stats.map((s, i) => (
+          <div key={s.label} className={`py-8 px-6 lg:px-12 ${i < 3 ? "border-r border-[#1A1A1A]/10" : ""} ${i < 2 ? "border-b lg:border-b-0 border-[#1A1A1A]/10" : i === 2 ? "border-b lg:border-b-0 border-[#1A1A1A]/10" : ""}`}
+            style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(20px)", transition: `all 0.5s ease ${i * 0.08}s` }}>
+            <div className="text-3xl lg:text-4xl font-extrabold tracking-tight">{s.value}</div>
+            <div className="t-micro text-[#6B6B6B] mt-2">{s.label}</div>
+          </div>
         ))}
       </div>
     </div>
   );
 }
 
-/* ── Project ── */
-function Project({ num, title, tag, desc, tech, stats, live, code, accent, reverse }: {
-  num: string; title: string; tag: string; desc: string; tech: string[]; stats: string[];
-  live: string; code: string; accent: string; reverse?: boolean;
-}) {
-  const { ref, isVisible } = useInView(0.1);
+/* ── Work ── */
+function Work() {
+  const { ref: r1, isVisible: v1 } = useInView(0.08);
+  const { ref: r2, isVisible: v2 } = useInView(0.08);
+
+  const projects = [
+    {
+      num: "01", title: "Redwood Retreats", tag: "Cabin Rental Platform",
+      desc: "A luxury cabin rental platform with canvas-rendered grass animations, PS5-style particle effects, 3D tilt cards, and a dynamic booking system. Lighthouse 100 performance, 91 accessibility, 41 tests.",
+      tech: ["Next.js 16", "TypeScript", "Canvas API", "Vitest", "Tailwind"],
+      live: "https://redwood-retreats.vercel.app", code: "https://github.com/jewelcruzs0922-dev/redwood-retreats",
+      color: "#C45D3E",
+      mockBg: "#FDF8F5",
+      mockAccent: "#C45D3E",
+    },
+    {
+      num: "02", title: "Cosmic Ray Solar", tag: "Full-Stack Solar Company",
+      desc: "A complete solar company platform with Stripe payment integration, Sanity CMS, appointment scheduling, and a real-time savings calculator. 59 tests, 35 pages, 5 API routes.",
+      tech: ["Next.js 16", "Stripe", "Sanity", "Playwright", "Tailwind"],
+      live: "https://cosmicray-solar.netlify.app", code: "https://github.com/jewelcruzs0922-dev/cosmicray-solar",
+      color: "#2563EB",
+      mockBg: "#F5F8FF",
+      mockAccent: "#2563EB",
+    },
+  ];
 
   return (
-    <div ref={ref} className="min-h-screen flex items-center py-20 px-6 lg:px-12 relative">
-      {/* Giant number */}
-      <div className="absolute top-1/2 -translate-y-1/2 pointer-events-none select-none"
-        style={{
-          fontSize: "clamp(15rem, 35vw, 30rem)", fontWeight: 900, lineHeight: 0.8, color: `${accent}06`,
-          letterSpacing: "-0.05em", [reverse ? "right" : "left"]: "5%",
-          opacity: isVisible ? 1 : 0, transition: "opacity 1s ease 0.3s",
-        }}>
-        {num}
-      </div>
-
-      <div className={`w-full max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 items-center relative z-10 ${reverse ? "direction-rtl" : ""}`}>
-        {/* Text side */}
-        <div className={`${reverse ? "lg:col-start-8 lg:col-span-5" : "lg:col-span-5"} direction-ltr`}
-          style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateX(0)" : `translateX(${reverse ? "40px" : "-40px"})`, transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s" }}>
-          <span className="text-[10px] font-bold tracking-[0.3em] uppercase mb-4 block" style={{ color: accent }}>{tag}</span>
-          <h2 className="text-[clamp(2rem,5vw,4.5rem)] font-black tracking-tight leading-[0.95] mb-6">{title}</h2>
-          <p className="text-[#E8E0D4]/40 leading-relaxed mb-8 max-w-md">{desc}</p>
-          <div className="flex flex-wrap gap-2 mb-6">
-            {tech.map((t) => <span key={t} className="px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase border border-[#E8E0D4]/15 text-[#E8E0D4]/50 rounded-sm">{t}</span>)}
-          </div>
-          <div className="flex gap-4 mb-8">
-            {stats.map((s) => <span key={s} className="text-[10px] font-bold tracking-wider" style={{ color: accent }}>{s}</span>)}
-          </div>
-          <div className="flex gap-4">
-            <a href={live} className="group inline-flex items-center gap-2 text-sm font-semibold" style={{ color: accent }}>
-              View Live
-              <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-            </a>
-            <a href={code} className="inline-flex items-center text-sm text-[#E8E0D4]/40 hover:text-[#E8E0D4]/70 transition-colors">Code</a>
-          </div>
+    <section id="work" className="py-24 px-6 lg:px-12">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-16">
+          <p className="t-micro text-[#0055FF] mb-3">Selected Work</p>
+          <h2 className="t-heading">Projects I&apos;ve shipped.</h2>
         </div>
 
-        {/* Visual side */}
-        <div className={`${reverse ? "lg:col-start-1 lg:col-span-6 lg:row-start-1" : "lg:col-span-6 lg:col-start-7"} direction-ltr`}
-          style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateX(0)" : `translateX(${reverse ? "-40px" : "40px"})`, transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s" }}>
-          <div className="tilted relative">
-            {/* Project visual */}
-            <div className="relative aspect-[4/3] rounded-sm overflow-hidden" style={{ background: `${accent}08` }}>
-              {/* Fake browser bar */}
-              <div className="absolute top-0 left-0 right-0 h-8 flex items-center gap-2 px-4 border-b border-[#E8E0D4]/8">
-                <div className="w-2 h-2 rounded-full bg-[#E8E0D4]/10" />
-                <div className="w-2 h-2 rounded-full bg-[#E8E0D4]/10" />
-                <div className="w-2 h-2 rounded-full bg-[#E8E0D4]/10" />
-                <div className="flex-1 flex justify-center">
-                  <div className="px-3 py-0.5 text-[9px] text-[#E8E0D4]/20 font-mono">{live.replace("https://", "")}</div>
+        {/* Project 1 */}
+        <div ref={r1} className="mb-24">
+          <div className={`transition-all duration-700 ${v1 ? "opacity-100" : "opacity-0"}`}>
+            <div className="grid lg:grid-cols-2 gap-12 items-start">
+              {/* Text */}
+              <div style={{ opacity: v1 ? 1 : 0, transform: v1 ? "translateY(0)" : "translateY(30px)", transition: "all 0.6s ease 0.1s" }}>
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-xs font-bold text-[#6B6B6B]">{projects[0].num}</span>
+                  <div className="rule flex-1" />
+                  <span className="tag" style={{ borderColor: `${projects[0].color}30`, color: projects[0].color }}>{projects[0].tag}</span>
+                </div>
+                <h3 className="text-3xl lg:text-4xl font-extrabold tracking-tight mb-4">{projects[0].title}</h3>
+                <p className="t-body text-[#6B6B6B] mb-6 max-w-md">{projects[0].desc}</p>
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {projects[0].tech.map((t) => <span key={t} className="tag">{t}</span>)}
+                </div>
+                <div className="flex gap-4">
+                  <a href={projects[0].live} className="inline-flex items-center gap-2 text-sm font-semibold" style={{ color: projects[0].color }}>
+                    Live site
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" /></svg>
+                  </a>
+                  <a href={projects[0].code} className="text-sm text-[#6B6B6B] hover:text-[#1A1A1A]">Source code</a>
                 </div>
               </div>
-              {/* Simulated content */}
-              <div className="absolute inset-0 top-8 flex flex-col items-center justify-center p-8">
-                <div className="w-full max-w-sm">
-                  <div className="flex items-center gap-2 mb-6">
-                    <div className="w-4 h-4 rounded-sm" style={{ background: accent }} />
-                    <div className="h-1.5 w-16 rounded-full bg-[#E8E0D4]/10" />
+
+              {/* Mockup */}
+              <div style={{ opacity: v1 ? 1 : 0, transform: v1 ? "translateY(0)" : "translateY(30px)", transition: "all 0.6s ease 0.3s" }}>
+                <div className="border border-[#1A1A1A]/10 rounded-sm overflow-hidden">
+                  {/* Browser bar */}
+                  <div className="flex items-center gap-2 px-4 py-2.5 bg-[#FAFAFA] border-b border-[#1A1A1A]/5">
+                    <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#1A1A1A]/8" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#1A1A1A]/8" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#1A1A1A]/8" />
+                    </div>
+                    <div className="flex-1 flex justify-center">
+                      <div className="px-3 py-1 text-[10px] text-[#6B6B6B] bg-white border border-[#1A1A1A]/8 rounded-sm font-mono">
+                        {projects[0].live.replace("https://", "")}
+                      </div>
+                    </div>
+                    <div className="w-10" />
                   </div>
-                  <div className="h-20 rounded-sm mb-3" style={{ background: `linear-gradient(135deg, ${accent}15, ${accent}05)` }} />
-                  <div className="grid grid-cols-3 gap-2 mb-4">
-                    {[1, 2, 3].map((i) => <div key={i} className="h-14 rounded-sm bg-[#E8E0D4]/[0.03]" />)}
+                  {/* Site preview */}
+                  <div className="aspect-[16/10]" style={{ background: projects[0].mockBg }}>
+                    <div className="h-full flex flex-col p-6">
+                      {/* Nav mock */}
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 rounded-sm" style={{ background: projects[0].mockAccent }} />
+                          <div className="h-2 w-16 bg-[#1A1A1A]/10 rounded-full" />
+                        </div>
+                        <div className="flex gap-3">
+                          <div className="h-2 w-8 bg-[#1A1A1A]/8 rounded-full" />
+                          <div className="h-2 w-8 bg-[#1A1A1A]/8 rounded-full" />
+                          <div className="h-2 w-8 bg-[#1A1A1A]/8 rounded-full" />
+                        </div>
+                      </div>
+                      {/* Hero mock */}
+                      <div className="flex-1 flex items-center">
+                        <div>
+                          <div className="h-3 w-40 bg-[#1A1A1A]/10 rounded-full mb-3" />
+                          <div className="h-2 w-56 bg-[#1A1A1A]/5 rounded-full mb-2" />
+                          <div className="h-2 w-44 bg-[#1A1A1A]/5 rounded-full mb-5" />
+                          <div className="h-7 w-24 rounded-full" style={{ background: projects[0].mockAccent }} />
+                        </div>
+                      </div>
+                      {/* Cards mock */}
+                      <div className="grid grid-cols-3 gap-3">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="rounded-sm border border-[#1A1A1A]/5 bg-white p-3">
+                            <div className="aspect-[4/3] rounded-sm mb-2" style={{ background: `${projects[0].mockAccent}08` }} />
+                            <div className="h-1.5 w-12 bg-[#1A1A1A]/8 rounded-full mb-1" />
+                            <div className="h-1 w-16 bg-[#1A1A1A]/5 rounded-full" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <div className="h-1.5 w-24 rounded-full bg-[#E8E0D4]/5 mb-2" />
-                  <div className="h-1.5 w-36 rounded-full bg-[#E8E0D4]/[0.03]" />
                 </div>
               </div>
             </div>
-            {/* Accent label */}
-            <div className="absolute -bottom-3 left-4 px-3 py-1 text-[9px] font-bold tracking-widest uppercase rounded-sm" style={{ background: accent, color: "#0C0C0C" }}>
-              {num}
-            </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
 
-/* ── Statement ── */
-function Statement() {
-  const { ref, isVisible } = useInView();
-  return (
-    <section ref={ref} className="py-32 px-6 lg:px-12">
-      <div className="max-w-5xl mx-auto" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(40px)", transition: "all 1s cubic-bezier(0.16, 1, 0.3, 1)" }}>
-        <div className="rule mb-12" />
-        <blockquote className="text-[clamp(1.5rem,4vw,3.5rem)] font-black tracking-tight leading-[1.2] text-[#E8E0D4]/80">
-          I don&apos;t believe in templates.<br />
-          Every project deserves its own <span className="text-[#C4956A]">identity</span>,<br />
-          its own <span className="text-[#C4956A]">rhythm</span>,<br />
-          its own <span className="text-[#C4956A]">soul</span>.
-        </blockquote>
-        <div className="rule-accent mt-12" />
-      </div>
-    </section>
-  );
-}
-
-/* ── About ── */
-function About() {
-  const { ref, isVisible } = useInView();
-  return (
-    <section id="about" className="py-32 px-6 lg:px-12">
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16">
-        <div ref={ref} style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(40px)", transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)" }}>
-          <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#C4956A] mb-4 block">About</span>
-          <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-tight leading-[0.95] mb-8">
-            Design is how<br />it <span className="text-[#C4956A]">works</span>.
-          </h2>
-        </div>
-        <div className="flex flex-col justify-end gap-6"
-          style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(40px)", transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s" }}>
-          <p className="text-[#E8E0D4]/50 leading-relaxed text-lg">
-            I&apos;m Jewel. I design and build websites from the Philippines. Two years in, and I&apos;ve shipped a luxury rental platform with canvas animations, a full-stack solar company with Stripe, and this portfolio you&apos;re looking at right now.
-          </p>
-          <p className="text-[#E8E0D4]/35 leading-relaxed">
-            Everything you see here is hand-coded. No templates. No page builders. Just code, design, and a lot of coffee.
-          </p>
-          <div className="mt-4 flex gap-12">
-            {[
-              { num: "2+", label: "Years" },
-              { num: "100+", label: "Tests" },
-              { num: "100", label: "Lighthouse" },
-            ].map((s) => (
-              <div key={s.label}>
-                <div className="text-2xl font-black text-[#C4956A]">{s.num}</div>
-                <div className="text-[10px] font-bold tracking-widest uppercase text-[#E8E0D4]/30 mt-1">{s.label}</div>
+        {/* Project 2 — reversed */}
+        <div ref={r2}>
+          <div className={`transition-all duration-700 ${v2 ? "opacity-100" : "opacity-0"}`}>
+            <div className="grid lg:grid-cols-2 gap-12 items-start">
+              {/* Mockup (left) */}
+              <div className="order-2 lg:order-1" style={{ opacity: v2 ? 1 : 0, transform: v2 ? "translateY(0)" : "translateY(30px)", transition: "all 0.6s ease 0.3s" }}>
+                <div className="border border-[#1A1A1A]/10 rounded-sm overflow-hidden">
+                  <div className="flex items-center gap-2 px-4 py-2.5 bg-[#FAFAFA] border-b border-[#1A1A1A]/5">
+                    <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#1A1A1A]/8" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#1A1A1A]/8" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#1A1A1A]/8" />
+                    </div>
+                    <div className="flex-1 flex justify-center">
+                      <div className="px-3 py-1 text-[10px] text-[#6B6B6B] bg-white border border-[#1A1A1A]/8 rounded-sm font-mono">
+                        {projects[1].live.replace("https://", "")}
+                      </div>
+                    </div>
+                    <div className="w-10" />
+                  </div>
+                  <div className="aspect-[16/10]" style={{ background: projects[1].mockBg }}>
+                    <div className="h-full flex flex-col p-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 rounded-sm" style={{ background: projects[1].mockAccent }} />
+                          <div className="h-2 w-20 bg-[#1A1A1A]/10 rounded-full" />
+                        </div>
+                        <div className="h-6 w-20 rounded-full" style={{ background: projects[1].mockAccent }} />
+                      </div>
+                      <div className="flex-1 flex items-center">
+                        <div>
+                          <div className="h-3 w-36 bg-[#1A1A1A]/10 rounded-full mb-3" />
+                          <div className="h-2 w-48 bg-[#1A1A1A]/5 rounded-full mb-2" />
+                          <div className="h-2 w-40 bg-[#1A1A1A]/5 rounded-full mb-5" />
+                          <div className="flex gap-2">
+                            <div className="h-7 w-24 rounded-full" style={{ background: projects[1].mockAccent }} />
+                            <div className="h-7 w-20 rounded-full border border-[#1A1A1A]/10" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[1, 2].map((i) => (
+                          <div key={i} className="rounded-sm border border-[#1A1A1A]/5 bg-white p-3">
+                            <div className="aspect-[16/9] rounded-sm mb-2" style={{ background: `${projects[1].mockAccent}08` }} />
+                            <div className="h-1.5 w-14 bg-[#1A1A1A]/8 rounded-full mb-1" />
+                            <div className="h-1 w-20 bg-[#1A1A1A]/5 rounded-full" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            ))}
+
+              {/* Text (right) */}
+              <div className="order-1 lg:order-2" style={{ opacity: v2 ? 1 : 0, transform: v2 ? "translateY(0)" : "translateY(30px)", transition: "all 0.6s ease 0.1s" }}>
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-xs font-bold text-[#6B6B6B]">{projects[1].num}</span>
+                  <div className="rule flex-1" />
+                  <span className="tag" style={{ borderColor: `${projects[1].color}30`, color: projects[1].color }}>{projects[1].tag}</span>
+                </div>
+                <h3 className="text-3xl lg:text-4xl font-extrabold tracking-tight mb-4">{projects[1].title}</h3>
+                <p className="t-body text-[#6B6B6B] mb-6 max-w-md">{projects[1].desc}</p>
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {projects[1].tech.map((t) => <span key={t} className="tag">{t}</span>)}
+                </div>
+                <div className="flex gap-4">
+                  <a href={projects[1].live} className="inline-flex items-center gap-2 text-sm font-semibold" style={{ color: projects[1].color }}>
+                    Live site
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" /></svg>
+                  </a>
+                  <a href={projects[1].code} className="text-sm text-[#6B6B6B] hover:text-[#1A1A1A]">Source code</a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -235,30 +296,101 @@ function About() {
 function Services() {
   const { ref, isVisible } = useInView();
   const services = [
-    { num: "01", title: "Design", desc: "Interfaces that feel inevitable. Research, wireframes, prototypes, pixel-perfect execution." },
-    { num: "02", title: "Development", desc: "Next.js, React, TypeScript. Fast, tested, accessible. Production-ready from day one." },
-    { num: "03", title: "Branding", desc: "Visual identities that stick. Logos, color systems, typography, design languages." },
+    { num: "01", title: "Design", desc: "User interfaces from research to prototype. Wireframes, visual design, design systems. I think in systems, not screens." },
+    { num: "02", title: "Development", desc: "Next.js, React, TypeScript. Performance-first, tested, accessible. I write code that ships and holds up in production." },
+    { num: "03", title: "Branding", desc: "Visual identities that stick. Logos, color systems, typography, and design languages. Your brand, distilled." },
   ];
   return (
-    <section id="services" className="py-32 px-6 lg:px-12">
-      <div className="max-w-7xl mx-auto">
-        <div ref={ref} style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(40px)", transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)" }}>
-          <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#C4956A] mb-4 block">Services</span>
-          <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-tight leading-[0.95] mb-16">
-            What I <span className="text-[#C4956A]">do</span>.
-          </h2>
+    <section id="services" className="py-24 px-6 lg:px-12 bg-white">
+      <div className="max-w-6xl mx-auto">
+        <div ref={ref} className="mb-16" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.6s ease" }}>
+          <p className="t-micro text-[#0055FF] mb-3">Services</p>
+          <h2 className="t-heading">What I do.</h2>
         </div>
         <div className="grid lg:grid-cols-3 gap-0">
           {services.map((s, i) => (
-            <div key={s.num} className="py-10 border-t border-[#E8E0D4]/10 group hover:bg-[#E8E0D4]/[0.02] transition-colors duration-500"
-              style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(30px)", transition: `all 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.1}s` }}>
-              <div className="px-6 lg:px-10">
-                <span className="text-[10px] font-bold tracking-[0.3em] text-[#C4956A]/50">{s.num}</span>
-                <h3 className="text-2xl font-black tracking-tight mt-3 mb-4">{s.title}</h3>
-                <p className="text-sm text-[#E8E0D4]/35 leading-relaxed">{s.desc}</p>
-              </div>
+            <div key={s.num} className={`py-10 px-6 lg:px-8 border-t border-[#1A1A1A]/10 ${i < 2 ? "lg:border-r" : ""}`}
+              style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(20px)", transition: `all 0.5s ease ${i * 0.1}s` }}>
+              <span className="text-xs font-bold text-[#0055FF]">{s.num}</span>
+              <h3 className="text-xl font-bold tracking-tight mt-3 mb-3">{s.title}</h3>
+              <p className="t-small text-[#6B6B6B] leading-relaxed">{s.desc}</p>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Skills ── */
+function Skills() {
+  const { ref, isVisible } = useInView();
+  const groups = [
+    { label: "Frontend", items: ["React", "Next.js", "TypeScript", "Tailwind CSS", "JavaScript ES6+"] },
+    { label: "Design", items: ["Figma", "UI/UX Design", "Design Systems", "Prototyping", "Wireframing"] },
+    { label: "Tools", items: ["Git & GitHub", "Vercel", "Netlify", "Playwright", "Vitest"] },
+    { label: "Other", items: ["SEO", "Web Accessibility", "REST APIs", "Sanity CMS", "Stripe"] },
+  ];
+  return (
+    <section id="skills" className="py-24 px-6 lg:px-12">
+      <div className="max-w-6xl mx-auto">
+        <div ref={ref} className="mb-16" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.6s ease" }}>
+          <p className="t-micro text-[#0055FF] mb-3">Skills</p>
+          <h2 className="t-heading">What I know.</h2>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-0">
+          {groups.map((g, i) => (
+            <div key={g.label} className={`py-8 px-6 border-t border-[#1A1A1A]/10 ${i % 2 === 0 ? "sm:border-r" : ""} ${i < 2 ? "lg:border-r lg:border-b-0" : "lg:border-b-0"} ${i < groups.length - 2 ? "border-b sm:border-b-0" : i === 2 ? "lg:border-r" : ""}`}
+              style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(20px)", transition: `all 0.5s ease ${i * 0.08}s` }}>
+              <h3 className="t-micro text-[#1A1A1A] mb-4">{g.label}</h3>
+              <ul className="space-y-2">
+                {g.items.map((item) => (
+                  <li key={item} className="t-small text-[#6B6B6B]">{item}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── About ── */
+function About() {
+  const { ref, isVisible } = useInView();
+  return (
+    <section id="about" className="py-24 px-6 lg:px-12 bg-white">
+      <div className="max-w-6xl mx-auto grid lg:grid-cols-5 gap-16">
+        <div ref={ref} className="lg:col-span-3" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.6s ease" }}>
+          <p className="t-micro text-[#0055FF] mb-3">About</p>
+          <h2 className="t-heading mb-8">Design is how it works.</h2>
+          <div className="space-y-4">
+            <p className="t-body text-[#6B6B6B]">
+              I&apos;m Jewel Cruz, a web designer and frontend developer from the Philippines. I build websites that are fast, accessible, and actually work the way they should.
+            </p>
+            <p className="t-body text-[#6B6B6B]">
+              Two years in, I&apos;ve shipped a luxury rental platform with canvas animations, a full-stack solar company with Stripe payments, and this portfolio you&apos;re looking at right now. Every project is hand-coded. No templates. No page builders.
+            </p>
+            <p className="t-body text-[#6B6B6B]">
+              I believe great web design is invisible. Users shouldn&apos;t notice the design. They should just find what they need, fast. That&apos;s what I build.
+            </p>
+          </div>
+        </div>
+        <div className="lg:col-span-2 flex flex-col justify-center">
+          <div className="border border-[#1A1A1A]/10 rounded-sm">
+            {[
+              { label: "Location", value: "Philippines" },
+              { label: "Status", value: "Available for work" },
+              { label: "Focus", value: "Frontend & Design" },
+              { label: "Stack", value: "Next.js, React, TS" },
+            ].map((row, i) => (
+              <div key={row.label} className={`flex justify-between items-center px-6 py-4 ${i < 3 ? "border-b border-[#1A1A1A]/10" : ""}`}>
+                <span className="t-micro text-[#6B6B6B]">{row.label}</span>
+                <span className="t-small font-semibold">{row.value}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -269,22 +401,31 @@ function Services() {
 function Contact() {
   const { ref, isVisible } = useInView();
   return (
-    <section id="contact" className="py-32 px-6 lg:px-12">
-      <div className="max-w-7xl mx-auto">
-        <div ref={ref} className="text-center" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(40px)", transition: "all 1s cubic-bezier(0.16, 1, 0.3, 1)" }}>
-          <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#C4956A] mb-6 block">Contact</span>
-          <h2 className="text-[clamp(3rem,10vw,9rem)] font-black tracking-tight leading-[0.85] mb-8">
-            Let&apos;s<br />talk<span className="text-[#C4956A]">.</span>
-          </h2>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mt-12">
-            <a href="mailto:jewel@example.com" className="group inline-flex items-center gap-3 text-lg font-semibold text-[#C4956A] hover:gap-4 transition-all duration-300">
-              Email
-              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-            </a>
-            <span className="text-[#E8E0D4]/15">|</span>
-            <a href="https://github.com/jewelcruzs0922-dev" className="text-lg text-[#E8E0D4]/40 hover:text-[#E8E0D4]/70 transition-colors">GitHub</a>
-            <span className="text-[#E8E0D4]/15">|</span>
-            <a href="https://linkedin.com" className="text-lg text-[#E8E0D4]/40 hover:text-[#E8E0D4]/70 transition-colors">LinkedIn</a>
+    <section id="contact" className="py-24 px-6 lg:px-12">
+      <div className="max-w-6xl mx-auto">
+        <div ref={ref} className="grid lg:grid-cols-2 gap-16" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s ease" }}>
+          <div>
+            <p className="t-micro text-[#0055FF] mb-3">Contact</p>
+            <h2 className="t-heading mb-6">Let&apos;s work together.</h2>
+            <p className="t-body text-[#6B6B6B] max-w-md">
+              I&apos;m open to freelance projects, full-time positions, and interesting collaborations. If you have an idea that needs building, let&apos;s talk.
+            </p>
+          </div>
+          <div className="flex flex-col justify-center">
+            <div className="space-y-6">
+              <a href="mailto:jewel@example.com" className="flex items-center justify-between py-4 border-b border-[#1A1A1A]/10 group">
+                <span className="t-body font-semibold">Email</span>
+                <svg className="w-4 h-4 text-[#0055FF] group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" /></svg>
+              </a>
+              <a href="https://github.com/jewelcruzs0922-dev" className="flex items-center justify-between py-4 border-b border-[#1A1A1A]/10 group">
+                <span className="t-body font-semibold">GitHub</span>
+                <svg className="w-4 h-4 text-[#0055FF] group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" /></svg>
+              </a>
+              <a href="https://linkedin.com" className="flex items-center justify-between py-4 border-b border-[#1A1A1A]/10 group">
+                <span className="t-body font-semibold">LinkedIn</span>
+                <svg className="w-4 h-4 text-[#0055FF] group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" /></svg>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -295,10 +436,10 @@ function Contact() {
 /* ── Footer ── */
 function Footer() {
   return (
-    <footer className="py-8 px-6 lg:px-12 border-t border-[#E8E0D4]/10">
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-bold tracking-widest uppercase text-[#E8E0D4]/20">
-        <p>&copy; 2026 Jewel Cruz</p>
-        <p>Built by hand. No templates.</p>
+    <footer className="border-t border-[#1A1A1A]/10 py-6 px-6 lg:px-12">
+      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p className="t-small text-[#6B6B6B]">&copy; 2026 Jewel Cruz</p>
+        <p className="t-micro text-[#6B6B6B]">Hand-coded. No templates.</p>
       </div>
     </footer>
   );
@@ -310,25 +451,10 @@ export default function Home() {
     <>
       <Nav />
       <Hero />
-      <Marquee />
-      <Project
-        num="01" title="Redwood Retreats" tag="Cabin Rental Platform"
-        desc="Canvas-rendered grass with wind physics, PS5-style particles, 3D tilt cards, and a booking system with dynamic pricing. Every detail hand-crafted."
-        tech={["Next.js 16", "TypeScript", "Canvas API", "Vitest"]}
-        stats={["41 Tests", "100 Lighthouse", "91 A11y"]}
-        live="https://redwood-retreats.vercel.app" code="https://github.com/jewelcruzs0922-dev/redwood-retreats"
-        accent="#C4956A"
-      />
-      <Project
-        num="02" title="Cosmic Ray Solar" tag="Full-Stack Solar Company"
-        desc="Stripe payments, Sanity CMS, appointment scheduling, and a real-time savings calculator. 35 pages, 5 API routes, zero shortcuts."
-        tech={["Next.js 16", "Stripe", "Sanity", "Playwright"]}
-        stats={["59 Tests", "35 Pages", "5 APIs"]}
-        live="https://cosmicray-solar.netlify.app" code="https://github.com/jewelcruzs0922-dev/cosmicray-solar"
-        accent="#8B7355" reverse
-      />
-      <Statement />
+      <StatsBar />
+      <Work />
       <Services />
+      <Skills />
       <About />
       <Contact />
       <Footer />
