@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
-/* ── Hook ── */
+/* ── Hooks ── */
 function useInView(t = 0.15) {
   const [r, setR] = useState<HTMLElement | null>(null);
   const [v, setV] = useState(false);
@@ -14,23 +14,63 @@ function useInView(t = 0.15) {
   return { ref: setR, isVisible: v };
 }
 
+function useScrollProgress() {
+  const [p, setP] = useState(0);
+  useEffect(() => {
+    const h = () => { const s = document.documentElement; setP(s.scrollTop / (s.scrollHeight - s.clientHeight)); };
+    addEventListener("scroll", h, { passive: true }); return () => removeEventListener("scroll", h);
+  }, []);
+  return p;
+}
+
+/* ── Split text reveal ── */
+function SplitReveal({ text, className = "", delay = 0 }: { text: string; className?: string; delay?: number }) {
+  const { ref, isVisible } = useInView(0.3);
+  return (
+    <span ref={ref} className={`inline-block overflow-hidden ${className}`}>
+      {text.split("").map((c, i) => (
+        <span key={i} className="inline-block" style={{
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? "translateY(0) rotateX(0)" : "translateY(100%) rotateX(-80deg)",
+          transition: `all 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${delay + i * 0.025}s`,
+          transformOrigin: "bottom",
+        }}>{c === " " ? "\u00A0" : c}</span>
+      ))}
+    </span>
+  );
+}
+
+/* ── Magnetic button ── */
+function MagneticBtn({ children, className = "", href = "#" }: { children: React.ReactNode; className?: string; href?: string }) {
+  const ref = useRef<HTMLAnchorElement>(null);
+  const move = useCallback((e: React.MouseEvent) => {
+    if (!ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    ref.current.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.15}px, ${(e.clientY - r.top - r.height / 2) * 0.15}px)`;
+  }, []);
+  const leave = useCallback(() => { if (ref.current) ref.current.style.transform = "translate(0,0)"; }, []);
+  return <a ref={ref} href={href} className={className} onMouseMove={move} onMouseLeave={leave} style={{ transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)" }}>{children}</a>;
+}
+
 /* ── Nav ── */
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    const h = () => setScrolled(scrollY > 40);
+    const h = () => setScrolled(scrollY > 50);
     addEventListener("scroll", h, { passive: true }); return () => removeEventListener("scroll", h);
   }, []);
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-[#F5F3EF]/90 backdrop-blur-sm border-b border-[#1A1A1A]/5" : ""}`}>
-      <div className="max-w-6xl mx-auto px-6 lg:px-12 flex items-center justify-between h-16">
-        <a href="#home" className="text-sm font-bold tracking-tight text-[#1A1A1A]">Jewel Cruz</a>
-        <div className="hidden sm:flex items-center gap-8">
-          {["Work", "Services", "About", "Contact"].map((item) => (
-            <a key={item} href={`#${item.toLowerCase()}`} className="text-xs font-semibold tracking-wider uppercase text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors">{item}</a>
-          ))}
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? "py-3" : "py-5"}`}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
+        <div className="glass-pill flex items-center justify-between px-6 lg:px-8 py-3">
+          <a href="#home" className="text-sm font-bold tracking-tight text-white hover-target">J<span className="text-[#8B5CF6]">.</span>C</a>
+          <div className="hidden sm:flex gap-1">
+            {["Work", "About", "Contact"].map((item) => (
+              <a key={item} href={`#${item.toLowerCase()}`} className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white/40 hover:text-white/80 transition-colors rounded-xl hover:bg-white/[0.06]">{item}</a>
+            ))}
+          </div>
+          <MagneticBtn href="#contact" className="glass-btn px-5 py-2 text-xs font-semibold text-white">Hire me</MagneticBtn>
         </div>
-        <a href="#contact" className="text-xs font-semibold tracking-wider uppercase text-[#0055FF] hover:underline">Hire me</a>
       </div>
     </nav>
   );
@@ -39,53 +79,65 @@ function Nav() {
 /* ── Hero ── */
 function Hero() {
   const [loaded, setLoaded] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setLoaded(true), 100); return () => clearTimeout(t); }, []);
+  useEffect(() => { const t = setTimeout(() => setLoaded(true), 200); return () => clearTimeout(t); }, []);
 
   return (
-    <section id="home" className="min-h-screen flex flex-col justify-end px-6 lg:px-12 pb-20 pt-32">
-      <div className="max-w-6xl mx-auto w-full">
-        <div className="rule-accent mb-8" style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.6s ease 0.1s" }} />
+    <section id="home" className="min-h-screen flex items-end px-6 lg:px-12 pb-20 pt-32 relative overflow-hidden">
+      {/* Floating orbs */}
+      <div className="absolute top-20 right-[8%] w-[400px] h-[400px] opacity-40 pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(139,92,246,0.4), transparent 70%)", borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%", animation: "drift1 14s ease-in-out infinite" }} />
+      <div className="absolute bottom-[15%] left-[5%] w-[350px] h-[350px] opacity-30 pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(6,182,212,0.4), transparent 70%)", borderRadius: "30% 60% 70% 40% / 50% 60% 30% 60%", animation: "drift2 17s ease-in-out infinite" }} />
+      <div className="absolute top-[50%] left-[40%] w-[250px] h-[250px] opacity-20 pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(244,114,182,0.4), transparent 70%)", animation: "drift3 12s ease-in-out infinite" }} />
 
-        <div style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(40px)", transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s" }}>
-          <p className="t-micro text-[#0055FF] mb-4">Web Designer &amp; Developer</p>
-          <h1 className="t-display max-w-4xl">
-            I build websites<br />that work.
+      <div className="max-w-7xl mx-auto w-full relative z-10">
+        <div className="glass-pill inline-flex items-center gap-3 px-5 py-2.5 mb-10"
+          style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(20px)", transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s" }}>
+          <div className="relative"><div className="h-2 w-2 rounded-full bg-[#34d399]" /><div className="absolute inset-0 h-2 w-2 rounded-full bg-[#34d399] animate-ping" /></div>
+          <span className="t-micro text-[#34d399]">Available for hire</span>
+        </div>
+
+        <div style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.6s ease 0.3s" }}>
+          <h1 className="t-hero max-w-4xl">
+            <SplitReveal text="Jewel" delay={300} /><br />
+            <SplitReveal text="Cruz" className="gradient-text" delay={600} />
           </h1>
         </div>
 
-        <div className="mt-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-8"
-          style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(20px)", transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s" }}>
-          <p className="t-body text-[#6B6B6B] max-w-md">
-            Frontend developer from the Philippines. I build fast, tested, production-ready web applications. Currently available for remote work.
+        <div className="mt-10 max-w-xl" style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(20px)", transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.7s" }}>
+          <p className="t-body text-white/45">
+            <span className="text-white font-semibold">Web designer &amp; developer</span> building production-grade interfaces with soul. Based in the Philippines.
           </p>
-          <div className="flex items-center gap-6">
-            <a href="#work" className="link t-small font-semibold">See work</a>
-            <a href="#contact" className="link t-small font-semibold">Get in touch</a>
-          </div>
+        </div>
+
+        <div className="mt-8 flex flex-col sm:flex-row gap-4 items-start" style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(20px)", transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.9s" }}>
+          <MagneticBtn href="#work" className="glass-btn px-8 py-3.5 inline-flex items-center gap-2 text-sm font-semibold text-white">
+            See my work
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+          </MagneticBtn>
+          <MagneticBtn href="#contact" className="glass-ghost px-8 py-3.5 text-sm font-semibold text-white/60 inline-flex items-center">Get in touch</MagneticBtn>
+        </div>
+
+        <div className="flex gap-2 mt-8" style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.6s ease 1.1s" }}>
+          {["Next.js", "React", "TypeScript", "Tailwind", "Figma"].map((t, i) => (
+            <span key={t} className="glass-sm px-3 py-1.5 text-[10px] font-semibold text-white/35 rounded-lg hover:text-white/70 hover:bg-white/[0.06] transition-all cursor-default"
+              style={{ opacity: loaded ? 1 : 0, transition: `all 0.5s ease ${1.1 + i * 0.06}s` }}>{t}</span>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-/* ── Stats bar ── */
-function StatsBar() {
-  const { ref, isVisible } = useInView();
-  const stats = [
-    { value: "2+", label: "Years experience" },
-    { value: "100+", label: "Tests written" },
-    { value: "100", label: "Lighthouse score" },
-    { value: "2", label: "Production apps" },
-  ];
+/* ── Marquee ── */
+function Marquee() {
+  const items = ["Redwood Retreats", "\u2014", "Cosmic Ray Solar", "\u2014", "Web Designer", "\u2014", "Frontend Developer", "\u2014", "UI/UX", "\u2014", "Philippines", "\u2014"];
   return (
-    <div ref={ref} className="border-y border-[#1A1A1A]/10">
-      <div className="max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-4">
-        {stats.map((s, i) => (
-          <div key={s.label} className={`py-8 px-6 lg:px-12 ${i < 3 ? "border-r border-[#1A1A1A]/10" : ""} ${i < 2 ? "border-b lg:border-b-0 border-[#1A1A1A]/10" : i === 2 ? "border-b lg:border-b-0 border-[#1A1A1A]/10" : ""}`}
-            style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(20px)", transition: `all 0.5s ease ${i * 0.08}s` }}>
-            <div className="text-3xl lg:text-4xl font-extrabold tracking-tight">{s.value}</div>
-            <div className="t-micro text-[#6B6B6B] mt-2">{s.label}</div>
-          </div>
+    <div className="py-6 border-y border-white/[0.06] overflow-hidden">
+      <div className="flex whitespace-nowrap" style={{ animation: "marquee 22s linear infinite" }}>
+        {[...items, ...items].map((item, i) => (
+          <span key={i} className="mx-6 text-[clamp(1.2rem,3vw,2.5rem)] font-bold tracking-tight text-white/[0.06] hover:text-white/20 transition-colors duration-500">{item}</span>
         ))}
       </div>
     </div>
@@ -100,109 +152,73 @@ function Work() {
   const projects = [
     {
       num: "01", title: "Redwood Retreats", tag: "Cabin Rental Platform",
-      desc: "A luxury cabin rental platform with canvas-rendered grass animations, PS5-style particle effects, 3D tilt cards, and a dynamic booking system. Lighthouse 100 performance, 91 accessibility, 41 tests.",
-      tech: ["Next.js 16", "TypeScript", "Canvas API", "Vitest", "Tailwind"],
+      desc: "Canvas-rendered grass with wind physics, PS5-style particles, 3D tilt cards, and a dynamic booking system with real-time pricing. Lighthouse 100. 41 tests.",
+      tech: ["Next.js 16", "TypeScript", "Canvas API", "Vitest"],
       live: "https://redwood-retreats.vercel.app", code: "https://github.com/jewelcruzs0922-dev/redwood-retreats",
-      color: "#C45D3E",
-      mockBg: "#FDF8F5",
-      mockAccent: "#C45D3E",
+      accent: "#E8913A",
+      mockBg: "linear-gradient(135deg, #1a1210, #2d1810, #1a1210)",
     },
     {
       num: "02", title: "Cosmic Ray Solar", tag: "Full-Stack Solar Company",
-      desc: "A complete solar company platform with Stripe payment integration, Sanity CMS, appointment scheduling, and a real-time savings calculator. 59 tests, 35 pages, 5 API routes.",
-      tech: ["Next.js 16", "Stripe", "Sanity", "Playwright", "Tailwind"],
+      desc: "Stripe payments, Sanity CMS, appointment scheduling, and a real-time savings calculator. 59 tests, 35 pages, 5 API routes.",
+      tech: ["Next.js 16", "Stripe", "Sanity", "Playwright"],
       live: "https://cosmicray-solar.netlify.app", code: "https://github.com/jewelcruzs0922-dev/cosmicray-solar",
-      color: "#2563EB",
-      mockBg: "#F5F8FF",
-      mockAccent: "#2563EB",
+      accent: "#6B8DD6",
+      mockBg: "linear-gradient(135deg, #0d1020, #151830, #0d1020)",
     },
   ];
 
   return (
-    <section id="work" className="py-24 px-6 lg:px-12">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-16">
-          <p className="t-micro text-[#0055FF] mb-3">Selected Work</p>
-          <h2 className="t-heading">Projects I&apos;ve shipped.</h2>
+    <section id="work" className="py-32 px-6 lg:px-12">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-20">
+          <span className="glass-pill inline-block px-4 py-1.5 t-micro text-[#8B5CF6] mb-4">Portfolio</span>
+          <h2 className="t-display"><SplitReveal text="Selected work" /></h2>
         </div>
 
         {/* Project 1 */}
-        <div ref={r1} className="mb-24">
-          <div className={`transition-all duration-700 ${v1 ? "opacity-100" : "opacity-0"}`}>
-            <div className="grid lg:grid-cols-2 gap-12 items-start">
-              {/* Text */}
-              <div style={{ opacity: v1 ? 1 : 0, transform: v1 ? "translateY(0)" : "translateY(30px)", transition: "all 0.6s ease 0.1s" }}>
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-xs font-bold text-[#6B6B6B]">{projects[0].num}</span>
-                  <div className="rule flex-1" />
-                  <span className="tag" style={{ borderColor: `${projects[0].color}30`, color: projects[0].color }}>{projects[0].tag}</span>
-                </div>
-                <h3 className="text-3xl lg:text-4xl font-extrabold tracking-tight mb-4">{projects[0].title}</h3>
-                <p className="t-body text-[#6B6B6B] mb-6 max-w-md">{projects[0].desc}</p>
-                <div className="flex flex-wrap gap-2 mb-8">
-                  {projects[0].tech.map((t) => <span key={t} className="tag">{t}</span>)}
-                </div>
-                <div className="flex gap-4">
-                  <a href={projects[0].live} className="inline-flex items-center gap-2 text-sm font-semibold" style={{ color: projects[0].color }}>
-                    Live site
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" /></svg>
-                  </a>
-                  <a href={projects[0].code} className="text-sm text-[#6B6B6B] hover:text-[#1A1A1A]">Source code</a>
-                </div>
+        <div ref={r1} className="mb-32">
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
+            <div className={v1 ? "reveal visible" : "reveal"} style={{ transitionDelay: "0.1s" }}>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-xs font-bold text-white/30">{projects[0].num}</span>
+                <div className="h-[1px] flex-1 bg-white/10" />
+                <span className="t-micro" style={{ color: projects[0].accent }}>{projects[0].tag}</span>
               </div>
+              <h3 className="t-display mb-5">{projects[0].title}</h3>
+              <p className="t-body text-white/40 mb-6 max-w-md">{projects[0].desc}</p>
+              <div className="flex flex-wrap gap-2 mb-8">
+                {projects[0].tech.map((t) => <span key={t} className="glass-sm px-3 py-1.5 text-[10px] font-semibold text-white/50 rounded-xl">{t}</span>)}
+              </div>
+              <div className="flex gap-4">
+                <MagneticBtn href={projects[0].live} className="glass-btn px-7 py-3 text-sm inline-flex items-center gap-2 text-white font-semibold">
+                  Live Demo <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                </MagneticBtn>
+                <MagneticBtn href={projects[0].code} className="glass-ghost px-7 py-3 text-sm font-semibold text-white/50 inline-flex items-center">Code</MagneticBtn>
+              </div>
+            </div>
 
-              {/* Mockup */}
-              <div style={{ opacity: v1 ? 1 : 0, transform: v1 ? "translateY(0)" : "translateY(30px)", transition: "all 0.6s ease 0.3s" }}>
-                <div className="border border-[#1A1A1A]/10 rounded-sm overflow-hidden">
-                  {/* Browser bar */}
-                  <div className="flex items-center gap-2 px-4 py-2.5 bg-[#FAFAFA] border-b border-[#1A1A1A]/5">
-                    <div className="flex gap-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#1A1A1A]/8" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#1A1A1A]/8" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#1A1A1A]/8" />
-                    </div>
-                    <div className="flex-1 flex justify-center">
-                      <div className="px-3 py-1 text-[10px] text-[#6B6B6B] bg-white border border-[#1A1A1A]/8 rounded-sm font-mono">
-                        {projects[0].live.replace("https://", "")}
-                      </div>
-                    </div>
-                    <div className="w-10" />
+            <div className={v1 ? "reveal visible" : "reveal"} style={{ transitionDelay: "0.3s" }}>
+              <div className="glass-heavy overflow-hidden rounded-2xl group">
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06]">
+                  <div className="flex gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-white/10" /><div className="w-2.5 h-2.5 rounded-full bg-white/10" /><div className="w-2.5 h-2.5 rounded-full bg-white/10" /></div>
+                  <div className="flex-1 flex justify-center"><div className="px-3 py-1 text-[9px] text-white/25 font-mono bg-white/[0.03] rounded-md border border-white/[0.06]">{projects[0].live.replace("https://", "")}</div></div>
+                  <div className="w-8" />
+                </div>
+                <div className="relative aspect-[16/10] overflow-hidden">
+                  <div className="absolute inset-0 flex flex-col p-6 transition-transform duration-700 group-hover:scale-105" style={{ background: projects[0].mockBg }}>
+                    <div className="flex items-center gap-2 mb-6"><div className="w-4 h-4 rounded" style={{ background: projects[0].accent }} /><div className="h-2 w-20 rounded-full bg-white/10" /></div>
+                    <div className="flex-1 flex items-center"><div>
+                      <div className="h-4 w-48 bg-white/10 rounded mb-3" />
+                      <div className="h-2 w-64 bg-white/5 rounded mb-2" />
+                      <div className="h-2 w-48 bg-white/5 rounded mb-6" />
+                      <div className="h-8 w-28 rounded" style={{ background: projects[0].accent }} />
+                    </div></div>
+                    <div className="grid grid-cols-3 gap-2">{[1,2,3].map(i => <div key={i} className="h-16 rounded-lg bg-white/[0.04] border border-white/[0.04]" />)}</div>
                   </div>
-                  {/* Site preview */}
-                  <div className="aspect-[16/10]" style={{ background: projects[0].mockBg }}>
-                    <div className="h-full flex flex-col p-6">
-                      {/* Nav mock */}
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-sm" style={{ background: projects[0].mockAccent }} />
-                          <div className="h-2 w-16 bg-[#1A1A1A]/10 rounded-full" />
-                        </div>
-                        <div className="flex gap-3">
-                          <div className="h-2 w-8 bg-[#1A1A1A]/8 rounded-full" />
-                          <div className="h-2 w-8 bg-[#1A1A1A]/8 rounded-full" />
-                          <div className="h-2 w-8 bg-[#1A1A1A]/8 rounded-full" />
-                        </div>
-                      </div>
-                      {/* Hero mock */}
-                      <div className="flex-1 flex items-center">
-                        <div>
-                          <div className="h-3 w-40 bg-[#1A1A1A]/10 rounded-full mb-3" />
-                          <div className="h-2 w-56 bg-[#1A1A1A]/5 rounded-full mb-2" />
-                          <div className="h-2 w-44 bg-[#1A1A1A]/5 rounded-full mb-5" />
-                          <div className="h-7 w-24 rounded-full" style={{ background: projects[0].mockAccent }} />
-                        </div>
-                      </div>
-                      {/* Cards mock */}
-                      <div className="grid grid-cols-3 gap-3">
-                        {[1, 2, 3].map((i) => (
-                          <div key={i} className="rounded-sm border border-[#1A1A1A]/5 bg-white p-3">
-                            <div className="aspect-[4/3] rounded-sm mb-2" style={{ background: `${projects[0].mockAccent}08` }} />
-                            <div className="h-1.5 w-12 bg-[#1A1A1A]/8 rounded-full mb-1" />
-                            <div className="h-1 w-16 bg-[#1A1A1A]/5 rounded-full" />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
+                    <MagneticBtn href={projects[0].live} className="glass-btn px-6 py-2.5 text-xs font-bold tracking-wider uppercase text-white">View Project</MagneticBtn>
                   </div>
                 </div>
               </div>
@@ -212,77 +228,52 @@ function Work() {
 
         {/* Project 2 — reversed */}
         <div ref={r2}>
-          <div className={`transition-all duration-700 ${v2 ? "opacity-100" : "opacity-0"}`}>
-            <div className="grid lg:grid-cols-2 gap-12 items-start">
-              {/* Mockup (left) */}
-              <div className="order-2 lg:order-1" style={{ opacity: v2 ? 1 : 0, transform: v2 ? "translateY(0)" : "translateY(30px)", transition: "all 0.6s ease 0.3s" }}>
-                <div className="border border-[#1A1A1A]/10 rounded-sm overflow-hidden">
-                  <div className="flex items-center gap-2 px-4 py-2.5 bg-[#FAFAFA] border-b border-[#1A1A1A]/5">
-                    <div className="flex gap-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#1A1A1A]/8" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#1A1A1A]/8" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#1A1A1A]/8" />
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
+            <div className={v2 ? "reveal visible" : "reveal"} style={{ transitionDelay: "0.3s" }}>
+              <div className="glass-heavy overflow-hidden rounded-2xl group order-2 lg:order-1">
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06]">
+                  <div className="flex gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-white/10" /><div className="w-2.5 h-2.5 rounded-full bg-white/10" /><div className="w-2.5 h-2.5 rounded-full bg-white/10" /></div>
+                  <div className="flex-1 flex justify-center"><div className="px-3 py-1 text-[9px] text-white/25 font-mono bg-white/[0.03] rounded-md border border-white/[0.06]">{projects[1].live.replace("https://", "")}</div></div>
+                  <div className="w-8" />
+                </div>
+                <div className="relative aspect-[16/10] overflow-hidden">
+                  <div className="absolute inset-0 flex flex-col p-6 transition-transform duration-700 group-hover:scale-105" style={{ background: projects[1].mockBg }}>
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-2"><div className="w-4 h-4 rounded" style={{ background: projects[1].accent }} /><div className="h-2 w-24 rounded-full bg-white/10" /></div>
+                      <div className="h-6 w-20 rounded-full" style={{ background: projects[1].accent }} />
                     </div>
-                    <div className="flex-1 flex justify-center">
-                      <div className="px-3 py-1 text-[10px] text-[#6B6B6B] bg-white border border-[#1A1A1A]/8 rounded-sm font-mono">
-                        {projects[1].live.replace("https://", "")}
-                      </div>
-                    </div>
-                    <div className="w-10" />
+                    <div className="flex-1 flex items-center"><div>
+                      <div className="h-4 w-40 bg-white/10 rounded mb-3" />
+                      <div className="h-2 w-56 bg-white/5 rounded mb-2" />
+                      <div className="h-2 w-40 bg-white/5 rounded mb-6" />
+                      <div className="flex gap-2"><div className="h-8 w-24 rounded" style={{ background: projects[1].accent }} /><div className="h-8 w-20 rounded border border-white/10" /></div>
+                    </div></div>
+                    <div className="grid grid-cols-2 gap-2">{[1,2].map(i => <div key={i} className="h-20 rounded-lg bg-white/[0.04] border border-white/[0.04]" />)}</div>
                   </div>
-                  <div className="aspect-[16/10]" style={{ background: projects[1].mockBg }}>
-                    <div className="h-full flex flex-col p-6">
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-sm" style={{ background: projects[1].mockAccent }} />
-                          <div className="h-2 w-20 bg-[#1A1A1A]/10 rounded-full" />
-                        </div>
-                        <div className="h-6 w-20 rounded-full" style={{ background: projects[1].mockAccent }} />
-                      </div>
-                      <div className="flex-1 flex items-center">
-                        <div>
-                          <div className="h-3 w-36 bg-[#1A1A1A]/10 rounded-full mb-3" />
-                          <div className="h-2 w-48 bg-[#1A1A1A]/5 rounded-full mb-2" />
-                          <div className="h-2 w-40 bg-[#1A1A1A]/5 rounded-full mb-5" />
-                          <div className="flex gap-2">
-                            <div className="h-7 w-24 rounded-full" style={{ background: projects[1].mockAccent }} />
-                            <div className="h-7 w-20 rounded-full border border-[#1A1A1A]/10" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[1, 2].map((i) => (
-                          <div key={i} className="rounded-sm border border-[#1A1A1A]/5 bg-white p-3">
-                            <div className="aspect-[16/9] rounded-sm mb-2" style={{ background: `${projects[1].mockAccent}08` }} />
-                            <div className="h-1.5 w-14 bg-[#1A1A1A]/8 rounded-full mb-1" />
-                            <div className="h-1 w-20 bg-[#1A1A1A]/5 rounded-full" />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
+                    <MagneticBtn href={projects[1].live} className="glass-btn px-6 py-2.5 text-xs font-bold tracking-wider uppercase text-white">View Project</MagneticBtn>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Text (right) */}
-              <div className="order-1 lg:order-2" style={{ opacity: v2 ? 1 : 0, transform: v2 ? "translateY(0)" : "translateY(30px)", transition: "all 0.6s ease 0.1s" }}>
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-xs font-bold text-[#6B6B6B]">{projects[1].num}</span>
-                  <div className="rule flex-1" />
-                  <span className="tag" style={{ borderColor: `${projects[1].color}30`, color: projects[1].color }}>{projects[1].tag}</span>
-                </div>
-                <h3 className="text-3xl lg:text-4xl font-extrabold tracking-tight mb-4">{projects[1].title}</h3>
-                <p className="t-body text-[#6B6B6B] mb-6 max-w-md">{projects[1].desc}</p>
-                <div className="flex flex-wrap gap-2 mb-8">
-                  {projects[1].tech.map((t) => <span key={t} className="tag">{t}</span>)}
-                </div>
-                <div className="flex gap-4">
-                  <a href={projects[1].live} className="inline-flex items-center gap-2 text-sm font-semibold" style={{ color: projects[1].color }}>
-                    Live site
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" /></svg>
-                  </a>
-                  <a href={projects[1].code} className="text-sm text-[#6B6B6B] hover:text-[#1A1A1A]">Source code</a>
-                </div>
+            <div className={v2 ? "reveal visible" : "reveal"} style={{ transitionDelay: "0.1s" }}>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-xs font-bold text-white/30">{projects[1].num}</span>
+                <div className="h-[1px] flex-1 bg-white/10" />
+                <span className="t-micro" style={{ color: projects[1].accent }}>{projects[1].tag}</span>
+              </div>
+              <h3 className="t-display mb-5">{projects[1].title}</h3>
+              <p className="t-body text-white/40 mb-6 max-w-md">{projects[1].desc}</p>
+              <div className="flex flex-wrap gap-2 mb-8">
+                {projects[1].tech.map((t) => <span key={t} className="glass-sm px-3 py-1.5 text-[10px] font-semibold text-white/50 rounded-xl">{t}</span>)}
+              </div>
+              <div className="flex gap-4">
+                <MagneticBtn href={projects[1].live} className="glass-btn px-7 py-3 text-sm inline-flex items-center gap-2 text-white font-semibold">
+                  Live Demo <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                </MagneticBtn>
+                <MagneticBtn href={projects[1].code} className="glass-ghost px-7 py-3 text-sm font-semibold text-white/50 inline-flex items-center">Code</MagneticBtn>
               </div>
             </div>
           </div>
@@ -296,24 +287,25 @@ function Work() {
 function Services() {
   const { ref, isVisible } = useInView();
   const services = [
-    { num: "01", title: "Design", desc: "User interfaces from research to prototype. Wireframes, visual design, design systems. I think in systems, not screens." },
-    { num: "02", title: "Development", desc: "Next.js, React, TypeScript. Performance-first, tested, accessible. I write code that ships and holds up in production." },
-    { num: "03", title: "Branding", desc: "Visual identities that stick. Logos, color systems, typography, and design languages. Your brand, distilled." },
+    { num: "01", title: "Design", desc: "User-centered interfaces from research to prototype. Every pixel placed with intention.", color: "#8B5CF6" },
+    { num: "02", title: "Development", desc: "Next.js, React, TypeScript. Performance-first, tested, accessible, production-ready.", color: "#06B6D4" },
+    { num: "03", title: "Branding", desc: "Visual identities that stick. Logos, color systems, typography, and design languages.", color: "#F472B6" },
   ];
   return (
-    <section id="services" className="py-24 px-6 lg:px-12 bg-white">
-      <div className="max-w-6xl mx-auto">
-        <div ref={ref} className="mb-16" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.6s ease" }}>
-          <p className="t-micro text-[#0055FF] mb-3">Services</p>
-          <h2 className="t-heading">What I do.</h2>
+    <section id="services" className="py-32 px-6 lg:px-12">
+      <div className="max-w-7xl mx-auto">
+        <div ref={ref} className={isVisible ? "reveal visible" : "reveal"}>
+          <span className="glass-pill inline-block px-4 py-1.5 t-micro text-[#8B5CF6] mb-4">Services</span>
+          <h2 className="t-display mb-16"><SplitReveal text="What I do" /></h2>
         </div>
-        <div className="grid lg:grid-cols-3 gap-0">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {services.map((s, i) => (
-            <div key={s.num} className={`py-10 px-6 lg:px-8 border-t border-[#1A1A1A]/10 ${i < 2 ? "lg:border-r" : ""}`}
-              style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(20px)", transition: `all 0.5s ease ${i * 0.1}s` }}>
-              <span className="text-xs font-bold text-[#0055FF]">{s.num}</span>
-              <h3 className="text-xl font-bold tracking-tight mt-3 mb-3">{s.title}</h3>
-              <p className="t-small text-[#6B6B6B] leading-relaxed">{s.desc}</p>
+            <div key={s.num} className={`glass p-8 hover:bg-white/[0.09] transition-all duration-500 ${isVisible ? "reveal visible" : "reveal"}`} style={{ transitionDelay: `${0.1 + i * 0.1}s` }}>
+              <div className="glass-sm w-11 h-11 flex items-center justify-center rounded-xl mb-5" style={{ boxShadow: `0 0 20px ${s.color}15` }}>
+                <span className="text-xs font-bold" style={{ color: s.color }}>{s.num}</span>
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">{s.title}</h3>
+              <p className="text-sm text-white/35 leading-relaxed">{s.desc}</p>
             </div>
           ))}
         </div>
@@ -325,30 +317,37 @@ function Services() {
 /* ── Skills ── */
 function Skills() {
   const { ref, isVisible } = useInView();
-  const groups = [
-    { label: "Frontend", items: ["React", "Next.js", "TypeScript", "Tailwind CSS", "JavaScript ES6+"] },
-    { label: "Design", items: ["Figma", "UI/UX Design", "Design Systems", "Prototyping", "Wireframing"] },
-    { label: "Tools", items: ["Git & GitHub", "Vercel", "Netlify", "Playwright", "Vitest"] },
-    { label: "Other", items: ["SEO", "Web Accessibility", "REST APIs", "Sanity CMS", "Stripe"] },
+  const skills = [
+    { name: "React / Next.js", pct: 95, color: "#8B5CF6" },
+    { name: "TypeScript", pct: 90, color: "#06B6D4" },
+    { name: "Tailwind CSS", pct: 95, color: "#06B6D4" },
+    { name: "UI/UX Design", pct: 88, color: "#F472B6" },
+    { name: "Node.js", pct: 75, color: "#34d399" },
+    { name: "Testing", pct: 85, color: "#8B5CF6" },
   ];
   return (
-    <section id="skills" className="py-24 px-6 lg:px-12">
-      <div className="max-w-6xl mx-auto">
-        <div ref={ref} className="mb-16" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.6s ease" }}>
-          <p className="t-micro text-[#0055FF] mb-3">Skills</p>
-          <h2 className="t-heading">What I know.</h2>
+    <section id="skills" className="py-32 px-6 lg:px-12">
+      <div className="max-w-7xl mx-auto">
+        <div ref={ref} className={isVisible ? "reveal visible" : "reveal"}>
+          <span className="glass-pill inline-block px-4 py-1.5 t-micro text-[#8B5CF6] mb-4">Skills</span>
+          <h2 className="t-display mb-16"><SplitReveal text="Tech stack" /></h2>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-0">
-          {groups.map((g, i) => (
-            <div key={g.label} className={`py-8 px-6 border-t border-[#1A1A1A]/10 ${i % 2 === 0 ? "sm:border-r" : ""} ${i < 2 ? "lg:border-r lg:border-b-0" : "lg:border-b-0"} ${i < groups.length - 2 ? "border-b sm:border-b-0" : i === 2 ? "lg:border-r" : ""}`}
-              style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(20px)", transition: `all 0.5s ease ${i * 0.08}s` }}>
-              <h3 className="t-micro text-[#1A1A1A] mb-4">{g.label}</h3>
-              <ul className="space-y-2">
-                {g.items.map((item) => (
-                  <li key={item} className="t-small text-[#6B6B6B]">{item}</li>
-                ))}
-              </ul>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {skills.map((s) => (
+            <div key={s.name} className="glass p-6 hover:bg-white/[0.09] transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <span className="font-bold text-white text-sm">{s.name}</span>
+                <span className="text-sm font-black" style={{ color: s.color }}>{s.pct}%</span>
+              </div>
+              <div className="h-1.5 bg-white/5 overflow-hidden rounded-full">
+                <div className="h-full rounded-full transition-all duration-[1.5s] ease-out" style={{ width: isVisible ? `${s.pct}%` : "0%", background: `linear-gradient(90deg, ${s.color}, ${s.color}99)` }} />
+              </div>
             </div>
+          ))}
+        </div>
+        <div className="mt-8 flex flex-wrap gap-2">
+          {["Git", "GitHub", "Vercel", "Netlify", "Figma", "REST APIs", "SEO", "A11y", "Sanity", "Stripe"].map((t) => (
+            <span key={t} className="glass-sm px-4 py-2 text-xs font-medium text-white/30 hover:text-white/70 hover:bg-white/[0.06] transition-all cursor-default rounded-xl">{t}</span>
           ))}
         </div>
       </div>
@@ -360,37 +359,27 @@ function Skills() {
 function About() {
   const { ref, isVisible } = useInView();
   return (
-    <section id="about" className="py-24 px-6 lg:px-12 bg-white">
-      <div className="max-w-6xl mx-auto grid lg:grid-cols-5 gap-16">
-        <div ref={ref} className="lg:col-span-3" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.6s ease" }}>
-          <p className="t-micro text-[#0055FF] mb-3">About</p>
-          <h2 className="t-heading mb-8">Design is how it works.</h2>
-          <div className="space-y-4">
-            <p className="t-body text-[#6B6B6B]">
-              I&apos;m Jewel Cruz, a web designer and frontend developer from the Philippines. I build websites that are fast, accessible, and actually work the way they should.
-            </p>
-            <p className="t-body text-[#6B6B6B]">
-              Two years in, I&apos;ve shipped a luxury rental platform with canvas animations, a full-stack solar company with Stripe payments, and this portfolio you&apos;re looking at right now. Every project is hand-coded. No templates. No page builders.
-            </p>
-            <p className="t-body text-[#6B6B6B]">
-              I believe great web design is invisible. Users shouldn&apos;t notice the design. They should just find what they need, fast. That&apos;s what I build.
-            </p>
-          </div>
+    <section id="about" className="py-32 px-6 lg:px-12">
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16">
+        <div ref={ref} className={isVisible ? "reveal visible" : "reveal"}>
+          <span className="glass-pill inline-block px-4 py-1.5 t-micro text-[#8B5CF6] mb-4">About</span>
+          <h2 className="t-display mb-8">I don&apos;t just build websites. I craft <span className="gradient-text">experiences</span>.</h2>
+          <p className="t-body text-white/40 mb-4">I&apos;m Jewel Cruz, a web designer &amp; developer from the Philippines. Every project starts with a question: &ldquo;How do I make this feel alive?&rdquo;</p>
+          <p className="t-body text-white/40 mb-4">Two years in, I&apos;ve shipped a luxury rental platform with canvas animations, a full-stack solar company with Stripe, and this portfolio you&apos;re looking at right now.</p>
+          <p className="t-body text-white/30">Everything is hand-coded. No templates. No page builders. Just code, design, and intention.</p>
         </div>
-        <div className="lg:col-span-2 flex flex-col justify-center">
-          <div className="border border-[#1A1A1A]/10 rounded-sm">
-            {[
-              { label: "Location", value: "Philippines" },
-              { label: "Status", value: "Available for work" },
-              { label: "Focus", value: "Frontend & Design" },
-              { label: "Stack", value: "Next.js, React, TS" },
-            ].map((row, i) => (
-              <div key={row.label} className={`flex justify-between items-center px-6 py-4 ${i < 3 ? "border-b border-[#1A1A1A]/10" : ""}`}>
-                <span className="t-micro text-[#6B6B6B]">{row.label}</span>
-                <span className="t-small font-semibold">{row.value}</span>
-              </div>
-            ))}
-          </div>
+        <div className="flex flex-col gap-4 justify-center">
+          {[
+            { num: "2+", label: "Years building", color: "#E8913A" },
+            { num: "100+", label: "Tests written", color: "#8B5CF6" },
+            { num: "100", label: "Lighthouse score", color: "#34d399" },
+            { num: "0", label: "Templates used", color: "#06B6D4" },
+          ].map((s, i) => (
+            <div key={s.label} className={`glass-card p-5 flex items-center gap-5 ${isVisible ? "reveal visible" : "reveal"}`} style={{ transitionDelay: `${0.2 + i * 0.1}s` }}>
+              <div className="text-3xl font-black min-w-[60px] text-right" style={{ color: s.color }}>{s.num}</div>
+              <div className="text-sm text-white/40">{s.label}</div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -401,32 +390,20 @@ function About() {
 function Contact() {
   const { ref, isVisible } = useInView();
   return (
-    <section id="contact" className="py-24 px-6 lg:px-12">
-      <div className="max-w-6xl mx-auto">
-        <div ref={ref} className="grid lg:grid-cols-2 gap-16" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s ease" }}>
-          <div>
-            <p className="t-micro text-[#0055FF] mb-3">Contact</p>
-            <h2 className="t-heading mb-6">Let&apos;s work together.</h2>
-            <p className="t-body text-[#6B6B6B] max-w-md">
-              I&apos;m open to freelance projects, full-time positions, and interesting collaborations. If you have an idea that needs building, let&apos;s talk.
-            </p>
-          </div>
-          <div className="flex flex-col justify-center">
-            <div className="space-y-6">
-              <a href="mailto:jewel@example.com" className="flex items-center justify-between py-4 border-b border-[#1A1A1A]/10 group">
-                <span className="t-body font-semibold">Email</span>
-                <svg className="w-4 h-4 text-[#0055FF] group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" /></svg>
-              </a>
-              <a href="https://github.com/jewelcruzs0922-dev" className="flex items-center justify-between py-4 border-b border-[#1A1A1A]/10 group">
-                <span className="t-body font-semibold">GitHub</span>
-                <svg className="w-4 h-4 text-[#0055FF] group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" /></svg>
-              </a>
-              <a href="https://linkedin.com" className="flex items-center justify-between py-4 border-b border-[#1A1A1A]/10 group">
-                <span className="t-body font-semibold">LinkedIn</span>
-                <svg className="w-4 h-4 text-[#0055FF] group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" /></svg>
-              </a>
-            </div>
-          </div>
+    <section id="contact" className="py-32 px-6 lg:px-12">
+      <div className="max-w-4xl mx-auto text-center" ref={ref}>
+        <span className="glass-pill inline-block px-4 py-1.5 t-micro text-[#8B5CF6] mb-6">Contact</span>
+        <div className={isVisible ? "reveal visible" : "reveal"}>
+          <h2 className="t-hero mb-8">
+            <SplitReveal text="Let's" /><br />
+            <span className="gradient-text"><SplitReveal text="talk" delay={200} /></span>
+          </h2>
+        </div>
+        <p className="text-white/35 mb-12 max-w-md mx-auto text-lg">Open to freelance, remote positions, and collaborations.</p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center" style={{ opacity: isVisible ? 1 : 0, transition: "opacity 0.6s ease 0.4s" }}>
+          <MagneticBtn href="mailto:jewel@example.com" className="glass-btn px-10 py-4 inline-flex items-center justify-center text-white font-semibold">Email Me</MagneticBtn>
+          <MagneticBtn href="https://github.com/jewelcruzs0922-dev" className="glass-ghost px-10 py-4 text-sm font-semibold text-white/60 inline-flex items-center justify-center">GitHub</MagneticBtn>
+          <MagneticBtn href="https://linkedin.com" className="glass-ghost px-10 py-4 text-sm font-semibold text-white/60 inline-flex items-center justify-center">LinkedIn</MagneticBtn>
         </div>
       </div>
     </section>
@@ -436,22 +413,35 @@ function Contact() {
 /* ── Footer ── */
 function Footer() {
   return (
-    <footer className="border-t border-[#1A1A1A]/10 py-6 px-6 lg:px-12">
-      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="t-small text-[#6B6B6B]">&copy; 2026 Jewel Cruz</p>
-        <p className="t-micro text-[#6B6B6B]">Hand-coded. No templates.</p>
+    <footer className="py-8 px-6 lg:px-12 border-t border-white/[0.06]">
+      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p className="t-small text-white/25">&copy; 2026 Jewel Cruz</p>
+        <div className="flex gap-3">
+          <span className="glass-sm px-3 py-1 text-[9px] font-bold tracking-wider text-[#8B5CF6] rounded-full">100 Lighthouse</span>
+          <span className="glass-sm px-3 py-1 text-[9px] font-bold tracking-wider text-[#06B6D4] rounded-full">100+ Tests</span>
+        </div>
+        <p className="t-micro text-white/20">Hand-coded. No templates.</p>
       </div>
     </footer>
   );
+}
+
+/* ── Scroll progress ── */
+function ScrollProgress() {
+  const p = useScrollProgress();
+  return <div className="fixed top-0 left-0 h-[2px] z-[60] transition-all duration-150" style={{ width: `${p * 100}%`, background: "linear-gradient(90deg, #8B5CF6, #06B6D4, #F472B6)" }} />;
 }
 
 /* ── Main ── */
 export default function Home() {
   return (
     <>
+      <div className="aurora"><div className="aurora-extra" /></div>
+      <div className="grid-bg" />
+      <ScrollProgress />
       <Nav />
       <Hero />
-      <StatsBar />
+      <Marquee />
       <Work />
       <Services />
       <Skills />
