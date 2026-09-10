@@ -3,82 +3,38 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 
 /* ── Hooks ── */
-function useInView(threshold = 0.1) {
-  const [ref, setRef] = useState<HTMLElement | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
+function useInView(t = 0.1) {
+  const [r, setR] = useState<HTMLElement | null>(null);
+  const [v, setV] = useState(false);
   useEffect(() => {
-    if (!ref) return;
-    const o = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setIsVisible(true); o.unobserve(e.target); } }, { threshold });
-    o.observe(ref); return () => o.disconnect();
-  }, [ref, threshold]);
-  return { ref: setRef, isVisible };
-}
-
-function useMouseParallax(s = 20) {
-  const [p, setP] = useState({ x: 0, y: 0 });
-  useEffect(() => {
-    const h = (e: MouseEvent) => setP({ x: (e.clientX / innerWidth - 0.5) * s, y: (e.clientY / innerHeight - 0.5) * s });
-    addEventListener("mousemove", h); return () => removeEventListener("mousemove", h);
-  }, [s]);
-  return p;
+    if (!r) return;
+    const o = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setV(true); o.unobserve(e.target); } }, { threshold: t });
+    o.observe(r); return () => o.disconnect();
+  }, [r, t]);
+  return { ref: setR, isVisible: v };
 }
 
 /* ── Components ── */
-function Counter({ target }: { target: number }) {
-  const [c, setC] = useState(0);
+function RevealText({ text, className = "" }: { text: string; className?: string }) {
   const { ref, isVisible } = useInView();
-  useEffect(() => {
-    if (!isVisible) return;
-    let v = 0; const s = target / 60;
-    const t = setInterval(() => { v += s; if (v >= target) { setC(target); clearInterval(t); } else setC(Math.floor(v)); }, 16);
-    return () => clearInterval(t);
-  }, [isVisible, target]);
-  return <span ref={ref}>{c}</span>;
-}
-
-function Ring({ value, label, color }: { value: number; label: string; color: string }) {
-  const { ref, isVisible } = useInView();
-  const r = 40, circ = 2 * Math.PI * r, off = circ - (isVisible ? (value / 100) * circ : 0);
   return (
-    <div ref={ref} className="flex flex-col items-center group cursor-default">
-      <div className="relative w-24 h-24 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
-        {/* Hexagon clip behind the ring */}
-        <div className="absolute inset-0 neu-hexagon neu-hexagon-shadow opacity-50" />
-        <svg className="absolute inset-1 w-[calc(100%-8px)] h-[calc(100%-8px)] -rotate-90" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r={r} fill="none" stroke="#d1d9e6" strokeWidth="5" />
-          <circle cx="50" cy="50" r={r} fill="none" stroke={color} strokeWidth="5"
-            strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round"
-            className="transition-all duration-[1.5s] ease-out" style={{ filter: `drop-shadow(0 0 6px ${color}50)` }} />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-base font-black" style={{ color }}>{isVisible ? value : 0}</span>
-        </div>
-      </div>
-      <span className="mt-3 text-xs font-semibold text-[#636e72] group-hover:text-[#2d3436] transition-colors">{label}</span>
-    </div>
+    <span ref={ref} className={`inline-block overflow-hidden ${className}`}>
+      {text.split("").map((c, i) => (
+        <span key={i} className="inline-block" style={{
+          opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(100%)",
+          transition: `all 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.04}s`,
+        }}>{c === " " ? "\u00A0" : c}</span>
+      ))}
+    </span>
   );
 }
 
 function GlowCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={`relative group ${className}`}>
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-[#6c5ce7] via-[#a29bfe] to-[#6c5ce7] opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" style={{ borderRadius: "24px 8px 24px 8px" }} />
+      <div className="absolute -inset-[1px] bg-gradient-to-br from-[#6c5ce7]/20 via-[#a29bfe]/10 to-[#6c5ce7]/20 opacity-0 group-hover:opacity-100 transition-all duration-700 blur-md" style={{ borderRadius: "32px 8px 32px 8px" }} />
       <div className="relative neu-raised">{children}</div>
     </div>
-  );
-}
-
-function RevealText({ text, className = "" }: { text: string; className?: string }) {
-  const { ref, isVisible } = useInView();
-  return (
-    <span ref={ref} className={`inline-block overflow-hidden ${className}`}>
-      {text.split("").map((ch, i) => (
-        <span key={i} className="inline-block" style={{
-          opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0) rotate(0)" : "translateY(100%) rotate(10deg)",
-          transition: `all 0.5s ease ${i * 0.03}s`,
-        }}>{ch === " " ? "\u00A0" : ch}</span>
-      ))}
-    </span>
   );
 }
 
@@ -87,10 +43,10 @@ function MagneticBtn({ children, className = "", href = "#" }: { children: React
   const move = useCallback((e: React.MouseEvent) => {
     if (!ref.current) return;
     const r = ref.current.getBoundingClientRect();
-    ref.current.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.15}px, ${(e.clientY - r.top - r.height / 2) * 0.15}px)`;
+    ref.current.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.12}px, ${(e.clientY - r.top - r.height / 2) * 0.12}px)`;
   }, []);
   const leave = useCallback(() => { if (ref.current) ref.current.style.transform = "translate(0,0)"; }, []);
-  return <a ref={ref} href={href} className={className} onMouseMove={move} onMouseLeave={leave} style={{ transition: "transform 0.2s ease" }}>{children}</a>;
+  return <a ref={ref} href={href} className={className} onMouseMove={move} onMouseLeave={leave} style={{ transition: "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)" }}>{children}</a>;
 }
 
 /* ── Nav ── */
@@ -108,15 +64,15 @@ function Nav() {
     addEventListener("scroll", h, { passive: true }); return () => removeEventListener("scroll", h);
   }, []);
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? "py-3" : "py-5"}`}>
-      <div className="mx-auto max-w-6xl px-6">
-        <div className="neu-pill flex items-center justify-between px-6 py-3">
-          <a href="#home" className="text-lg font-black text-[#2d3436] tracking-tight">JC<span className="text-[#6c5ce7]">.</span></a>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${scrolled ? "py-3" : "py-6"}`}>
+      <div className="mx-auto max-w-7xl px-6 lg:px-12">
+        <div className="neu-pill flex items-center justify-between px-6 lg:px-8 py-3">
+          <a href="#home" className="text-lg font-black text-[#2d3436] tracking-tight">J<span className="text-[#6c5ce7]">.</span>C</a>
           <div className="hidden sm:flex gap-1">
-            {["Home", "Work", "Skills", "About", "Contact"].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className={`px-4 py-2 text-sm font-medium transition-all duration-300 ${
+            {["Work", "Skills", "About", "Contact"].map((item) => (
+              <a key={item} href={`#${item.toLowerCase()}`} className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${
                 active === item.toLowerCase() ? "neu-inset text-[#6c5ce7]" : "text-[#636e72] hover:text-[#2d3436]"
-              }`} style={{ borderRadius: "12px" }}>{item}</a>
+              }`} style={{ borderRadius: "10px" }}>{item}</a>
             ))}
           </div>
         </div>
@@ -128,109 +84,55 @@ function Nav() {
 /* ── Hero ── */
 function Hero() {
   const [loaded, setLoaded] = useState(false);
-  const mouse = useMouseParallax(25);
   useEffect(() => { const t = setTimeout(() => setLoaded(true), 100); return () => clearTimeout(t); }, []);
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center px-6 overflow-hidden">
-      {/* Morphing blob background */}
-      <div className="absolute top-20 right-10 w-96 h-96 opacity-30 pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(108,92,231,0.15), transparent 70%)", borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%", animation: "morphBlob 8s ease-in-out infinite" }} />
-      <div className="absolute bottom-20 left-10 w-72 h-72 opacity-20 pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(108,92,231,0.1), transparent 70%)", borderRadius: "30% 60% 70% 40% / 50% 60% 30% 60%", animation: "morphBlob 10s ease-in-out infinite reverse" }} />
+    <section id="home" className="relative min-h-screen flex items-center px-6 lg:px-12 overflow-hidden">
+      {/* Decorative morphing blobs */}
+      <div className="absolute top-32 right-0 w-[500px] h-[500px] opacity-[0.04] pointer-events-none"
+        style={{ background: "radial-gradient(circle, #6c5ce7, transparent 70%)", borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%", animation: "morphBlob 12s ease-in-out infinite" }} />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] opacity-[0.03] pointer-events-none"
+        style={{ background: "radial-gradient(circle, #a29bfe, transparent 70%)", borderRadius: "30% 60% 70% 40% / 50% 60% 30% 60%", animation: "morphBlob 15s ease-in-out infinite reverse" }} />
 
-      {/* Floating hexagons */}
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className="absolute neu-hexagon neu-hexagon-shadow opacity-[0.03] pointer-events-none"
-          style={{ width: 40 + i * 20, height: 40 + i * 20, top: `${15 + i * 18}%`, left: `${5 + i * 18}%`, transform: `translate(${mouse.x * (i * 0.2)}px, ${mouse.y * (i * 0.2)}px)`, animation: `float ${5 + i}s ease-in-out infinite`, animationDelay: `${i * 0.5}s` }} />
-      ))}
-
-      <div className="mx-auto max-w-6xl w-full relative z-10">
-        <div className="grid gap-16 lg:grid-cols-12 lg:items-center">
-          <div className="lg:col-span-7">
-            {/* Availability pill */}
-            <div className="neu-pill inline-flex items-center gap-2 px-5 py-2.5 mb-8" style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(20px)", transition: "all 0.8s ease 0.2s" }}>
-              <div className="neu-circle-inset w-6 h-6 flex items-center justify-center">
-                <div className="h-2 w-2 rounded-full bg-[#00b894] animate-pulse" />
-              </div>
-              <span className="text-xs font-semibold tracking-wider text-[#00b894] uppercase">Available for hire</span>
+      <div className="mx-auto max-w-7xl w-full relative z-10">
+        <div className="max-w-3xl">
+          {/* Pill badge */}
+          <div className="inline-flex items-center gap-2 neu-pill px-4 py-2 mb-8"
+            style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(20px)", transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s" }}>
+            <div className="neu-circle-inset w-5 h-5 flex items-center justify-center">
+              <div className="h-1.5 w-1.5 rounded-full bg-[#00b894] animate-pulse" />
             </div>
-
-            {/* Title */}
-            <div style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(50px)", transition: "all 1s ease 0.3s" }}>
-              <RevealText text="I build" className="block text-5xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-[#2d3436]" />
-              <RevealText text="digital" className="block text-5xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-[#6c5ce7]" />
-              <RevealText text="experiences." className="block text-5xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-[#2d3436]" />
-            </div>
-
-            <p className="mt-8 text-lg text-[#636e72] max-w-md leading-relaxed" style={{ opacity: loaded ? 1 : 0, transition: "all 0.8s ease 0.8s" }}>
-              Frontend developer &amp; designer crafting <span className="font-semibold text-[#2d3436]">production-grade</span> web applications with emotion and precision.
-            </p>
-
-            {/* Tech pills */}
-            <div className="mt-8 flex flex-wrap gap-3" style={{ opacity: loaded ? 1 : 0, transition: "all 0.8s ease 1s" }}>
-              {["Next.js", "React", "TypeScript", "Tailwind", "Vitest"].map((t, i) => (
-                <span key={t} className="neu-pill px-5 py-2.5 text-sm font-semibold text-[#2d3436] hover:text-[#6c5ce7] transition-all cursor-default hover:scale-105"
-                  style={{ opacity: loaded ? 1 : 0, transition: `all 0.6s ease ${1.1 + i * 0.1}s` }}>{t}</span>
-              ))}
-            </div>
-
-            {/* Buttons */}
-            <div className="mt-10 flex gap-4" style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s ease 1.4s" }}>
-              <MagneticBtn href="#work" className="neu-button text-base px-10 py-4 inline-flex items-center">
-                View Projects
-                <svg className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-              </MagneticBtn>
-              <MagneticBtn href="#contact" className="neu-pill px-10 py-4 text-base font-semibold text-[#2d3436] inline-flex items-center hover:scale-105 transition-transform">Contact</MagneticBtn>
-            </div>
+            <span className="text-[10px] font-bold tracking-[0.2em] text-[#00b894] uppercase">Available for hire</span>
           </div>
 
-          {/* Right — Creative dashboard */}
-          <div className="lg:col-span-5" style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateX(0)" : "translateX(50px)", transition: "all 1.2s ease 0.5s" }}>
-            <GlowCard>
-              <div className="p-8">
-                {/* Performance bar */}
-                <div className="neu-inset p-5 mb-5" style={{ borderRadius: "20px 4px 20px 4px" }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-semibold text-[#636e72] uppercase tracking-wider">Performance</span>
-                    <span className="text-4xl font-black text-[#6c5ce7]"><Counter target={100} /></span>
-                  </div>
-                  <div className="neu-pill p-3 overflow-hidden">
-                    <div className="h-2.5 rounded-full bg-[#d1d9e6] overflow-hidden" style={{ borderRadius: "50px" }}>
-                      <div className="h-full rounded-full bg-gradient-to-r from-[#6c5ce7] via-[#a29bfe] to-[#6c5ce7] transition-all duration-[2s] ease-out relative" style={{ width: loaded ? "100%" : "0%", borderRadius: "50px" }}>
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_infinite]" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          {/* Giant headline */}
+          <div style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(60px)", transition: "all 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s" }}>
+            <h1 className="text-[clamp(3rem,10vw,8rem)] font-black leading-[0.85] tracking-tighter text-[#2d3436]">
+              <RevealText text="Jewel" className="block" />
+              <RevealText text="Cruz" className="block text-[#6c5ce7]" />
+            </h1>
+          </div>
 
-                {/* Stats — hexagonal grid */}
-                <div className="grid grid-cols-2 gap-3 mb-5">
-                  {[
-                    { value: "100+", label: "Tests", icon: "✓", color: "#00b894" },
-                    { value: "35+", label: "Pages", icon: "◆", color: "#6c5ce7" },
-                    { value: "2", label: "Apps", icon: "▲", color: "#e8913a" },
-                    { value: "0", label: "Errors", icon: "●", color: "#00b894" },
-                  ].map((s) => (
-                    <div key={s.label} className="relative group cursor-default">
-                      <div className="neu-hexagon neu-hexagon-shadow w-full aspect-[4/3.5] flex flex-col items-center justify-center transition-transform duration-300 group-hover:scale-105">
-                        <div className="text-lg mb-1" style={{ color: s.color }}>{s.icon}</div>
-                        <div className="text-xl font-black text-[#2d3436]">{s.value}</div>
-                        <div className="text-[10px] text-[#636e72]">{s.label}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+          <p className="mt-8 text-xl text-[#636e72] max-w-lg leading-relaxed"
+            style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.7s" }}>
+            <span className="text-[#2d3436] font-semibold">Frontend developer &amp; designer</span> building production-grade web applications with emotion and precision.
+          </p>
 
-                {/* Verified badge — arch shape */}
-                <div className="flex items-center justify-between">
-                  <div className="neu-arch px-6 py-3 text-xs font-semibold text-[#6c5ce7]">Verified</div>
-                  <div className="flex gap-1.5">
-                    {[...Array(5)].map((_, i) => <div key={i} className="neu-circle w-2.5 h-2.5 bg-[#6c5ce7]" style={{ animation: `pulseGlow ${2 + i * 0.3}s ease-in-out infinite` }} />)}
-                  </div>
-                </div>
-              </div>
-            </GlowCard>
+          {/* Tech stack */}
+          <div className="mt-8 flex flex-wrap gap-2" style={{ opacity: loaded ? 1 : 0, transition: "all 0.8s ease 0.9s" }}>
+            {["Next.js", "React", "TypeScript", "Tailwind", "Figma"].map((t, i) => (
+              <span key={t} className="neu-pill px-4 py-2 text-xs font-semibold text-[#636e72] hover:text-[#6c5ce7] transition-all cursor-default"
+                style={{ opacity: loaded ? 1 : 0, transition: `all 0.6s ease ${1 + i * 0.08}s` }}>{t}</span>
+            ))}
+          </div>
+
+          {/* CTAs */}
+          <div className="mt-10 flex gap-4 flex-wrap" style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.1s" }}>
+            <MagneticBtn href="#work" className="neu-button px-10 py-4 inline-flex items-center gap-2">
+              <span>View Work</span>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+            </MagneticBtn>
+            <MagneticBtn href="#contact" className="neu-pill px-10 py-4 text-sm font-semibold text-[#2d3436] inline-flex items-center hover:scale-105 transition-transform">Let&apos;s Talk</MagneticBtn>
           </div>
         </div>
       </div>
@@ -238,95 +140,77 @@ function Hero() {
   );
 }
 
-/* ── Projects ── */
-function Projects() {
+/* ── Work — Horizontal scroll cards ── */
+function Work() {
   const { ref, isVisible } = useInView(0.05);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const projects = [
     {
-      title: "Redwood Retreats", subtitle: "Luxury Cabin Rental Platform",
-      description: "Canvas grass animation with wind physics, PS5-style particles, 3D tilt cards, and a booking system. Every pixel crafted with intention.",
+      title: "Redwood Retreats", tag: "Luxury Rental Platform",
+      desc: "Canvas grass animation with wind physics, PS5-style particles, 3D tilt cards, and a booking system. Lighthouse 100/91/100.",
       tech: ["Next.js 16", "TypeScript", "Canvas API", "Vitest"],
-      liveUrl: "https://redwood-retreats.vercel.app", githubUrl: "https://github.com/jewelcruzs0922-dev/redwood-retreats",
-      stats: { tests: "41", perf: "100", a11y: "91" },
-      gradient: "from-[#e8913a] to-[#c4602a]", year: "2026",
+      live: "https://redwood-retreats.vercel.app", code: "https://github.com/jewelcruzs0922-dev/redwood-retreats",
+      stats: "41 tests · 100 perf · 91 a11y",
+      accent: "#e8913a",
     },
     {
-      title: "Cosmic Ray Solar", subtitle: "Full-Stack Solar Company",
-      description: "Stripe checkout, Sanity CMS, scheduling, savings calculator. 59 tests, 35 pages, 5 API routes across 15 US states.",
+      title: "Cosmic Ray Solar", tag: "Full-Stack Solar Company",
+      desc: "Stripe checkout, Sanity CMS, scheduling, savings calculator. 59 tests, 35 pages, 5 API routes.",
       tech: ["Next.js 16", "Stripe", "Sanity", "Playwright"],
-      liveUrl: "https://cosmicray-solar.netlify.app", githubUrl: "https://github.com/jewelcruzs0922-dev/cosmicray-solar",
-      stats: { tests: "59", pages: "35", apis: "5" },
-      gradient: "from-[#6c5ce7] to-[#a29bfe]", year: "2026",
+      live: "https://cosmicray-solar.netlify.app", code: "https://github.com/jewelcruzs0922-dev/cosmicray-solar",
+      stats: "59 tests · 35 pages · 5 APIs",
+      accent: "#6c5ce7",
     },
   ];
   const scrollTo = useCallback((i: number) => {
     if (!scrollRef.current) return;
-    const child = scrollRef.current.children[i] as HTMLElement;
-    if (child) { child.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" }); setActive(i); }
+    const c = scrollRef.current.children[i] as HTMLElement;
+    if (c) { c.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" }); setActive(i); }
   }, []);
 
   return (
-    <section id="work" className="py-24 overflow-hidden">
-      <div className="mx-auto max-w-6xl px-6 mb-12">
-        <span className="neu-pill inline-block px-5 py-2 text-xs font-semibold tracking-wider text-[#6c5ce7] uppercase mb-4">Portfolio</span>
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#2d3436]"><RevealText text="Selected work" /></h2>
+    <section id="work" className="py-32 overflow-hidden">
+      <div className="mx-auto max-w-7xl px-6 lg:px-12 mb-16">
+        <div className="flex items-end justify-between">
+          <div>
+            <span className="neu-pill inline-block px-4 py-1.5 text-[10px] font-bold tracking-[0.2em] text-[#6c5ce7] uppercase mb-4">Portfolio</span>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#2d3436]"><RevealText text="Selected work" /></h2>
+          </div>
+          <div className="hidden sm:flex gap-2">
+            {projects.map((_, i) => (
+              <button key={i} onClick={() => scrollTo(i)} className={`transition-all duration-500 ${active === i ? "neu-inset w-12 h-2" : "neu-flat w-2 h-2 hover:scale-150"}`} style={{ borderRadius: "50px" }} />
+            ))}
+          </div>
+        </div>
       </div>
       <div ref={ref} className={`transition-all duration-1000 ${isVisible ? "opacity-100" : "opacity-0"}`}>
-        <div className="flex justify-center gap-2 mb-8">
-          {projects.map((_, i) => <button key={i} onClick={() => scrollTo(i)} className={`transition-all duration-500 ${active === i ? "neu-inset w-10 h-2" : "neu-flat w-2 h-2 hover:scale-125"}`} style={{ borderRadius: "50px" }} />)}
-        </div>
-        <div ref={scrollRef} className="flex gap-8 overflow-x-auto snap-x snap-mandatory px-6 pb-6 scrollbar-hide">
-          {projects.map((project) => (
-            <div key={project.title} className="flex-shrink-0 w-[85vw] sm:w-[70vw] lg:w-[50vw] snap-center">
+        <div ref={scrollRef} className="flex gap-8 overflow-x-auto snap-x snap-mandatory px-6 lg:px-12 pb-8 scrollbar-hide">
+          {projects.map((p) => (
+            <div key={p.title} className="flex-shrink-0 w-[90vw] sm:w-[75vw] lg:w-[55vw] snap-center">
               <GlowCard>
-                <div className="p-8 h-full">
-                  {/* Top — wave gradient bar */}
-                  <div className="relative mb-6 overflow-hidden" style={{ borderRadius: "20px 20px 0 0" }}>
-                    <div className={`h-2 bg-gradient-to-r ${project.gradient}`} />
-                  </div>
-
-                  {/* Shield shape with year */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="neu-circle-inset w-12 h-12 flex items-center justify-center">
-                        <span className="text-xs font-black text-[#6c5ce7]">{project.year}</span>
-                      </div>
-                      <div>
-                        <span className="text-xs font-semibold text-[#636e72] uppercase tracking-wider block">{project.subtitle}</span>
-                        <h3 className="text-2xl font-black text-[#2d3436]">{project.title}</h3>
-                      </div>
+                <div className="p-8 lg:p-10 h-full">
+                  <div className="flex items-start justify-between mb-6">
+                    <div>
+                      <span className="text-[10px] font-bold tracking-[0.2em] text-[#636e72] uppercase">{p.tag}</span>
+                      <h3 className="text-3xl lg:text-4xl font-black text-[#2d3436] mt-2">{p.title}</h3>
                     </div>
-                    {/* Diamond shape accent */}
-                    <div className="neu-diamond w-10 h-10 flex items-center justify-center opacity-30">
-                      <div className="w-2 h-2 bg-[#6c5ce7] rotate-45" />
+                    <div className="neu-circle-inset w-14 h-14 flex items-center justify-center flex-shrink-0">
+                      <div className="w-3 h-3 rounded-full" style={{ background: p.accent }} />
                     </div>
                   </div>
-
-                  <p className="text-[#636e72] text-sm leading-relaxed mb-5">{project.description}</p>
-
-                  {/* Tech pills */}
-                  <div className="flex flex-wrap gap-2 mb-5">
-                    {project.tech.map((t) => <span key={t} className="neu-pill px-3 py-1.5 text-xs font-medium text-[#2d3436]">{t}</span>)}
+                  <p className="text-[#636e72] leading-relaxed mb-6 max-w-lg">{p.desc}</p>
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {p.tech.map((t) => <span key={t} className="neu-pill px-3 py-1.5 text-xs font-medium text-[#2d3436]">{t}</span>)}
                   </div>
-
-                  {/* Stats — pill shapes */}
-                  <div className="flex flex-wrap gap-3 mb-6">
-                    {Object.entries(project.stats).map(([k, v]) => (
-                      <div key={k} className="neu-pill px-4 py-2 flex items-center gap-2">
-                        <span className="font-bold text-[#6c5ce7]">{v}</span>
-                        <span className="text-xs text-[#636e72] capitalize">{k}</span>
-                      </div>
-                    ))}
+                  <div className="neu-inset px-4 py-2 inline-block mb-8">
+                    <span className="text-xs font-semibold text-[#6c5ce7]">{p.stats}</span>
                   </div>
-
-                  {/* Buttons — pill + arch */}
-                  <div className="flex gap-3">
-                    <MagneticBtn href={project.liveUrl} className="neu-button px-6 py-3 text-sm inline-flex items-center gap-2">
+                  <div className="flex gap-4">
+                    <MagneticBtn href={p.live} className="neu-button px-8 py-3 text-sm inline-flex items-center gap-2">
                       Live Demo <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                     </MagneticBtn>
-                    <MagneticBtn href={project.githubUrl} className="neu-pill px-6 py-3 text-sm font-semibold text-[#2d3436] inline-flex items-center hover:scale-105 transition-transform">Code</MagneticBtn>
+                    <MagneticBtn href={p.code} className="neu-pill px-8 py-3 text-sm font-semibold text-[#2d3436] inline-flex items-center hover:scale-105 transition-transform">Code</MagneticBtn>
                   </div>
                 </div>
               </GlowCard>
@@ -338,40 +222,43 @@ function Projects() {
   );
 }
 
-/* ── Skills ── */
+/* ── Skills — Clean grid with progress ── */
 function Skills() {
   const { ref, isVisible } = useInView();
   const skills = [
-    { name: "React", value: 90, color: "#61dafb" },
-    { name: "Next.js", value: 95, color: "#6c5ce7" },
-    { name: "TypeScript", value: 85, color: "#3178c6" },
-    { name: "Tailwind", value: 90, color: "#06b6d4" },
-    { name: "Node.js", value: 70, color: "#339933" },
-    { name: "Testing", value: 85, color: "#6c5ce7" },
+    { name: "React", pct: 90, color: "#61dafb" },
+    { name: "Next.js", pct: 95, color: "#6c5ce7" },
+    { name: "TypeScript", pct: 85, color: "#3178c6" },
+    { name: "Tailwind", pct: 90, color: "#06b6d4" },
+    { name: "Node.js", pct: 70, color: "#339933" },
+    { name: "Testing", pct: 85, color: "#6c5ce7" },
   ];
   return (
-    <section id="skills" className="py-24 px-6">
-      <div className="mx-auto max-w-6xl">
+    <section id="skills" className="py-32 px-6 lg:px-12">
+      <div className="max-w-7xl mx-auto">
         <div ref={ref} className={`transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-          <div className="text-center mb-16">
-            <span className="neu-pill inline-block px-5 py-2 text-xs font-semibold tracking-wider text-[#6c5ce7] uppercase mb-4">Skills</span>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#2d3436]"><RevealText text="What I know" /></h2>
+          <div className="mb-16">
+            <span className="neu-pill inline-block px-4 py-1.5 text-[10px] font-bold tracking-[0.2em] text-[#6c5ce7] uppercase mb-4">Skills</span>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#2d3436]"><RevealText text="What I know" /></h2>
           </div>
-          <GlowCard>
-            <div className="p-10 lg:p-14">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8">
-                {skills.map((s) => <Ring key={s.name} value={s.value} label={s.name} color={s.color} />)}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {skills.map((s) => (
+              <div key={s.name} className="neu-raised p-6 group hover:scale-[1.02] transition-transform duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="font-bold text-[#2d3436]">{s.name}</span>
+                  <span className="text-sm font-black" style={{ color: s.color }}>{s.pct}%</span>
+                </div>
+                <div className="neu-inset h-2 overflow-hidden" style={{ borderRadius: "50px" }}>
+                  <div className="h-full rounded-full transition-all duration-[1.5s] ease-out" style={{ width: isVisible ? `${s.pct}%` : "0%", background: s.color, borderRadius: "50px" }} />
+                </div>
               </div>
-              {/* Tools — hexagonal grid */}
-              <div className="mt-12 grid grid-cols-4 sm:grid-cols-8 gap-3">
-                {["Git", "GitHub", "Vercel", "Netlify", "Figma", "REST", "SEO", "A11y"].map((tool) => (
-                  <div key={tool} className="neu-hexagon neu-hexagon-shadow aspect-[4/3.5] flex items-center justify-center hover:scale-110 transition-transform cursor-default group">
-                    <span className="text-[10px] font-semibold text-[#636e72] group-hover:text-[#6c5ce7] transition-colors">{tool}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </GlowCard>
+            ))}
+          </div>
+          <div className="mt-8 flex flex-wrap gap-2">
+            {["Git", "GitHub", "Vercel", "Netlify", "Figma", "REST APIs", "SEO", "A11y"].map((t) => (
+              <span key={t} className="neu-pill px-4 py-2 text-xs font-medium text-[#636e72] hover:text-[#6c5ce7] hover:scale-105 transition-all cursor-default">{t}</span>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -382,38 +269,29 @@ function Skills() {
 function About() {
   const { ref, isVisible } = useInView();
   return (
-    <section id="about" className="py-24 px-6">
-      <div className="mx-auto max-w-4xl">
+    <section id="about" className="py-32 px-6 lg:px-12">
+      <div className="max-w-5xl mx-auto">
         <div ref={ref} className={`transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-          <div className="text-center mb-16">
-            <span className="neu-pill inline-block px-5 py-2 text-xs font-semibold tracking-wider text-[#6c5ce7] uppercase mb-4">About</span>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#2d3436]">Code with <span className="text-[#6c5ce7]">soul</span>.</h2>
+          <div className="mb-16">
+            <span className="neu-pill inline-block px-4 py-1.5 text-[10px] font-bold tracking-[0.2em] text-[#6c5ce7] uppercase mb-4">About</span>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#2d3436]">
+              Code with <span className="text-[#6c5ce7]">soul</span>.
+            </h2>
           </div>
           <GlowCard>
-            <div className="p-10 lg:p-14">
-              <p className="text-lg text-[#636e72] leading-relaxed mb-10">
-                I&apos;m Jewel Cruz, a frontend developer &amp; designer from the Philippines. I build web applications that are fast, accessible, and beautiful. Every project carries a piece of me — because I don&apos;t just write code, I feel it.
+            <div className="p-10 lg:p-16">
+              <p className="text-xl text-[#636e72] leading-relaxed mb-12 max-w-2xl">
+                I&apos;m Jewel Cruz, a frontend developer &amp; designer from the Philippines. I build web applications that are fast, accessible, and beautiful. Every project carries a piece of me.
               </p>
-              {/* Timeline with arch connectors */}
-              <div className="space-y-8">
+              <div className="grid sm:grid-cols-3 gap-6">
                 {[
-                  { year: "2024", title: "The Beginning", desc: "Started with HTML, CSS, JavaScript. Built my first websites and fell in love with crafting digital experiences.", color: "#e8913a" },
-                  { year: "2025", title: "The Growth", desc: "Mastered React, Next.js, and TypeScript. Built production-grade applications with clean architecture.", color: "#6c5ce7" },
-                  { year: "2026", title: "The Craft", desc: "Launched Redwood Retreats and Cosmic Ray Solar. 100+ tests, Lighthouse 100, and a portfolio with soul.", color: "#00b894" },
-                ].map((item, i) => (
-                  <div key={item.year} className="flex gap-5 items-start group">
-                    <div className="flex flex-col items-center flex-shrink-0">
-                      {/* Arch shape for timeline dot */}
-                      <div className="neu-circle-inset w-14 h-14 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
-                        <span className="text-sm font-black" style={{ color: item.color }}>{item.year.slice(-2)}</span>
-                      </div>
-                      {i < 2 && <div className="w-px h-20 bg-gradient-to-b from-[#d1d9e6] to-transparent mt-2" />}
-                    </div>
-                    {/* Shield-shaped content card */}
-                    <div className="flex-1 neu-shield p-6 pt-8 transition-all duration-300 group-hover:translate-x-1" style={{ clipPath: "polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%)" }}>
-                      <h3 className="font-bold text-[#2d3436] mb-2 text-lg">{item.title}</h3>
-                      <p className="text-sm text-[#636e72] leading-relaxed">{item.desc}</p>
-                    </div>
+                  { num: "2+", label: "Years building", color: "#e8913a" },
+                  { num: "100+", label: "Tests written", color: "#6c5ce7" },
+                  { num: "100", label: "Lighthouse score", color: "#00b894" },
+                ].map((s) => (
+                  <div key={s.label} className="neu-inset p-6 text-center">
+                    <div className="text-3xl font-black mb-1" style={{ color: s.color }}>{s.num}</div>
+                    <div className="text-sm text-[#636e72]">{s.label}</div>
                   </div>
                 ))}
               </div>
@@ -429,27 +307,17 @@ function About() {
 function Contact() {
   const { ref, isVisible } = useInView();
   return (
-    <section id="contact" className="py-24 px-6">
-      <div className="mx-auto max-w-2xl">
+    <section id="contact" className="py-32 px-6 lg:px-12">
+      <div className="max-w-3xl mx-auto text-center">
         <div ref={ref} className={`transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-          <GlowCard>
-            <div className="p-10 lg:p-14 text-center">
-              {/* Hexagon accent */}
-              <div className="flex justify-center mb-6">
-                <div className="neu-hexagon neu-hexagon-shadow w-16 h-16 flex items-center justify-center">
-                  <span className="text-2xl">✉</span>
-                </div>
-              </div>
-              <span className="neu-pill inline-block px-5 py-2 text-xs font-semibold tracking-wider text-[#6c5ce7] uppercase mb-4">Contact</span>
-              <h2 className="text-3xl lg:text-4xl font-black text-[#2d3436] mb-4">Let&apos;s build together</h2>
-              <p className="text-[#636e72] mb-10 max-w-md mx-auto">Available for freelance and remote positions. Let&apos;s create something great.</p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <MagneticBtn href="mailto:jewel@example.com" className="neu-button px-10 py-4 inline-flex items-center justify-center">Email Me</MagneticBtn>
-                <MagneticBtn href="https://github.com/jewelcruzs0922-dev" className="neu-pill px-10 py-4 text-sm font-semibold text-[#2d3436] inline-flex items-center justify-center hover:scale-105 transition-transform">GitHub</MagneticBtn>
-                <MagneticBtn href="https://linkedin.com" className="neu-pill px-10 py-4 text-sm font-semibold text-[#2d3436] inline-flex items-center justify-center hover:scale-105 transition-transform">LinkedIn</MagneticBtn>
-              </div>
-            </div>
-          </GlowCard>
+          <span className="neu-pill inline-block px-4 py-1.5 text-[10px] font-bold tracking-[0.2em] text-[#6c5ce7] uppercase mb-6">Contact</span>
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#2d3436] mb-6">Let&apos;s create<br />something great</h2>
+          <p className="text-[#636e72] mb-12 max-w-md mx-auto text-lg">Available for freelance projects and remote positions.</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <MagneticBtn href="mailto:jewel@example.com" className="neu-button px-10 py-4 inline-flex items-center justify-center">Email Me</MagneticBtn>
+            <MagneticBtn href="https://github.com/jewelcruzs0922-dev" className="neu-pill px-10 py-4 text-sm font-semibold text-[#2d3436] inline-flex items-center justify-center hover:scale-105 transition-transform">GitHub</MagneticBtn>
+            <MagneticBtn href="https://linkedin.com" className="neu-pill px-10 py-4 text-sm font-semibold text-[#2d3436] inline-flex items-center justify-center hover:scale-105 transition-transform">LinkedIn</MagneticBtn>
+          </div>
         </div>
       </div>
     </section>
@@ -459,13 +327,13 @@ function Contact() {
 /* ── Footer ── */
 function Footer() {
   return (
-    <footer className="py-6 px-6">
-      <div className="mx-auto max-w-6xl">
+    <footer className="py-8 px-6 lg:px-12">
+      <div className="max-w-7xl mx-auto">
         <div className="neu-pill px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[#636e72]">
-          <p>&copy; 2026 Jewel Cruz. Built with passion and Next.js.</p>
+          <p>&copy; 2026 Jewel Cruz</p>
           <div className="flex gap-3">
-            <span className="neu-inset px-3 py-1 text-xs font-medium text-[#6c5ce7]">100 Lighthouse</span>
-            <span className="neu-inset px-3 py-1 text-xs font-medium text-[#6c5ce7]">100+ Tests</span>
+            <span className="neu-inset px-3 py-1 text-[10px] font-bold tracking-wider text-[#6c5ce7]">100 Lighthouse</span>
+            <span className="neu-inset px-3 py-1 text-[10px] font-bold tracking-wider text-[#6c5ce7]">100+ Tests</span>
           </div>
         </div>
       </div>
@@ -474,5 +342,5 @@ function Footer() {
 }
 
 export default function Home() {
-  return (<><Nav /><Hero /><Projects /><Skills /><About /><Contact /><Footer /></>);
+  return (<><Nav /><Hero /><Work /><Skills /><About /><Contact /><Footer /></>);
 }
