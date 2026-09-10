@@ -189,7 +189,7 @@ function About() {
                 Every project I build has automated tests, performance optimization, and clean architecture. I don&apos;t cut corners — I build things right.
               </p>
               <p>
-                I&apos;m looking for remote opportunities with US/EU companies where I can contribute to meaningful products and grow as an engineer.
+                I&apos;m looking for remote web developer positions with US/EU companies where I can build beautiful, functional websites and grow my skills.
               </p>
             </div>
           </div>
