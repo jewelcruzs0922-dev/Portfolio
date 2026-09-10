@@ -3,7 +3,7 @@ function Nav() {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#222] bg-[#0a0a0a]/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
         <a href="#" className="text-lg font-bold text-[#f5f5f5]">
-          Jimwel Cruz
+          Jewel Cruz
         </a>
         <div className="flex gap-6 text-sm text-[#888]">
           <a href="#projects" className="transition-colors hover:text-[#f59e0b]">
@@ -29,7 +29,7 @@ function Hero() {
           Frontend Developer
         </p>
         <h1 className="mb-6 text-5xl font-bold tracking-tight text-[#f5f5f5] sm:text-6xl">
-          Jimwel Cruz
+          Jewel Cruz
         </h1>
         <p className="mb-10 text-lg leading-relaxed text-[#888]">
           I build beautiful, performant web experiences with Next.js and
@@ -230,7 +230,7 @@ function Contact() {
         </p>
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
           <a
-            href="mailto:jimwel@example.com"
+            href="mailto:jewel@example.com"
             className="inline-flex h-12 items-center rounded-lg bg-[#f59e0b] px-8 text-sm font-semibold text-[#0a0a0a] transition-colors hover:bg-[#d97706]"
           >
             Email Me
@@ -261,7 +261,7 @@ function Footer() {
   return (
     <footer className="border-t border-[#222] py-8 px-6">
       <div className="mx-auto max-w-5xl text-center text-sm text-[#888]">
-        &copy; 2026 Jimwel Cruz. Built with Next.js and Tailwind CSS.
+        &copy; 2026 Jewel Cruz. Built with Next.js and Tailwind CSS.
       </div>
     </footer>
   );
