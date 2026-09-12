@@ -1,526 +1,819 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, type JSX } from "react";
 
-/* ── Hooks ── */
-function useInView(t = 0.15) {
-  const [r, setR] = useState<HTMLElement | null>(null);
-  const [v, setV] = useState(false);
-  useEffect(() => {
-    if (!r) return;
-    const o = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setV(true); o.unobserve(e.target); } }, { threshold: t });
-    o.observe(r); return () => o.disconnect();
-  }, [r, t]);
-  return { ref: setR, isVisible: v };
-}
+/* ══════════════════════════════════════════════════════════════
+   HEXAGON CANVAS BACKGROUND
+   ══════════════════════════════════════════════════════════════ */
+function HexagonCanvas({ currentSlide }: { currentSlide: number }) {
+  const staticRef = useRef<HTMLCanvasElement>(null);
+  const starRef = useRef<HTMLCanvasElement>(null);
+  const rafRef = useRef(0);
 
-/* ── Split reveal ── */
-function SplitReveal({ text, className = "", delay = 0 }: { text: string; className?: string; delay?: number }) {
-  const { ref, isVisible } = useInView(0.3);
-  return (
-    <span ref={ref} className={`inline-block overflow-hidden ${className}`}>
-      {text.split("").map((c, i) => (
-        <span key={i} className="inline-block" style={{
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? "translateY(0)" : "translateY(100%)",
-          transition: `all 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${delay + i * 0.02}s`,
-        }}>{c === " " ? "\u00A0" : c}</span>
-      ))}
-    </span>
-  );
-}
+  const drawStatic = useCallback(() => {
+    const canvas = staticRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-/* ── Magnetic ── */
-function MagBtn({ children, className = "", href = "#" }: { children: React.ReactNode; className?: string; href?: string }) {
-  const ref = useRef<HTMLAnchorElement>(null);
-  const move = useCallback((e: React.MouseEvent) => {
-    if (!ref.current) return;
-    const r = ref.current.getBoundingClientRect();
-    ref.current.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.12}px, ${(e.clientY - r.top - r.height / 2) * 0.12}px)`;
-  }, []);
-  const leave = useCallback(() => { if (ref.current) ref.current.style.transform = "translate(0,0)"; }, []);
-  return <a ref={ref} href={href} className={className} onMouseMove={move} onMouseLeave={leave} style={{ transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)" }}>{children}</a>;
-}
+    const dpr = window.devicePixelRatio || 1;
+    const w = window.innerWidth;
+    const h_screen = window.innerHeight;
+    canvas.width = w * dpr;
+    canvas.height = h_screen * dpr;
+    canvas.style.width = w + "px";
+    canvas.style.height = h_screen + "px";
+    ctx.scale(dpr, dpr);
 
-/* ── Reveal ── */
-function R({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
-  const { ref, isVisible } = useInView();
-  return (
-    <div ref={ref} className={className} style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(30px)", transition: `all 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s` }}>
-      {children}
-    </div>
-  );
-}
+    // Responsive hex size
+    const isMobile = w < 768;
+    const size = isMobile ? 28 : 40;
+    const hexH = size * Math.sqrt(3);
+    const cols = Math.ceil(w / (size * 1.5)) + 6;
+    const rows = Math.ceil(h_screen * 0.5 / hexH) + 2;
+    const cutoffY = isMobile ? 0.4 : 0.45;
 
-/* ══════════════════════════════════════════
-   LAYOUT: Two-column pinned sidebar
-   Left = sticky identity (name, nav, bio)
-   Right = scrollable content (work, skills, contact)
-   ══════════════════════════════════════════ */
+    const cx = w / 2;
+    const cy = h_screen * cutoffY;
+    for (let row = -1; row < rows; row++) {
+      for (let col = -3; col < cols; col++) {
+        const x = col * size * 1.5;
+        const y = row * hexH + (col % 2 !== 0 ? hexH / 2 : 0);
+        const nx = x / w;
+        const ny = y / h_screen;
+        // Exclude center — less aggressive on mobile to show more corners
+        const dx = (x - cx) / (w * (isMobile ? 0.35 : 0.45));
+        const dy = (y - cy) / (h_screen * (isMobile ? 0.3 : 0.5));
+        if (dx * dx + dy * dy < (isMobile ? 1.5 : 0.85)) continue;
+        if (ny > cutoffY) continue;
+        // Remove the 2 isolated hexagons at top center
+        const isolatedLeft = Math.abs(nx - 0.38) < 0.05 && ny < 0.08;
+        const isolatedRight = Math.abs(nx - 0.58) < 0.05 && ny < 0.08;
+        if (isolatedLeft || isolatedRight) continue;
+        const hue = 195 + nx * 20;
+        const sat = 55 + nx * 15;
+        const lit = 78;
+        const a = 0.85;
 
-/* ── Sidebar (sticky left) ── */
-function Sidebar() {
-  const [active, setActive] = useState("hero");
-  useEffect(() => {
-    const h = () => {
-      for (const id of ["hero", "work", "skills", "contact"]) {
-        const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= 300) { setActive(id); break; }
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const angle = (Math.PI / 3) * i;
+          const px = x + size * Math.cos(angle);
+          const py = y + size * Math.sin(angle);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+
+        // radial glow fill
+        const ig = ctx.createRadialGradient(x, y, 0, x, y, size);
+        ig.addColorStop(0, `hsla(${hue}, ${sat}%, ${lit}%, ${a * 0.5})`);
+        ig.addColorStop(0.7, `hsla(${hue}, ${sat - 10}%, ${lit - 5}%, ${a * 0.2})`);
+        ig.addColorStop(1, `hsla(${hue}, ${sat - 20}%, ${lit}%, 0)`);
+        ctx.fillStyle = ig;
+        ctx.fill();
+
+        // outer glow stroke — blue
+        ctx.strokeStyle = `hsla(210, 70%, 80%, ${a})`;
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+
+        // inner bright edge — pink
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = `hsla(330, 60%, 85%, ${a * 0.5})`;
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+
+        // ray trace — primary reflection (top-right edge)
+        ctx.beginPath();
+        ctx.moveTo(x + (size - 1), y);
+        ctx.lineTo(x + (size - 1) * 0.5, y - (size - 1) * 0.866);
+        ctx.strokeStyle = `hsla(${hue + 15}, 40%, 95%, ${a * 0.85})`;
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = `hsla(${hue}, 60%, 90%, 0.75)`;
+        ctx.shadowBlur = 16;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // ray trace — secondary reflection (top-left edge, dimmer)
+        ctx.beginPath();
+        ctx.moveTo(x + (size - 1) * 0.5, y - (size - 1) * 0.866);
+        ctx.lineTo(x - (size - 1) * 0.5, y - (size - 1) * 0.866);
+        ctx.strokeStyle = `hsla(${hue + 20}, 35%, 92%, ${a * 0.4})`;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // ray trace — specular highlight point
+        const hx = x + (size - 2) * 0.75;
+        const hy = y - (size - 2) * 0.433;
+        const hg = ctx.createRadialGradient(hx, hy, 0, hx, hy, size * 0.35);
+        hg.addColorStop(0, `hsla(${hue + 10}, 30%, 98%, ${a * 0.6})`);
+        hg.addColorStop(0.5, `hsla(${hue}, 40%, 92%, ${a * 0.2})`);
+        hg.addColorStop(1, `hsla(${hue}, 30%, 85%, 0)`);
+        ctx.fillStyle = hg;
+        ctx.beginPath();
+        ctx.arc(hx, hy, size * 0.35, 0, Math.PI * 2);
+        ctx.fill();
       }
-    };
-    addEventListener("scroll", h, { passive: true }); return () => removeEventListener("scroll", h);
+    }
   }, []);
 
+  useEffect(() => {
+    drawStatic();
+    const onResize = () => drawStatic();
+    window.addEventListener("resize", onResize);
+
+    // animated star trails
+    const starCanvas = starRef.current;
+    if (!starCanvas) return;
+    const ctx = starCanvas.getContext("2d");
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const w = window.innerWidth;
+    const h_screen = window.innerHeight;
+    starCanvas.width = w * dpr;
+    starCanvas.height = h_screen * dpr;
+    starCanvas.style.width = w + "px";
+    starCanvas.style.height = h_screen + "px";
+    ctx.scale(dpr, dpr);
+
+    const centerX = w * 0.5;
+    const centerY = h_screen * 0.25;
+    const trailCount = 40;
+    const baseAngles: number[] = [];
+    for (let i = 0; i < trailCount; i++) {
+      baseAngles.push((i * 137.508) * Math.PI / 180);
+    }
+
+    const drawStars = (time: number) => {
+      const t = time * 0.0005;
+      ctx.clearRect(0, 0, w, h_screen);
+
+      // star trails
+      for (let i = 0; i < trailCount; i++) {
+        const radius = 30 + i * 8;
+        const arcLen = 0.5 + (i % 5) * 0.6 + Math.sin(t * 0.8 + i) * 0.15;
+        const sa = baseAngles[i] + t * (0.25 + (i % 3) * 0.1) + Math.sin(t * 0.5 + i * 0.3) * 0.05;
+        const alpha = 0.35 + (1 - i / trailCount) * 0.5;
+        const lw = 1.2 + (i % 4) * 0.4;
+
+        // color shift — inner trails more blue, outer trails more pink
+        const ratio = i / trailCount;
+        const cr = Math.round(180 + ratio * 60);
+        const cg = Math.round(220 - ratio * 30);
+        const cb = 255;
+
+        // outer glow layer
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, sa, sa + arcLen);
+        ctx.strokeStyle = `rgba(${cr},${cg},${cb},${alpha * 0.15})`;
+        ctx.lineWidth = lw + 6;
+        ctx.stroke();
+
+        // mid glow
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, sa, sa + arcLen);
+        ctx.strokeStyle = `rgba(${cr},${cg},${cb},${alpha * 0.3})`;
+        ctx.lineWidth = lw + 3;
+        ctx.stroke();
+
+        // main trail
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, sa, sa + arcLen);
+        ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+        ctx.lineWidth = lw;
+        ctx.stroke();
+
+        // bright head at end — layered glow
+        const hx = centerX + radius * Math.cos(sa + arcLen);
+        const hy = centerY + radius * Math.sin(sa + arcLen);
+
+        // outer head glow
+        const headGrad = ctx.createRadialGradient(hx, hy, 0, hx, hy, 5);
+        headGrad.addColorStop(0, `rgba(255,255,255,${alpha * 0.9})`);
+        headGrad.addColorStop(0.3, `rgba(${cr},${cg},${cb},${alpha * 0.5})`);
+        headGrad.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+        ctx.beginPath();
+        ctx.arc(hx, hy, 5, 0, Math.PI * 2);
+        ctx.fillStyle = headGrad;
+        ctx.fill();
+
+        // core head
+        ctx.beginPath();
+        ctx.arc(hx, hy, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${Math.min(alpha * 1.5, 1)})`;
+        ctx.fill();
+
+        // trailing particles — sparkle dust behind the head
+        for (let p = 0; p < 3; p++) {
+          const pDist = 3 + p * 4 + Math.sin(t * 2 + i + p) * 2;
+          const pAngle = sa + arcLen - (pDist / radius);
+          const px = centerX + radius * Math.cos(pAngle);
+          const py = centerY + radius * Math.sin(pAngle);
+          const pAlpha = alpha * (0.45 - p * 0.12) * (0.7 + Math.sin(t * 5 + i * 3 + p * 2) * 0.3);
+          ctx.beginPath();
+          ctx.arc(px, py, 0.6 + Math.sin(t * 4 + i + p) * 0.3, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255,255,255,${pAlpha})`;
+          ctx.fill();
+        }
+      }
+
+      // scattered bright stars — center-left and center-right below star trail
+      const brightStars = [
+        // center-left
+        { bx: 0.08, by: 0.45, r: 8 }, { bx: 0.15, by: 0.5, r: 6 },
+        { bx: 0.22, by: 0.48, r: 9 }, { bx: 0.28, by: 0.52, r: 7 },
+        { bx: 0.32, by: 0.46, r: 5 }, { bx: 0.12, by: 0.55, r: 6 },
+        { bx: 0.25, by: 0.58, r: 5 }, { bx: 0.18, by: 0.53, r: 7 },
+        // center-right
+        { bx: 0.68, by: 0.45, r: 8 }, { bx: 0.75, by: 0.5, r: 6 },
+        { bx: 0.82, by: 0.48, r: 9 }, { bx: 0.88, by: 0.52, r: 7 },
+        { bx: 0.72, by: 0.46, r: 5 }, { bx: 0.78, by: 0.55, r: 6 },
+        { bx: 0.85, by: 0.58, r: 5 }, { bx: 0.92, by: 0.53, r: 7 },
+      ];
+
+      for (let i = 0; i < brightStars.length; i++) {
+        const s = brightStars[i];
+        const sx = w * s.bx;
+        const sy = h_screen * s.by;
+        const twinkle = 0.5 + Math.sin(t * 3 + i * 2.5) * 0.5;
+        const sr = s.r * twinkle;
+
+        // 4-pointed star shape with curved sides
+        ctx.beginPath();
+        ctx.moveTo(sx, sy - sr);
+        ctx.quadraticCurveTo(sx + sr * 0.3, sy - sr * 0.3, sx + sr, sy);
+        ctx.quadraticCurveTo(sx + sr * 0.3, sy + sr * 0.3, sx, sy + sr);
+        ctx.quadraticCurveTo(sx - sr * 0.3, sy + sr * 0.3, sx - sr, sy);
+        ctx.quadraticCurveTo(sx - sr * 0.3, sy - sr * 0.3, sx, sy - sr);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(255,255,255,${0.7 * twinkle})`;
+        ctx.fill();
+
+        // glow
+        ctx.beginPath();
+        ctx.arc(sx, sy, sr * 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(200,230,255,${0.1 * twinkle})`;
+        ctx.fill();
+      }
+
+      rafRef.current = requestAnimationFrame(drawStars);
+    };
+
+    rafRef.current = requestAnimationFrame(drawStars);
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [drawStatic]);
+
   return (
-    <div className="hidden lg:flex flex-col justify-between h-screen sticky top-0 py-12 px-8 w-[340px] flex-shrink-0">
-      {/* Top — Identity */}
-      <div>
-        <a href="#hero" className="inline-block mb-8">
-          <div className="glass-pill px-4 py-2 inline-flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #5B9BD5, #7EC8E3)" }}>JC</div>
-            <span className="text-sm font-bold text-[#1E3A5F]">Jewel Cruz</span>
+    <>
+      <canvas ref={staticRef} className="bg-grid-canvas hex-static" />
+      <canvas ref={starRef} className="bg-grid-canvas canvas-reveal" style={{
+        zIndex: 2,
+        opacity: currentSlide === 0 ? 1 : 0,
+        transform: currentSlide === 0 ? "translateY(0) scale(1)" : "translateY(20px) scale(0.95)",
+        filter: currentSlide === 0 ? "blur(0px)" : "blur(6px)",
+        transition: "opacity 0.6s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), filter 0.6s ease",
+      }} />
+    </>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BACKGROUND LAYER
+   ══════════════════════════════════════════════════════════════ */
+function Background({ currentSlide }: { currentSlide: number }) {
+  return (
+    <>
+      <div className="fixed inset-0 z-0" style={{
+        background: "linear-gradient(180deg, #b8ddef 0%, #c0e2f4 15%, #cce8f6 30%, #d4ecf8 45%, #dcf0fa 55%, #e4ecf2 65%, #ecdce6 78%, #f4c8dc 90%, #f8b8cc 100%)"
+      }} />
+      <div className="absolute top-0 left-0 w-full h-screen overflow-hidden z-[1]">
+        <HexagonCanvas currentSlide={currentSlide} />
+        <div className="noise-overlay" />
+        <div className="absolute bottom-0 left-0 right-0 h-[85vh] z-[3] opacity-0 animate-mountainReveal" style={{
+          backgroundImage: "url(/grid-bg.png)",
+          backgroundSize: "cover",
+          backgroundPosition: "center top",
+          maskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 30%, transparent 80%)",
+          WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 30%, transparent 80%)",
+        }} />
+      </div>
+    </>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HERO
+   ══════════════════════════════════════════════════════════════ */
+function Hero() {
+  return (
+    <section id="home" className="h-full flex flex-col items-center justify-center relative px-6 z-10">
+      {/* Title */}
+      <div className="text-center fade-in fade-d2">
+        <h1 className="text-5xl md:text-7xl font-light tracking-[0.3em] text-[var(--color-ink)]"
+          style={{ textShadow: "0 0 50px rgba(120,216,240,0.15)" }}>
+          JEWEL CRUZ
+        </h1>
+        <div className="flex items-center justify-center gap-4 mt-4 mb-2">
+          <div className="w-12 h-px bg-[var(--color-ink)] opacity-20" />
+          <div className="text-center">
+            <p className="text-base md:text-lg tracking-[0.3em] text-[var(--color-ink)] opacity-50">FRONTEND DEVELOPER</p>
+            <p className="text-base md:text-lg tracking-[0.3em] text-[var(--color-ink)] opacity-50">WEB DESIGNER</p>
           </div>
-        </a>
-
-        <div className="glass-pill inline-flex items-center gap-2 px-4 py-2 mb-8">
-          <div className="h-1.5 w-1.5 rounded-full bg-[#5B9BD5] animate-pulse" />
-          <span className="t-micro text-[#5B9BD5]">Available</span>
+          <div className="w-12 h-px bg-[var(--color-ink)] opacity-20" />
         </div>
-
-        <nav className="flex flex-col gap-1">
-          {[
-            { id: "hero", label: "Home" },
-            { id: "work", label: "Work" },
-            { id: "skills", label: "Skills" },
-            { id: "contact", label: "Contact" },
-          ].map((item) => (
-            <a key={item.id} href={`#${item.id}`}
-              className={`px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 ${
-                active === item.id
-                  ? "glass text-[#1E3A5F]"
-                  : "text-[#1E3A5F]/35 hover:text-[#1E3A5F]/60 hover:bg-white/30"
-              }`}>
-              {item.label}
-            </a>
-          ))}
-        </nav>
       </div>
 
-      {/* Bottom — Links */}
-      <div className="flex flex-col gap-2">
-        <MagBtn href="https://github.com/jewelcruzs0922-dev" className="text-xs text-[#1E3A5F]/30 hover:text-[#5B9BD5] transition-colors">GitHub</MagBtn>
-        <MagBtn href="https://linkedin.com" className="text-xs text-[#1E3A5F]/30 hover:text-[#5B9BD5] transition-colors">LinkedIn</MagBtn>
-        <MagBtn href="mailto:jewel@example.com" className="text-xs text-[#1E3A5F]/30 hover:text-[#5B9BD5] transition-colors">Email</MagBtn>
+      {/* Tagline */}
+      <div className="text-center mt-5 fade-in fade-d3">
+        <p className="text-sm md:text-base tracking-[0.2em] text-[var(--color-ink-dim)] opacity-40">
+          Innovation through iteration
+        </p>
       </div>
-    </div>
+    </section>
   );
 }
 
-/* ── Mobile nav ── */
-function MobileNav() {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="lg:hidden">
-      <button onClick={() => setOpen(!open)} className="fixed top-5 right-6 z-50 glass-pill px-4 py-2.5 flex items-center gap-2" aria-label="Menu">
-        <span className={`block w-5 h-[1.5px] bg-[#1E3A5F] transition-all duration-300 ${open ? "rotate-45 translate-y-[3.5px]" : ""}`} />
-        <span className={`block w-5 h-[1.5px] bg-[#1E3A5F] transition-all duration-300 ${open ? "-rotate-45 -translate-y-[1.5px]" : ""}`} />
-      </button>
-      <div className={`fixed inset-0 z-40 flex flex-col items-center justify-center gap-6 transition-all duration-500 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`} style={{ background: "rgba(240,247,255,0.95)", backdropFilter: "blur(20px)" }}>
-        {["Home", "Work", "Skills", "Contact"].map((item, i) => (
-          <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setOpen(false)}
-            className="text-2xl font-bold text-[#1E3A5F]/60 hover:text-[#1E3A5F] transition-colors"
-            style={{ opacity: open ? 1 : 0, transform: open ? "translateY(0)" : "translateY(20px)", transition: `all 0.4s ease ${i * 0.06}s` }}>
-            {item}
-          </a>
-        ))}
-      </div>
-    </div>
-  );
+/* ══════════════════════════════════════════════════════════════
+   ABOUT
+   ══════════════════════════════════════════════════════════════ */
+function TechIcon({ name }: { name: string }) {
+  const icons: Record<string, JSX.Element> = {
+    React: (
+      <svg viewBox="0 0 24 24" className="w-8 h-8" fill="currentColor">
+        <path d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z" />
+      </svg>
+    ),
+    "Next.js": (
+      <svg viewBox="0 0 24 24" className="w-8 h-8" fill="currentColor">
+        <path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z" />
+      </svg>
+    ),
+    TypeScript: (
+      <svg viewBox="0 0 24 24" className="w-8 h-8" fill="currentColor">
+        <path d="M1.125 0C.502 0 0 .502 0 1.125v21.75C0 23.498.502 24 1.125 24h21.75c.623 0 1.125-.502 1.125-1.125V1.125C24 .502 23.498 0 22.875 0zm17.363 9.75c.612 0 1.154.037 1.627.111a6.38 6.38 0 0 1 1.306.34v2.458a3.95 3.95 0 0 0-.643-.361 5.093 5.093 0 0 0-.717-.26 5.453 5.453 0 0 0-1.426-.2c-.3 0-.573.028-.819.086a2.1 2.1 0 0 0-.623.242c-.17.104-.3.229-.393.374a.888.888 0 0 0-.14.49c0 .196.053.373.156.529.104.156.252.304.443.444s.423.276.696.41c.273.135.582.274.926.416.47.197.892.407 1.266.628.374.222.695.473.963.753.268.279.472.598.614.957.142.359.214.776.214 1.253 0 .657-.125 1.21-.373 1.656a3.033 3.033 0 0 1-1.012 1.085 4.38 4.38 0 0 1-1.487.596c-.566.12-1.163.18-1.79.18a9.916 9.916 0 0 1-1.84-.164 5.544 5.544 0 0 1-1.512-.493v-2.63a5.033 5.033 0 0 0 3.237 1.2c.333 0 .624-.03.872-.09.249-.06.456-.144.623-.25.166-.108.29-.234.373-.38a1.023 1.023 0 0 0-.074-1.089 2.12 2.12 0 0 0-.537-.5 5.597 5.597 0 0 0-.807-.444 27.72 27.72 0 0 0-1.007-.436c-.918-.383-1.602-.852-2.053-1.405-.45-.553-.676-1.222-.676-2.005 0-.614.123-1.141.369-1.582.246-.441.58-.804 1.004-1.089a4.494 4.494 0 0 1 1.47-.629 7.536 7.536 0 0 1 1.77-.201zm-15.113.188h9.563v2.166H9.506v9.646H6.789v-9.646H3.375z" />
+      </svg>
+    ),
+    "Tailwind CSS": (
+      <svg viewBox="0 0 24 24" className="w-8 h-8" fill="currentColor">
+        <path d="M12.001,4.8c-3.2,0-5.2,1.6-6,4.8c1.2-1.6,2.6-2.2,4.2-1.8c0.913,0.228,1.565,0.89,2.288,1.624 C13.666,10.618,15.027,12,18.001,12c3.2,0,5.2-1.6,6-4.8c-1.2,1.6-2.6,2.2-4.2,1.8c-0.913-0.228-1.565-0.89-2.288-1.624 C16.337,6.182,14.976,4.8,12.001,4.8z M6.001,12c-3.2,0-5.2,1.6-6,4.8c1.2-1.6,2.6-2.2,4.2-1.8c0.913,0.228,1.565,0.89,2.288,1.624 c1.177,1.194,2.538,2.576,5.512,2.576c3.2,0,5.2-1.6,6-4.8c-1.2,1.6-2.6,2.2-4.2,1.8c-0.913-0.228-1.565-0.89-2.288-1.624 C10.337,13.382,8.976,12,6.001,12z" />
+      </svg>
+    ),
+    "Node.js": (
+      <svg viewBox="0 0 24 24" className="w-8 h-8" fill="currentColor">
+        <path d="M11.998,24c-0.321,0-0.641-0.084-0.922-0.247l-2.936-1.737c-0.438-0.245-0.224-0.332-0.08-0.383 c0.585-0.203,0.703-0.25,1.328-0.604c0.065-0.037,0.151-0.023,0.218,0.017l2.256,1.339c0.082,0.045,0.197,0.045,0.272,0l8.795-5.076 c0.082-0.047,0.134-0.141,0.134-0.238V6.921c0-0.099-0.053-0.192-0.137-0.242l-8.791-5.072c-0.081-0.047-0.189-0.047-0.271,0 L3.075,6.68C2.99,6.729,2.936,6.825,2.936,6.921v10.15c0,0.097,0.054,0.189,0.139,0.235l2.409,1.392 c1.307,0.654,2.108-0.116,2.108-0.89V7.787c0-0.142,0.114-0.253,0.256-0.253h1.115c0.139,0,0.255,0.112,0.255,0.253v10.021 c0,1.745-0.95,2.745-2.604,2.745c-0.508,0-0.909,0-2.026-0.551L2.28,18.675c-0.57-0.329-0.922-0.945-0.922-1.604V6.921 c0-0.659,0.353-1.275,0.922-1.603l8.795-5.082c0.557-0.315,1.296-0.315,1.848,0l8.794,5.082c0.57,0.329,0.924,0.944,0.924,1.603 v10.15c0,0.659-0.354,1.273-0.924,1.604l-8.794,5.078C12.643,23.916,12.324,24,11.998,24z" />
+      </svg>
+    ),
+    Vitest: (
+      <svg viewBox="0 0 24 24" className="w-8 h-8" fill="currentColor">
+        <path d="M11.545 23.3a.613.613 0 0 1-.895.197L.252 15.936A.61.61 0 0 1 0 15.439V6.325c0-.502.569-.792.975-.497l6.358 4.624c.594.433 1.432.25 1.793-.39L14.393.7a.62.62 0 0 1 .535-.314h8.455a.613.613 0 0 1 .537.916z" />
+      </svg>
+    ),
+    Playwright: (
+      <svg viewBox="0 0 24 24" className="w-8 h-8" fill="currentColor">
+        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2zm-2 6v8l6-4-6-4z" />
+      </svg>
+    ),
+    Sanity: (
+      <svg viewBox="0 0 24 24" className="w-8 h-8" fill="currentColor">
+        <path d="M16.5 16.5l-3-3V8l3-3h3l3 3v3l-3 3h-3zm-9 0l-3-3V8l3-3h3l3 3v3l-3 3h-3z" />
+      </svg>
+    ),
+  };
+  return icons[name] || <div className="w-8 h-8 border border-current opacity-30" />;
 }
 
-/* ── Content sections (right side) ── */
-
-function HeroSection() {
-  const [loaded, setLoaded] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setLoaded(true), 200); return () => clearTimeout(t); }, []);
+function About() {
+  const technologies = [
+    { name: "React" },
+    { name: "Next.js" },
+    { name: "TypeScript" },
+    { name: "Tailwind CSS" },
+    { name: "Node.js" },
+    { name: "Vitest" },
+    { name: "Playwright" },
+    { name: "Sanity" },
+  ];
 
   return (
-    <section id="hero" className="min-h-screen flex items-center px-6 lg:px-12 relative">
-      {/* Glowing orbs */}
-      <div className="absolute top-[15%] right-[5%] w-[300px] h-[300px] pointer-events-none opacity-40"
-        style={{ background: "radial-gradient(circle, rgba(126,200,227,0.6), transparent 70%)", borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%", animation: "float1 12s ease-in-out infinite, pulse 6s ease-in-out infinite" }} />
-      <div className="absolute bottom-[20%] right-[25%] w-[200px] h-[200px] pointer-events-none opacity-30"
-        style={{ background: "radial-gradient(circle, rgba(184,201,232,0.5), transparent 70%)", borderRadius: "50%", animation: "float2 15s ease-in-out infinite, breathe 8s ease-in-out infinite" }} />
-      <div className="absolute top-[45%] right-[15%] w-[150px] h-[150px] pointer-events-none opacity-25"
-        style={{ background: "radial-gradient(circle, rgba(91,155,213,0.4), transparent 70%)", borderRadius: "40% 60% 50% 50%", animation: "float3 10s ease-in-out infinite" }} />
-
-      {/* Decorative hexagons */}
-      <div className="absolute top-[20%] right-[18%] w-16 h-16 pointer-events-none opacity-[0.07]"
-        style={{ clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)", background: "var(--color-blue)", animation: "float2 20s ease-in-out infinite, spin 30s linear infinite" }} />
-      <div className="absolute bottom-[30%] right-[10%] w-10 h-10 pointer-events-none opacity-[0.05]"
-        style={{ clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)", background: "var(--color-cyan)", animation: "float1 16s ease-in-out infinite" }} />
-
-      <div className="w-full max-w-2xl relative z-10">
-        {/* Shimmer badge */}
-        <div className="glass-pill inline-flex items-center gap-2 px-4 py-2 mb-6 relative overflow-hidden"
-          style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(15px)", transition: "all 0.6s ease 0.1s" }}>
-          <div className="h-1.5 w-1.5 rounded-full bg-[#5B9BD5] animate-pulse" />
-          <span className="t-micro text-[#5B9BD5]">Available for work</span>
-          <div className="absolute inset-0 shimmer" />
+    <section id="about" className="h-full flex items-start justify-center pt-10 pb-12 px-6 overflow-y-auto">
+      <div className="max-w-6xl mx-auto w-full">
+        {/* Section header — full width line */}
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-2 h-2 rotate-45 bg-[var(--color-ink)] opacity-30" />
+          <span className="text-[11px] tracking-[0.4em] text-[var(--color-ink)] opacity-60">ABOUT</span>
+          <div className="flex-1 h-px bg-[var(--color-ink)] opacity-10" />
+          <span className="text-[10px] tracking-[0.3em] text-[var(--color-ink-dim)] opacity-40">01</span>
         </div>
 
-        <div style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.6s ease 0.2s" }}>
-          <h1 className="text-[clamp(2.5rem,7vw,5.5rem)] font-black tracking-tight leading-[0.9] text-[#1E3A5F]">
-            <SplitReveal text="Jewel" delay={100} /><br />
-            <SplitReveal text="Cruz" className="gradient-text" delay={400} />
-          </h1>
+        {/* Title + blue underline */}
+        <div className="mb-8">
+          <h2 className="text-[36px] md:text-[48px] font-extralight tracking-[0.06em] text-[var(--color-ink)] leading-tight">
+            FRONTEND DEVELOPER
+          </h2>
+          <h2 className="text-[36px] md:text-[48px] font-extralight tracking-[0.06em] text-[var(--color-ink)] leading-tight opacity-25">
+            & WEB DESIGNER
+          </h2>
+          <div className="w-12 h-[3px] bg-[var(--color-cyan)] opacity-40 mt-4" />
         </div>
 
-        <div className="mt-8" style={{ opacity: loaded ? 1 : 0, transform: loaded ? "translateY(0)" : "translateY(15px)", transition: "all 0.6s ease 0.6s" }}>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#5B9BD5] mb-3">Designer &amp; Developer</p>
-          <p className="t-body text-[#1E3A5F]/45 max-w-md">
-            I turn ideas into interfaces that people actually enjoy using. Based in the Philippines, building for the world.
-          </p>
-        </div>
+        {/* Two columns with center divider + diamond */}
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1px_1fr] gap-8 md:gap-12 items-start">
+          {/* LEFT — Description */}
+          <div>
+            <p className="text-[18px] text-[var(--color-ink)] leading-[1.8] mb-5">
+              Hi, I&apos;m Jewel — a frontend developer and web designer from the Philippines.
+            </p>
+            <p className="text-[18px] text-[var(--color-ink)] leading-[1.8] mb-5">
+              I turn ideas into clean, accessible, interactive, and user-friendly web experiences that look as good as they perform.
+            </p>
+            <p className="text-[18px] text-[var(--color-ink)] leading-[1.8]">
+              I leverage AI tools to streamline my workflow, prototype faster, and deliver high-quality results without compromising creativity.
+            </p>
+          </div>
 
-        <div className="flex gap-2 mt-8" style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.6s ease 0.8s" }}>
-          {["Next.js", "React", "TypeScript", "Tailwind", "Figma"].map((t, i) => (
-            <span key={t} className="glass-subtle px-3 py-1.5 text-[10px] font-semibold text-[#1E3A5F]/35 rounded-lg hover:bg-white/50 hover:text-[#5B9BD5] transition-all cursor-default"
-              style={{ opacity: loaded ? 1 : 0, transition: `all 0.5s ease ${0.8 + i * 0.05}s` }}>{t}</span>
-          ))}
-        </div>
+          {/* CENTER — Vertical line with diamond */}
+          <div className="hidden md:flex flex-col items-center justify-center relative h-full py-8">
+            {/* Gradient line */}
+            <div className="w-px h-full bg-gradient-to-b from-transparent via-[var(--color-ink)] to-transparent opacity-30" />
+            {/* Diamond with glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+              <div className="w-4 h-4 rotate-45 bg-[var(--color-ink)] shadow-[0_0_16px_rgba(26,58,90,0.4)]" />
+            </div>
+            {/* Small dots along the line */}
+            <div className="absolute top-1/4 w-1.5 h-1.5 rounded-full bg-[var(--color-ink)] opacity-25" />
+            <div className="absolute top-3/4 w-1.5 h-1.5 rounded-full bg-[var(--color-ink)] opacity-25" />
+          </div>
 
-        <div className="mt-10 flex gap-4" style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.6s ease 1s" }}>
-          <MagBtn href="#work" className="glass-btn px-7 py-3 text-sm font-semibold text-white inline-flex items-center gap-2">
-            See work <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-          </MagBtn>
-          <MagBtn href="#contact" className="glass-ghost px-7 py-3 text-sm font-semibold text-[#1E3A5F]/50">Contact</MagBtn>
+          {/* RIGHT — Technologies */}
+          <div className="text-center">
+            <h3 className="text-[13px] tracking-[0.35em] text-[var(--color-ink)] mb-8">TECHNOLOGIES</h3>
+
+            <div className="grid grid-cols-4 gap-6">
+              {technologies.map((t) => (
+                <div key={t.name} className="flex flex-col items-center gap-2 group cursor-default">
+                  <div className="w-14 h-14 rounded-full border border-white/25 bg-white/5 flex items-center justify-center text-[var(--color-ink)] group-hover:border-[var(--color-cyan)] transition-all">
+                    <TechIcon name={t.name} />
+                  </div>
+                  <span className="text-[11px] tracking-[0.05em] text-[var(--color-ink)] opacity-70 group-hover:opacity-100 transition-opacity">{t.name}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Tags */}
+            <div className="mt-10 flex flex-wrap justify-center gap-4">
+              {["UI/UX", "Responsive", "Animations", "Performance", "Testing"].map((tag) => (
+                <span key={tag} className="text-[13px] tracking-[0.1em] text-[var(--color-ink)]">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-function WorkSection() {
+/* ══════════════════════════════════════════════════════════════
+   PROJECTS
+   ══════════════════════════════════════════════════════════════ */
+function Projects() {
   const projects = [
     {
-      num: "01", title: "Redwood Retreats", tag: "Cabin Rental Platform",
-      desc: "A luxury cabin rental platform where the experience starts before you even book. The grass on the homepage is rendered on a real-time canvas that responds to wind. Particles float like fireflies at dusk. Every card tilts in 3D when you hover. The booking system calculates pricing dynamically based on season, guests, and dates.",
-      tech: ["Next.js 16", "TypeScript", "Canvas API", "Vitest", "Tailwind"],
-      stats: { tests: "41", perf: "100", a11y: "91" },
-      live: "https://redwood-retreats.vercel.app", code: "https://github.com/jewelcruzs0922-dev/redwood-retreats",
-      accent: "#5B9BD5",
+      id: "001", title: "Redwood Retreats", cat: "CABIN RENTAL PLATFORM",
+      desc: "Full-stack cabin rental platform with real-time canvas animations, dynamic pricing engine, and booking system.",
+      highlight: "Real-time animations + dynamic pricing",
+      tech: ["Next.js", "TypeScript", "Canvas API", "Tailwind"],
+      live: "https://redwood-retreats.vercel.app",
+      code: "https://github.com/jewelcruzs0922-dev/redwood-retreats",
     },
     {
-      num: "02", title: "Cosmic Ray Solar", tag: "Solar Company Platform",
-      desc: "A complete business platform for a solar energy company. Customers can browse plans, calculate savings based on their electricity bill, schedule appointments, and pay through Stripe. Content is managed through Sanity CMS so the client can update plans and pricing without touching code.",
-      tech: ["Next.js 16", "Stripe", "Sanity", "Playwright", "Tailwind"],
-      stats: { tests: "59", pages: "35", apis: "5" },
-      live: "https://cosmicray-solar.netlify.app", code: "https://github.com/jewelcruzs0922-dev/cosmicray-solar",
-      accent: "#3A7CC8",
+      id: "002", title: "Cosmic Ray Solar", cat: "SOLAR ENERGY PLATFORM",
+      desc: "Solar company platform with Stripe payments integration, Sanity CMS for content management, and fully responsive design.",
+      highlight: "Stripe payments + Sanity CMS",
+      tech: ["Next.js", "Stripe", "Sanity", "Tailwind"],
+      live: "https://cosmicray-solar.netlify.app",
+      code: "https://github.com/jewelcruzs0922-dev/cosmicray-solar",
     },
   ];
 
   return (
-    <section id="work" className="py-24 px-6 lg:px-12">
-      <R className="mb-12">
-        <span className="glass-pill inline-block px-4 py-1.5 t-micro text-[#5B9BD5] mb-3">Portfolio</span>
-        <h2 className="text-[clamp(1.8rem,4vw,3.5rem)] font-black tracking-tight text-[#1E3A5F]"><SplitReveal text="Selected work" /></h2>
-        <p className="text-sm text-[#1E3A5F]/35 mt-3 max-w-md">Two production apps. Designed, built, tested, deployed. Every line of code written by hand.</p>
-      </R>
+    <section id="projects" className="h-full flex items-center justify-center py-16 px-6 overflow-y-auto">
+      <div className="max-w-6xl mx-auto w-full">
+        {/* Section header */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-2 h-2 rotate-45 bg-[var(--color-ink)] opacity-30" />
+          <span className="text-[10px] tracking-[0.4em] text-[var(--color-ink)] opacity-60">PROJECTS</span>
+          <div className="flex-1 h-px bg-[var(--color-ink)] opacity-10" />
+          <span className="text-[9px] tracking-[0.3em] text-[var(--color-ink-dim)] opacity-40">{projects.length.toString().padStart(2, "0")} ENTRIES</span>
+        </div>
 
-      <div className="space-y-8">
-        {projects.map((p, i) => (
-          <R key={p.num} delay={i * 0.15}>
-            <div className="glass-strong rounded-2xl overflow-hidden group">
-              <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/40">
-                <div className="flex gap-1.5"><div className="w-2 h-2 rounded-full bg-[#5B9BD5]/20" /><div className="w-2 h-2 rounded-full bg-[#5B9BD5]/20" /><div className="w-2 h-2 rounded-full bg-[#5B9BD5]/20" /></div>
-                <div className="flex-1 flex justify-center"><div className="px-3 py-1 text-[9px] text-[#1E3A5F]/25 font-mono bg-white/40 rounded border border-white/50">{p.live.replace("https://", "")}</div></div>
-                <div className="w-6" />
+        {/* Asymmetric layout — first project big, second compact */}
+        <div className="grid grid-cols-12 gap-3">
+          {/* Project 1 — big featured card */}
+          <div className="col-span-12 md:col-span-8 border border-white/15 bg-white/5 group hover:border-[var(--color-cyan)] transition-all">
+            {/* Top bar */}
+            <div className="flex items-center justify-between px-5 py-2.5 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rotate-45 bg-[var(--color-cyan)] opacity-40" />
+                <span className="text-[8px] tracking-[0.25em] text-[var(--color-ink-dim)] opacity-50">{projects[0].cat}</span>
+              </div>
+              <span className="text-[8px] tracking-[0.2em] text-[var(--color-ink-dim)] opacity-30">NO.{projects[0].id}</span>
+            </div>
+
+            <div className="p-6">
+              <h3 className="text-xl md:text-2xl tracking-[0.1em] text-[var(--color-ink)] mb-3 font-light">{projects[0].title}</h3>
+              <p className="text-[12px] text-[var(--color-ink-dim)] leading-relaxed mb-4 opacity-60 max-w-lg">{projects[0].desc}</p>
+
+              {/* Highlight badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-[var(--color-cyan)] border-opacity-20 bg-[var(--color-cyan)] bg-opacity-5 mb-5">
+                <div className="w-1 h-1 rotate-45 bg-[var(--color-cyan)] opacity-50" />
+                <span className="text-[9px] tracking-[0.15em] text-[var(--color-ink)]">{projects[0].highlight}</span>
               </div>
 
-              <div className="grid lg:grid-cols-5 gap-0">
-                <div className="lg:col-span-3 aspect-[16/10] lg:aspect-auto relative overflow-hidden" style={{ background: "linear-gradient(135deg, #F5F9FF, #EDF4FC)" }}>
-                  <div className="absolute inset-0 flex flex-col p-5 transition-transform duration-700 group-hover:scale-[1.02]">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2"><div className="w-4 h-4 rounded" style={{ background: p.accent }} /><div className="h-1.5 w-16 rounded-full bg-[#1E3A5F]/8" /></div>
-                      <div className="flex gap-2">{[1,2,3].map(j => <div key={j} className="h-1 w-8 rounded-full bg-[#1E3A5F]/6" />)}</div>
-                    </div>
-                    <div className="mb-4">
-                      <div className="h-3 w-40 rounded bg-[#1E3A5F]/8 mb-2" />
-                      <div className="h-2 w-56 rounded bg-[#1E3A5F]/4 mb-1.5" />
-                      <div className="h-2 w-40 rounded bg-[#1E3A5F]/3 mb-3" />
-                      <div className="h-6 w-20 rounded" style={{ background: p.accent }} />
-                    </div>
-                    <div className="flex-1 grid grid-cols-3 gap-2">
-                      {[1,2,3].map(j => <div key={j} className="rounded-lg bg-white/50 border border-white/60 p-2"><div className="h-full rounded" style={{ background: `${p.accent}08` }} /></div>)}
-                    </div>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex flex-wrap gap-1.5">
+                  {projects[0].tech.map((t) => (
+                    <span key={t} className="px-2 py-0.5 text-[7px] tracking-[0.15em] text-[var(--color-ink-dim)] border border-white/15 opacity-50">{t}</span>
+                  ))}
                 </div>
-
-                <div className="lg:col-span-2 p-6 lg:p-8 flex flex-col justify-center">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[10px] font-bold text-[#1E3A5F]/25">{p.num}</span>
-                    <div className="h-[1px] flex-1 bg-[#5B9BD5]/10" />
-                    <span className="t-micro" style={{ color: p.accent }}>{p.tag}</span>
-                  </div>
-                  <h3 className="text-xl font-black text-[#1E3A5F] mb-2">{p.title}</h3>
-                  <p className="text-sm text-[#1E3A5F]/40 mb-4 leading-relaxed">{p.desc}</p>
-
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {p.tech.map((t) => <span key={t} className="glass-subtle px-2.5 py-1 text-[9px] font-semibold text-[#1E3A5F]/40 rounded-lg">{t}</span>)}
-                  </div>
-
-                  <div className="flex gap-2 mb-5">
-                    {Object.entries(p.stats).map(([k, v]) => (
-                      <div key={k} className="glass-subtle px-2.5 py-1.5 rounded-lg text-center">
-                        <div className="text-sm font-black" style={{ color: p.accent }}>{v}</div>
-                        <div className="text-[8px] font-semibold uppercase tracking-wider text-[#1E3A5F]/20">{k}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex gap-3">
-                    <MagBtn href={p.live} className="glass-btn px-5 py-2.5 text-xs font-semibold text-white inline-flex items-center gap-1.5">
-                      Demo <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" /></svg>
-                    </MagBtn>
-                    <MagBtn href={p.code} className="glass-ghost px-5 py-2.5 text-xs font-semibold text-[#1E3A5F]/40">Code</MagBtn>
-                  </div>
+                <div className="flex-1" />
+                <div className="flex gap-3">
+                  <a href={projects[0].live} target="_blank" rel="noopener noreferrer" className="text-[9px] tracking-[0.2em] text-[var(--color-ink-dim)] hover:text-[var(--color-cyan)] transition-colors">LIVE</a>
+                  <a href={projects[0].code} target="_blank" rel="noopener noreferrer" className="text-[9px] tracking-[0.2em] text-[var(--color-ink-dim)] hover:text-[var(--color-cyan)] transition-colors">CODE</a>
                 </div>
               </div>
-            </div>
-          </R>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function SkillsSection() {
-  const { ref, isVisible } = useInView();
-  const skills = [
-    { name: "React / Next.js", pct: 95, color: "#5B9BD5" },
-    { name: "TypeScript", pct: 90, color: "#7EC8E3" },
-    { name: "Tailwind CSS", pct: 95, color: "#7EC8E3" },
-    { name: "UI/UX Design", pct: 88, color: "#B8C9E8" },
-    { name: "Node.js", pct: 75, color: "#5B9BD5" },
-    { name: "Testing", pct: 85, color: "#3A7CC8" },
-  ];
-  return (
-    <section id="skills" className="py-24 px-6 lg:px-12">
-      <R className="mb-12">
-        <span className="glass-pill inline-block px-4 py-1.5 t-micro text-[#5B9BD5] mb-3">Skills</span>
-        <h2 className="text-[clamp(1.8rem,4vw,3.5rem)] font-black tracking-tight text-[#1E3A5F]"><SplitReveal text="Tech stack" /></h2>
-      </R>
-
-      <div ref={ref} className="grid sm:grid-cols-2 gap-3">
-        {skills.map((s) => (
-          <div key={s.name} className="glass p-5 hover:bg-white/60 transition-all duration-300">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-bold text-[#1E3A5F]">{s.name}</span>
-              <span className="text-sm font-black" style={{ color: s.color }}>{s.pct}%</span>
-            </div>
-            <div className="h-1.5 bg-white/40 overflow-hidden rounded-full">
-              <div className="h-full rounded-full transition-all duration-[1.5s] ease-out" style={{ width: isVisible ? `${s.pct}%` : "0%", background: `linear-gradient(90deg, ${s.color}, ${s.color}99)` }} />
             </div>
           </div>
-        ))}
-      </div>
 
-      <div className="mt-6 flex flex-wrap gap-2">
-        {["Git", "GitHub", "Vercel", "Netlify", "Figma", "REST APIs", "SEO", "A11y", "Sanity", "Stripe"].map((t) => (
-          <span key={t} className="glass-subtle px-3 py-1.5 text-[10px] font-medium text-[#1E3A5F]/30 hover:text-[#5B9BD5] hover:bg-white/50 transition-all cursor-default rounded-xl">{t}</span>
-        ))}
+          {/* Project 2 — tall compact card */}
+          <div className="col-span-12 md:col-span-4 border border-white/15 bg-white/5 group hover:border-[var(--color-cyan)] transition-all flex flex-col">
+            {/* Top bar */}
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-1 rotate-45 bg-[var(--color-cyan)] opacity-40" />
+                <span className="text-[7px] tracking-[0.2em] text-[var(--color-ink-dim)] opacity-50">{projects[1].cat}</span>
+              </div>
+              <span className="text-[7px] tracking-[0.2em] text-[var(--color-ink-dim)] opacity-30">NO.{projects[1].id}</span>
+            </div>
+
+            <div className="p-5 flex flex-col flex-1">
+              <h3 className="text-base tracking-[0.1em] text-[var(--color-ink)] mb-2 font-light">{projects[1].title}</h3>
+              <p className="text-[11px] text-[var(--color-ink-dim)] leading-relaxed mb-4 opacity-55 flex-1">{projects[1].desc}</p>
+
+              {/* Highlight */}
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 border border-[var(--color-cyan)] border-opacity-15 bg-[var(--color-cyan)] bg-opacity-5 mb-4 self-start">
+                <div className="w-0.5 h-0.5 rotate-45 bg-[var(--color-cyan)] opacity-50" />
+                <span className="text-[8px] tracking-[0.12em] text-[var(--color-ink)]">{projects[1].highlight}</span>
+              </div>
+
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {projects[1].tech.map((t) => (
+                  <span key={t} className="px-2 py-0.5 text-[6px] tracking-[0.12em] text-[var(--color-ink-dim)] border border-white/15 opacity-45">{t}</span>
+                ))}
+              </div>
+
+              <div className="flex gap-3 pt-3 border-t border-white/10">
+                <a href={projects[1].live} target="_blank" rel="noopener noreferrer" className="text-[8px] tracking-[0.2em] text-[var(--color-ink-dim)] hover:text-[var(--color-cyan)] transition-colors">LIVE</a>
+                <a href={projects[1].code} target="_blank" rel="noopener noreferrer" className="text-[8px] tracking-[0.2em] text-[var(--color-ink-dim)] hover:text-[var(--color-cyan)] transition-colors">CODE</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* More coming */}
+        <div className="mt-3 flex items-center gap-3 opacity-25">
+          <div className="w-1 h-1 rotate-45 bg-[var(--color-ink)]" />
+          <span className="text-[8px] tracking-[0.3em] text-[var(--color-ink-dim)]">MORE IN DEVELOPMENT</span>
+        </div>
       </div>
     </section>
   );
 }
 
-function AboutSection() {
-  const { ref, isVisible } = useInView();
+/* ══════════════════════════════════════════════════════════════
+   CONTACT
+   ══════════════════════════════════════════════════════════════ */
+function Contact() {
   return (
-    <section className="py-24 px-6 lg:px-12">
-      <R className="mb-8">
-        <span className="glass-pill inline-block px-4 py-1.5 t-micro text-[#5B9BD5] mb-3">About</span>
-        <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-black tracking-tight text-[#1E3A5F]">I craft <span className="gradient-text">experiences</span>.</h2>
-      </R>
-
-      <div ref={ref} className="grid sm:grid-cols-2 gap-3">
-        <div className="glass-strong p-6 rounded-2xl" style={{ opacity: isVisible ? 1 : 0, transition: "opacity 0.6s ease 0.1s" }}>
-          <p className="text-sm text-[#1E3A5F]/50 leading-relaxed mb-3">
-            I&apos;m Jewel Cruz, a web designer and frontend developer from the Philippines. I don&apos;t just build websites — I build experiences. Every project starts with a question: how do I make this feel alive?
-          </p>
-          <p className="text-sm text-[#1E3A5F]/50 leading-relaxed mb-3">
-            Over the past two years, I&apos;ve shipped a luxury rental platform with real-time canvas animations, a full-stack solar company with Stripe payments and CMS integration, and this portfolio you&apos;re looking at right now.
-          </p>
-          <p className="text-sm text-[#1E3A5F]/35 leading-relaxed">
-            I believe great web design is invisible — users shouldn&apos;t notice it, they should just find what they need, fast. That&apos;s what I build.
-          </p>
-        </div>
-        <div className="grid grid-cols-2 gap-3" style={{ opacity: isVisible ? 1 : 0, transition: "opacity 0.6s ease 0.2s" }}>
-          {[
-            { num: "2+", label: "Years building", color: "#5B9BD5" },
-            { num: "100+", label: "Tests written", color: "#7EC8E3" },
-            { num: "100", label: "Lighthouse score", color: "#5B9BD5" },
-            { num: "0", label: "Templates used", color: "#3A7CC8" },
-          ].map((s) => (
-            <div key={s.label} className="glass p-4 text-center">
-              <div className="text-xl font-black" style={{ color: s.color }}>{s.num}</div>
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-[#1E3A5F]/25 mt-1">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ContactSection() {
-  const { ref, isVisible } = useInView();
-  return (
-    <section id="contact" className="py-24 px-6 lg:px-12">
-      <div ref={ref}>
-        <div className="mb-8" style={{ opacity: isVisible ? 1 : 0, transform: isVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1)" }}>
-          <span className="glass-pill inline-block px-4 py-1.5 t-micro text-[#5B9BD5] mb-3">Contact</span>
-          <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-tight text-[#1E3A5F]">
-            <SplitReveal text="Get" delay={200} /> <span className="gradient-text"><SplitReveal text="in" delay={400} /></span><br />
-            <SplitReveal text="touch" delay={600} />
-          </h2>
-          <p className="text-sm text-[#1E3A5F]/40 mt-4 max-w-md leading-relaxed"
-            style={{ opacity: isVisible ? 1 : 0, transition: "opacity 0.6s ease 0.5s" }}>
-            Have a project in mind? Need a developer who cares about the details? Or just want to say hi? I&apos;d love to hear from you.
-          </p>
+    <section id="contact" className="h-full flex items-center justify-center py-16 px-6 overflow-y-auto">
+      <div className="max-w-6xl mx-auto w-full">
+        {/* Section header */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-2 h-2 rotate-45 bg-[var(--color-ink)] opacity-30" />
+          <span className="text-[10px] tracking-[0.4em] text-[var(--color-ink)] opacity-60">CONTACT</span>
+          <div className="flex-1 h-px bg-[var(--color-ink)] opacity-10" />
+          <span className="text-[9px] tracking-[0.3em] text-[var(--color-ink-dim)] opacity-40">ACTIVE</span>
         </div>
 
-        <div className="grid sm:grid-cols-3 gap-3" style={{ opacity: isVisible ? 1 : 0, transition: "opacity 0.6s ease 0.3s" }}>
-          <MagBtn href="mailto:jewel@example.com" className="glass-strong p-6 rounded-2xl text-left hover:bg-white/70 transition-all group">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: "rgba(91,155,213,0.1)" }}>
-              <svg className="w-5 h-5 text-[#5B9BD5]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+        {/* Bento grid */}
+        <div className="grid grid-cols-12 gap-3">
+          {/* Big CTA — spans 8 cols */}
+          <div className="col-span-12 md:col-span-8 p-6 border border-[var(--color-cyan)] border-opacity-15 bg-[var(--color-cyan)] bg-opacity-[0.03] relative overflow-hidden">
+            <div className="absolute bottom-0 right-0 w-32 h-32 bg-[var(--color-cyan)] opacity-[0.04] rounded-full translate-y-1/2 translate-x-1/2" />
+            <div className="relative z-10">
+              <div className="text-[24px] md:text-[32px] font-extralight tracking-[0.08em] text-[var(--color-ink)] leading-tight mb-1">
+                HAVE A PROJECT
+              </div>
+              <div className="text-[24px] md:text-[32px] font-extralight tracking-[0.08em] text-[var(--color-ink)] leading-tight opacity-35 mb-4">
+                IN MIND?
+              </div>
+              <p className="text-[12px] text-[var(--color-ink-dim)] leading-relaxed mb-5 max-w-md opacity-60">
+                I&apos;m always open to discussing new projects, creative ideas, or opportunities to be part of your vision.
+              </p>
+              <a href="mailto:jewel@example.com" className="inline-flex items-center gap-2 px-4 py-2.5 border border-[var(--color-cyan)] hover:bg-[var(--color-cyan)] group transition-all duration-300">
+                <div className="w-1.5 h-1.5 rotate-45 bg-[var(--color-cyan)] opacity-50 group-hover:bg-white group-hover:opacity-70 transition-all" />
+                <span className="text-[10px] tracking-[0.2em] text-[var(--color-ink)] group-hover:text-white transition-colors">jewel@example.com</span>
+              </a>
             </div>
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-[#5B9BD5] mb-1">Email</div>
-            <div className="text-sm font-bold text-[#1E3A5F] group-hover:text-[#5B9BD5] transition-colors">jewel@example.com</div>
-            <p className="text-[11px] text-[#1E3A5F]/30 mt-2">I reply within 24 hours.</p>
-          </MagBtn>
-          <MagBtn href="https://github.com/jewelcruzs0922-dev" className="glass-strong p-6 rounded-2xl text-left hover:bg-white/70 transition-all group">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: "rgba(91,155,213,0.1)" }}>
-              <svg className="w-5 h-5 text-[#5B9BD5]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" /></svg>
+          </div>
+
+          {/* Availability — spans 4 cols */}
+          <div className="col-span-12 md:col-span-4 p-5 border border-white/15 bg-white/5 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400 opacity-60 animate-pulse" />
+                <span className="text-[8px] tracking-[0.3em] text-[var(--color-ink-dim)] opacity-50">AVAILABLE</span>
+              </div>
+              <p className="text-[11px] text-[var(--color-ink-dim)] opacity-50 leading-relaxed">
+                Open for freelance, collaborations, and full-time roles.
+              </p>
             </div>
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-[#5B9BD5] mb-1">GitHub</div>
-            <div className="text-sm font-bold text-[#1E3A5F] group-hover:text-[#5B9BD5] transition-colors">jewelcruzs0922-dev</div>
-            <p className="text-[11px] text-[#1E3A5F]/30 mt-2">See my code and projects.</p>
-          </MagBtn>
-          <MagBtn href="https://linkedin.com" className="glass-strong p-6 rounded-2xl text-left hover:bg-white/70 transition-all group">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: "rgba(91,155,213,0.1)" }}>
-              <svg className="w-5 h-5 text-[#5B9BD5]" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
-            </div>
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-[#5B9BD5] mb-1">LinkedIn</div>
-            <div className="text-sm font-bold text-[#1E3A5F] group-hover:text-[#5B9BD5] transition-colors">Jewel Cruz</div>
-            <p className="text-[11px] text-[#1E3A5F]/30 mt-2">Let&apos;s connect professionally.</p>
-          </MagBtn>
+            <div className="mt-4 text-[8px] tracking-[0.2em] text-[var(--color-ink-dim)] opacity-30">PHILIPPINES • GMT+8</div>
+          </div>
+
+          {/* Link cards — 3 equal */}
+          <a href="mailto:jewel@example.com" className="col-span-4 p-5 border border-[var(--color-cyan)] border-opacity-20 bg-white/5 hover:bg-[var(--color-cyan)] group transition-all duration-300 text-center">
+            <div className="w-2 h-2 rotate-45 bg-[var(--color-cyan)] opacity-40 group-hover:bg-white group-hover:opacity-60 transition-all mx-auto mb-3" />
+            <div className="text-[10px] tracking-[0.2em] text-[var(--color-ink)] group-hover:text-white transition-colors">EMAIL</div>
+          </a>
+
+          <a href="https://github.com/jewelcruzs0922-dev" target="_blank" rel="noopener noreferrer" className="col-span-4 p-5 border border-white/15 bg-white/5 hover:border-[var(--color-cyan)] group transition-all duration-300 text-center">
+            <div className="w-2 h-2 rotate-45 border border-[var(--color-ink-dim)] opacity-25 group-hover:border-[var(--color-cyan)] group-hover:opacity-50 transition-all mx-auto mb-3" />
+            <div className="text-[10px] tracking-[0.2em] text-[var(--color-ink)]">GITHUB</div>
+          </a>
+
+          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="col-span-4 p-5 border border-white/15 bg-white/5 hover:border-[var(--color-cyan)] group transition-all duration-300 text-center">
+            <div className="w-2 h-2 rotate-45 border border-[var(--color-ink-dim)] opacity-25 group-hover:border-[var(--color-cyan)] group-hover:opacity-50 transition-all mx-auto mb-3" />
+            <div className="text-[10px] tracking-[0.2em] text-[var(--color-ink)]">LINKEDIN</div>
+          </a>
         </div>
       </div>
     </section>
   );
 }
 
+/* ══════════════════════════════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════════════════════════════ */
 function Footer() {
   return (
-    <footer className="py-12 px-6 lg:px-12 border-t border-[#5B9BD5]/10">
-      <div className="flex flex-col items-center gap-4">
-        <div className="glass-pill px-5 py-2.5 inline-flex items-center gap-2">
-          <span className="text-sm font-bold text-[#1E3A5F]">J</span>
-          <span className="text-[#5B9BD5]">.</span>
-          <span className="text-sm font-bold text-[#1E3A5F]">C</span>
-        </div>
-        <p className="text-[11px] text-[#1E3A5F]/30 text-center max-w-xs">
-          Designed &amp; built by Jewel Cruz. Every pixel, every line of code — mine.
-        </p>
-        <div className="flex gap-4">
-          <MagBtn href="https://github.com/jewelcruzs0922-dev" className="text-[10px] font-semibold uppercase tracking-wider text-[#1E3A5F]/20 hover:text-[#5B9BD5] transition-colors">GitHub</MagBtn>
-          <MagBtn href="https://linkedin.com" className="text-[10px] font-semibold uppercase tracking-wider text-[#1E3A5F]/20 hover:text-[#5B9BD5] transition-colors">LinkedIn</MagBtn>
-          <MagBtn href="mailto:jewel@example.com" className="text-[10px] font-semibold uppercase tracking-wider text-[#1E3A5F]/20 hover:text-[#5B9BD5] transition-colors">Email</MagBtn>
-        </div>
+    <footer className="py-6 px-6">
+      <div className="max-w-5xl mx-auto flex items-center justify-between opacity-30">
+        <span className="text-[8px] tracking-[0.3em] text-[var(--color-ink-dim)]">JC</span>
+        <span className="text-[8px] tracking-[0.3em] text-[var(--color-ink-dim)]">2025</span>
       </div>
     </footer>
   );
 }
 
-/* ── Floating particles ── */
-function Particles() {
-  const [particles] = useState(() =>
-    Array.from({ length: 20 }, (_, i) => ({
-      id: i,
-      left: `${Math.random() * 100}%`,
-      size: 3 + Math.random() * 5,
-      duration: 15 + Math.random() * 20,
-      delay: Math.random() * 15,
-      color: ["rgba(91,155,213,0.3)", "rgba(126,200,227,0.3)", "rgba(184,201,232,0.3)", "rgba(255,255,255,0.5)"][Math.floor(Math.random() * 4)],
-    }))
-  );
-  return (
-    <div className="particles">
-      {particles.map((p) => (
-        <div key={p.id} className="particle" style={{
-          left: p.left, width: p.size, height: p.size, background: p.color,
-          animationDuration: `${p.duration}s`, animationDelay: `${p.delay}s`,
-        }} />
-      ))}
-    </div>
-  );
-}
+/* ══════════════════════════════════════════════════════════════
+   MAIN
+   ══════════════════════════════════════════════════════════════ */
+const SLIDES = ["home", "about", "projects", "contact"] as const;
 
-/* ── Floating shapes (decorative) ── */
-function FloatingShapes() {
-  return (
-    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-      {/* Large orbs */}
-      <div className="absolute w-[500px] h-[500px] opacity-20"
-        style={{ top: "5%", right: "-5%", background: "radial-gradient(circle, rgba(126,200,227,0.5), transparent 70%)", borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%", animation: "float1 18s ease-in-out infinite" }} />
-      <div className="absolute w-[400px] h-[400px] opacity-15"
-        style={{ bottom: "10%", left: "-3%", background: "radial-gradient(circle, rgba(184,201,232,0.5), transparent 70%)", borderRadius: "30% 60% 70% 40% / 50% 60% 30% 60%", animation: "float2 22s ease-in-out infinite" }} />
-      <div className="absolute w-[300px] h-[300px] opacity-10"
-        style={{ top: "40%", left: "30%", background: "radial-gradient(circle, rgba(91,155,213,0.4), transparent 70%)", borderRadius: "50%", animation: "float3 15s ease-in-out infinite" }} />
-
-      {/* Hexagons */}
-      <div className="absolute w-20 h-20 opacity-[0.06]"
-        style={{ top: "15%", right: "12%", clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)", background: "var(--color-blue)", animation: "float2 20s ease-in-out infinite" }} />
-      <div className="absolute w-12 h-12 opacity-[0.04]"
-        style={{ top: "55%", right: "8%", clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)", background: "var(--color-cyan)", animation: "float1 16s ease-in-out infinite" }} />
-      <div className="absolute w-16 h-16 opacity-[0.05]"
-        style={{ bottom: "20%", right: "20%", clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)", background: "var(--color-lavender)", animation: "float3 24s ease-in-out infinite" }} />
-
-      {/* Circles */}
-      <div className="absolute w-6 h-6 rounded-full opacity-[0.08] border border-[#5B9BD5]/20"
-        style={{ top: "30%", left: "15%", animation: "float1 12s ease-in-out infinite" }} />
-      <div className="absolute w-4 h-4 rounded-full opacity-[0.06] border border-[#7EC8E3]/20"
-        style={{ top: "65%", left: "60%", animation: "float2 14s ease-in-out infinite" }} />
-      <div className="absolute w-8 h-8 rounded-full opacity-[0.05] border border-[#B8C9E8]/20"
-        style={{ bottom: "35%", left: "40%", animation: "float3 18s ease-in-out infinite" }} />
-    </div>
-  );
-}
-
-/* ── Main ── */
 export default function Home() {
+  const [current, setCurrent] = useState(0);
+
+  const goTo = (index: number) => {
+    if (index === current) return;
+    setCurrent(index);
+  };
+
+  const next = () => goTo(Math.min(current + 1, SLIDES.length - 1));
+  const prev = () => goTo(Math.max(current - 1, 0));
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") next();
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") prev();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   return (
-    <>
-      <div className="sky-backdrop" />
-      <div className="grid-bg" />
-      <FloatingShapes />
-      <Particles />
-      <MobileNav />
-      <div className="relative z-10 flex">
-        <Sidebar />
-        <main className="flex-1 min-w-0">
-          <HeroSection />
-          <WorkSection />
-          <SkillsSection />
-          <AboutSection />
-          <ContactSection />
-          <Footer />
-        </main>
-      </div>
-    </>
+    <div className="relative h-screen overflow-hidden">
+      <main id="main-content" className="relative z-10 h-full">
+
+        {/* Slides */}
+        <div className="relative h-full">
+          {/* Hero — full hexagon + star trail background */}
+          <div className={`slide ${current === 0 ? "slide-active" : ""}`}>
+            <Background currentSlide={current} />
+            <Hero />
+          </div>
+
+          {/* About — subtle gradient + noise */}
+          <div className={`slide ${current === 1 ? "slide-active" : ""}`}>
+            <div className="absolute inset-0 z-0" style={{
+              background: "linear-gradient(160deg, #c8e6f4 0%, #d4ecf8 40%, #e0e8f0 70%, #e8e0ec 100%)"
+            }} />
+            <div className="noise-overlay" />
+            <div className="relative z-10 h-full"><About /></div>
+          </div>
+
+          {/* Projects — darker shift */}
+          <div className={`slide ${current === 2 ? "slide-active" : ""}`}>
+            <div className="absolute inset-0 z-0" style={{
+              background: "linear-gradient(200deg, #bcdcf0 0%, #c8e2f4 30%, #d0e4f0 60%, #d8dce8 100%)"
+            }} />
+            <div className="noise-overlay" />
+            <div className="relative z-10 h-full"><Projects /></div>
+          </div>
+
+          {/* Contact — deepest tone */}
+          <div className={`slide ${current === 3 ? "slide-active" : ""}`}>
+            <div className="absolute inset-0 z-0" style={{
+              background: "linear-gradient(160deg, #c4dced 0%, #d0e4f0 30%, #dce0e8 60%, #e8d8e0 100%)"
+            }} />
+            <div className="noise-overlay" />
+            <div className="relative z-10 h-full">
+              <Contact />
+              <Footer />
+            </div>
+          </div>
+        </div>
+
+        {/* Arrow navigation */}
+        {current > 0 && (
+          <button onClick={prev} aria-label="Previous slide"
+            className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex items-center gap-3 group">
+            <div className="relative w-12 h-12 flex items-center justify-center">
+              <div className="absolute inset-0 border border-[var(--color-ink-dim)] opacity-30 rotate-45 group-hover:border-[var(--color-cyan)] group-hover:opacity-60 transition-all duration-300" />
+              <svg className="w-5 h-5 text-[var(--color-ink-dim)] group-hover:text-[var(--color-cyan)] transition-colors relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M15 19l-7-7 7-7" />
+              </svg>
+            </div>
+            <span className="hud text-[8px] tracking-[0.4em] text-[var(--color-ink-dim)] opacity-0 group-hover:opacity-60 transition-opacity -ml-2">PREV</span>
+          </button>
+        )}
+        {current < SLIDES.length - 1 && (
+          <button onClick={next} aria-label="Next slide"
+            className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex items-center gap-3 group">
+            <span className="hud text-[8px] tracking-[0.4em] text-[var(--color-ink-dim)] opacity-0 group-hover:opacity-60 transition-opacity -mr-2">NEXT</span>
+            <div className="relative w-12 h-12 flex items-center justify-center">
+              <div className="absolute inset-0 border border-[var(--color-ink-dim)] opacity-30 rotate-45 group-hover:border-[var(--color-cyan)] group-hover:opacity-60 transition-all duration-300" />
+              <svg className="w-5 h-5 text-[var(--color-ink-dim)] group-hover:text-[var(--color-cyan)] transition-colors relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </button>
+        )}
+
+        {/* Slide indicator — pink crystals */}
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+          <div className="flex items-center gap-6">
+            {SLIDES.map((name, i) => {
+              const isActive = i === current;
+              const isPast = i < current;
+              return (
+                <button key={i} onClick={() => goTo(i)} aria-label={`Go to ${name}`}
+                  className="flex flex-col items-center gap-2.5 group outline-none focus:outline-none focus:ring-0 active:outline-none"
+                  style={{ WebkitTapHighlightColor: "transparent" }}>
+                  {/* Crystal */}
+                  <div className="relative">
+                    {/* Glow layer */}
+                    {isActive && (
+                      <div className="absolute -inset-2 rotate-45 bg-[var(--color-cyan)] opacity-40 blur-md" />
+                    )}
+                    {/* Crystal body */}
+                    <div className={`relative w-4 h-4 rotate-45 transition-all duration-300 border border-transparent ${
+                      isActive
+                        ? "bg-[var(--color-cyan)] shadow-[0_0_20px_rgba(120,216,240,0.8)]"
+                        : isPast
+                          ? "bg-white/50 shadow-[0_0_6px_rgba(255,255,255,0.3)]"
+                          : "bg-white/30 border-white/40 group-hover:bg-white/50 group-hover:shadow-[0_0_8px_rgba(255,255,255,0.3)]"
+                    }`} />
+                  </div>
+                  {/* Label */}
+                  <span className={`text-[9px] tracking-[0.25em] transition-opacity duration-200 ${
+                    isActive ? "text-[var(--color-ink)]" : "text-[var(--color-ink-dim)] opacity-50 group-hover:opacity-80"
+                  }`}>
+                    {name.toUpperCase()}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }

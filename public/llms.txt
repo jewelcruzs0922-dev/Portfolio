@@ -1,0 +1,22 @@
+# Jewel Cruz — Frontend Developer
+
+> Frontend developer from the Philippines building production-grade web applications with Next.js, React, and TypeScript.
+
+## Sections
+
+- [Portfolio](https://jewelcruz.dev): Selected work including luxury cabin rental platform and solar energy company platform.
+- [Skills](https://jewelcruz.dev#skills): React/Next.js, TypeScript, Tailwind CSS, UI/UX Design, Node.js, Testing.
+- [About](https://jewelcruz.dev#about): 2+ years building, 100+ tests written, Lighthouse 100 performance.
+- [Contact](https://jewelcruz.dev#contact): Email, GitHub, LinkedIn.
+
+## Frequently asked questions
+
+- **What does Jewel Cruz do?** Frontend developer specializing in Next.js, React, and TypeScript. Builds production-grade web applications with comprehensive testing.
+- **What technologies does Jewel use?** Next.js 16, React 19, TypeScript, Tailwind CSS, Vitest, Playwright, Sanity CMS, Stripe.
+- **How can I contact Jewel?** Email at jewel@example.com or connect on GitHub and LinkedIn.
+
+## Contact
+
+- Email: jewel@example.com
+- GitHub: github.com/jewelcruzs0922-dev
+- LinkedIn: linkedin.com
