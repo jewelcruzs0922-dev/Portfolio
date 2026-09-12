@@ -323,7 +323,14 @@ function Hero() {
           <div className="w-12 h-px bg-[var(--color-ink)] opacity-20" />
           <div className="text-center">
             <p className="text-base md:text-lg tracking-[0.3em] text-[var(--color-ink)] opacity-50">FRONTEND DEVELOPER</p>
-            <p className="text-base md:text-lg tracking-[0.3em] text-[var(--color-ink)] opacity-50">WEB DESIGNER</p>
+            <p className="text-base md:text-lg tracking-[0.3em]"
+              style={{
+                background: "linear-gradient(90deg, #7ad8f0, #c0a0e0, #f0b8d0)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                textShadow: "0 0 30px rgba(120,216,240,0.5), 0 0 60px rgba(240,184,208,0.4)",
+                filter: "drop-shadow(0 0 12px rgba(120,216,240,0.5)) drop-shadow(0 0 24px rgba(240,184,208,0.4))",
+              }}>WEB DESIGNER</p>
           </div>
           <div className="w-12 h-px bg-[var(--color-ink)] opacity-20" />
         </div>
@@ -401,38 +408,43 @@ function About() {
   ];
 
   return (
-    <section id="about" className="h-full flex items-start justify-center pt-10 pb-12 px-6 overflow-y-auto">
+    <section id="about" className="h-full flex items-start justify-center pt-6 md:pt-10 pb-8 md:pb-12 px-4 md:px-6 overflow-y-auto">
       <div className="max-w-6xl mx-auto w-full">
         {/* Section header — full width line */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-4 md:mb-8">
           <div className="w-2 h-2 rotate-45 bg-[var(--color-ink)] opacity-30" />
           <span className="text-[11px] tracking-[0.4em] text-[var(--color-ink)] opacity-60">ABOUT</span>
           <div className="flex-1 h-px bg-[var(--color-ink)] opacity-10" />
           <span className="text-[10px] tracking-[0.3em] text-[var(--color-ink-dim)] opacity-40">01</span>
         </div>
 
-        {/* Title + blue underline */}
-        <div className="mb-8">
-          <h2 className="text-[36px] md:text-[48px] font-extralight tracking-[0.06em] text-[var(--color-ink)] leading-tight">
-            FRONTEND DEVELOPER
-          </h2>
-          <h2 className="text-[36px] md:text-[48px] font-extralight tracking-[0.06em] text-[var(--color-ink)] leading-tight opacity-25">
-            & WEB DESIGNER
-          </h2>
-          <div className="w-12 h-[3px] bg-[var(--color-cyan)] opacity-40 mt-4" />
-        </div>
+         {/* Title */}
+         <div className="mb-4 md:mb-8">
+           <h2 className="text-[20px] md:text-[48px] font-extralight tracking-[0.06em] text-[var(--color-ink)] leading-tight">
+             FRONTEND DEVELOPER
+           </h2>
+           <h2 className="text-[20px] md:text-[48px] font-extralight tracking-[0.06em] leading-tight">
+             <span className="text-[var(--color-ink)] opacity-25">&amp;</span>
+             <span style={{
+               background: "linear-gradient(90deg, #5ad0f0, #a080d0, #f090c0)",
+               WebkitBackgroundClip: "text",
+               WebkitTextFillColor: "transparent",
+               filter: "drop-shadow(0 0 20px rgba(90,208,240,0.8)) drop-shadow(0 0 40px rgba(240,144,192,0.7))",
+             }}> WEB DESIGNER</span>
+           </h2>
+         </div>
 
         {/* Two columns with center divider + diamond */}
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_1px_1fr] gap-8 md:gap-12 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1px_1fr] gap-6 md:gap-12 items-start">
           {/* LEFT — Description */}
           <div>
-            <p className="text-[18px] text-[var(--color-ink)] leading-[1.8] mb-5">
+            <p className="text-[13px] md:text-[18px] text-[var(--color-ink)] leading-[1.6] md:leading-[1.8] mb-3 md:mb-5">
               Hi, I&apos;m Jewel — a frontend developer and web designer from the Philippines.
             </p>
-            <p className="text-[18px] text-[var(--color-ink)] leading-[1.8] mb-5">
+            <p className="text-[13px] md:text-[18px] text-[var(--color-ink)] leading-[1.6] md:leading-[1.8] mb-3 md:mb-5">
               I turn ideas into clean, accessible, interactive, and user-friendly web experiences that look as good as they perform.
             </p>
-            <p className="text-[18px] text-[var(--color-ink)] leading-[1.8]">
+            <p className="text-[13px] md:text-[18px] text-[var(--color-ink)] leading-[1.6] md:leading-[1.8]">
               I leverage AI tools to streamline my workflow, prototype faster, and deliver high-quality results without compromising creativity.
             </p>
           </div>
@@ -452,21 +464,21 @@ function About() {
 
           {/* RIGHT — Technologies */}
           <div className="text-center">
-            <h3 className="text-[13px] tracking-[0.35em] text-[var(--color-ink)] mb-8">TECHNOLOGIES</h3>
+            <h3 className="text-[10px] md:text-[13px] tracking-[0.35em] text-[var(--color-ink)] mb-4 md:mb-8">TECHNOLOGIES</h3>
 
-            <div className="grid grid-cols-4 gap-6">
+            <div className="grid grid-cols-4 gap-3 md:gap-6">
               {technologies.map((t) => (
-                <div key={t.name} className="flex flex-col items-center gap-2 group cursor-default">
-                  <div className="w-14 h-14 rounded-full border border-white/25 bg-white/5 flex items-center justify-center text-[var(--color-ink)] group-hover:border-[var(--color-cyan)] transition-all">
+                <div key={t.name} className="flex flex-col items-center gap-1.5 md:gap-2 group cursor-default">
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-full border border-white/25 bg-white/5 flex items-center justify-center text-[var(--color-ink)] group-hover:border-[var(--color-cyan)] transition-all">
                     <TechIcon name={t.name} />
                   </div>
-                  <span className="text-[11px] tracking-[0.05em] text-[var(--color-ink)] opacity-70 group-hover:opacity-100 transition-opacity">{t.name}</span>
+                  <span className="text-[9px] md:text-[11px] tracking-[0.05em] text-[var(--color-ink)] opacity-70 group-hover:opacity-100 transition-opacity">{t.name}</span>
                 </div>
               ))}
             </div>
 
             {/* Tags */}
-            <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <div className="mt-6 md:mt-10 hidden md:flex flex-wrap justify-center gap-4">
               {["UI/UX", "Responsive", "Animations", "Performance", "Testing"].map((tag) => (
                 <span key={tag} className="text-[13px] tracking-[0.1em] text-[var(--color-ink)]">
                   {tag}
@@ -720,12 +732,75 @@ export default function Home() {
             <Hero />
           </div>
 
-          {/* About — subtle gradient + noise */}
+          {/* About — marble texture */}
           <div className={`slide ${current === 1 ? "slide-active" : ""}`}>
             <div className="absolute inset-0 z-0" style={{
-              background: "linear-gradient(160deg, #c8e6f4 0%, #d4ecf8 40%, #e0e8f0 70%, #e8e0ec 100%)"
+              background: "linear-gradient(135deg, #c8e4f8 0%, #d8e8f4 20%, #e4e0f0 40%, #f0e0ec 60%, #f4d8e4 80%, #f8d0dc 100%)"
             }} />
             <div className="noise-overlay" />
+
+            {/* Primary veins */}
+            <svg className="absolute inset-0 w-full h-full z-[1] opacity-[0.30] marble-vein-1" viewBox="0 0 400 400" preserveAspectRatio="none">
+              <defs>
+                <filter id="whiteGlow">
+                  <feGaussianBlur stdDeviation="3" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              <g fill="none" stroke="#ffffff" strokeWidth="2" filter="url(#whiteGlow)">
+                <path d="M0 50 Q100 30 200 60 T400 40" />
+                <path d="M0 100 Q80 80 160 110 T320 90 T400 100" />
+                <path d="M0 150 Q120 130 240 160 T400 140" />
+                <path d="M0 200 Q60 180 120 210 T240 190 T360 200 T400 195" />
+                <path d="M0 250 Q100 230 200 260 T400 240" />
+                <path d="M0 300 Q80 280 160 310 T320 290 T400 300" />
+                <path d="M0 350 Q120 330 240 360 T400 340" />
+              </g>
+            </svg>
+
+            {/* Secondary veins */}
+            <svg className="absolute inset-0 w-full h-full z-[1] opacity-[0.22] marble-vein-2" viewBox="0 0 400 400" preserveAspectRatio="none">
+              <g fill="none" stroke="#ffffff" strokeWidth="1.5" filter="url(#whiteGlow)">
+                <path d="M0 70 Q120 50 240 80 T400 65" />
+                <path d="M0 130 Q80 110 160 140 T320 120 T400 135" />
+                <path d="M0 180 Q100 160 200 190 T400 175" />
+                <path d="M0 230 Q70 210 140 240 T280 220 T400 235" />
+                <path d="M0 280 Q90 260 180 290 T360 270 T400 285" />
+                <path d="M0 330 Q100 310 200 340 T400 325" />
+              </g>
+            </svg>
+
+            {/* Tertiary veins */}
+            <svg className="absolute inset-0 w-full h-full z-[1] opacity-[0.15] marble-vein-3" viewBox="0 0 400 400" preserveAspectRatio="none">
+              <g fill="none" stroke="#ffffff" strokeWidth="1" filter="url(#whiteGlow)">
+                <path d="M0 80 Q140 60 280 90 T400 75" />
+                <path d="M0 160 Q90 140 180 170 T360 150 T400 165" />
+                <path d="M0 240 Q110 220 220 250 T400 235" />
+                <path d="M0 310 Q80 290 160 320 T320 300 T400 315" />
+                <path d="M0 370 Q100 350 200 380 T400 365" />
+              </g>
+            </svg>
+
+            {/* Cyan tint veins */}
+            <svg className="absolute inset-0 w-full h-full z-[2] opacity-[0.08] marble-vein-4" viewBox="0 0 400 400" preserveAspectRatio="none">
+              <g fill="none" stroke="#ffffff" strokeWidth="1" filter="url(#whiteGlow)">
+                <path d="M0 75 Q100 55 200 85 T400 70" />
+                <path d="M0 195 Q120 175 240 205 T400 190" />
+                <path d="M0 315 Q90 295 180 325 T360 305 T400 318" />
+              </g>
+            </svg>
+
+            {/* Pink tint veins */}
+            <svg className="absolute inset-0 w-full h-full z-[2] opacity-[0.08] marble-vein-5" viewBox="0 0 400 400" preserveAspectRatio="none">
+              <g fill="none" stroke="#ffffff" strokeWidth="1" filter="url(#whiteGlow)">
+                <path d="M0 115 Q80 95 160 125 T320 105 T400 118" />
+                <path d="M0 255 Q100 235 200 265 T400 252" />
+              </g>
+            </svg>
+
             <div className="relative z-10 h-full"><About /></div>
           </div>
 
@@ -754,7 +829,7 @@ export default function Home() {
         {/* Arrow navigation */}
         {current > 0 && (
           <button onClick={prev} aria-label="Previous slide"
-            className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex items-center gap-3 group">
+            className="fixed left-6 top-1/2 -translate-y-1/2 z-50 hidden md:flex items-center gap-3 group">
             <div className="relative w-12 h-12 flex items-center justify-center">
               <div className="absolute inset-0 border border-[var(--color-ink-dim)] opacity-30 rotate-45 group-hover:border-[var(--color-cyan)] group-hover:opacity-60 transition-all duration-300" />
               <svg className="w-5 h-5 text-[var(--color-ink-dim)] group-hover:text-[var(--color-cyan)] transition-colors relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -766,7 +841,7 @@ export default function Home() {
         )}
         {current < SLIDES.length - 1 && (
           <button onClick={next} aria-label="Next slide"
-            className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex items-center gap-3 group">
+            className="fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden md:flex items-center gap-3 group">
             <span className="hud text-[8px] tracking-[0.4em] text-[var(--color-ink-dim)] opacity-0 group-hover:opacity-60 transition-opacity -mr-2">NEXT</span>
             <div className="relative w-12 h-12 flex items-center justify-center">
               <div className="absolute inset-0 border border-[var(--color-ink-dim)] opacity-30 rotate-45 group-hover:border-[var(--color-cyan)] group-hover:opacity-60 transition-all duration-300" />
