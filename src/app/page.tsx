@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback, type JSX } from "react";
+import Image from "next/image";
 
 /* ══════════════════════════════════════════════════════════════
    HEXAGON CANVAS BACKGROUND
@@ -123,7 +124,9 @@ function HexagonCanvas({ currentSlide }: { currentSlide: number }) {
     const onResize = () => drawStatic();
     window.addEventListener("resize", onResize);
 
-    // animated star trails
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return () => window.removeEventListener("resize", onResize);
+
     const starCanvas = starRef.current;
     if (!starCanvas) return;
     const ctx = starCanvas.getContext("2d");
@@ -140,13 +143,18 @@ function HexagonCanvas({ currentSlide }: { currentSlide: number }) {
 
     const centerX = w * 0.5;
     const centerY = h_screen * 0.25;
-    const trailCount = 40;
+    const isMobile = w < 768;
+    const trailCount = isMobile ? 20 : 40;
     const baseAngles: number[] = [];
     for (let i = 0; i < trailCount; i++) {
       baseAngles.push((i * 137.508) * Math.PI / 180);
     }
 
     const drawStars = (time: number) => {
+      if (currentSlide !== 0) {
+        rafRef.current = requestAnimationFrame(drawStars);
+        return;
+      }
       const t = time * 0.0005;
       ctx.clearRect(0, 0, w, h_screen);
 
@@ -206,7 +214,8 @@ function HexagonCanvas({ currentSlide }: { currentSlide: number }) {
         ctx.fill();
 
         // trailing particles — sparkle dust behind the head
-        for (let p = 0; p < 3; p++) {
+        const particleCount = isMobile ? 1 : 3;
+        for (let p = 0; p < particleCount; p++) {
           const pDist = 3 + p * 4 + Math.sin(t * 2 + i + p) * 2;
           const pAngle = sa + arcLen - (pDist / radius);
           const px = centerX + radius * Math.cos(pAngle);
@@ -219,55 +228,58 @@ function HexagonCanvas({ currentSlide }: { currentSlide: number }) {
         }
       }
 
-      // scattered bright stars — center-left and center-right below star trail
-      const brightStars = [
-        // center-left
-        { bx: 0.08, by: 0.45, r: 8 }, { bx: 0.15, by: 0.5, r: 6 },
-        { bx: 0.22, by: 0.48, r: 9 }, { bx: 0.28, by: 0.52, r: 7 },
-        { bx: 0.32, by: 0.46, r: 5 }, { bx: 0.12, by: 0.55, r: 6 },
-        { bx: 0.25, by: 0.58, r: 5 }, { bx: 0.18, by: 0.53, r: 7 },
-        // center-right
-        { bx: 0.68, by: 0.45, r: 8 }, { bx: 0.75, by: 0.5, r: 6 },
-        { bx: 0.82, by: 0.48, r: 9 }, { bx: 0.88, by: 0.52, r: 7 },
-        { bx: 0.72, by: 0.46, r: 5 }, { bx: 0.78, by: 0.55, r: 6 },
-        { bx: 0.85, by: 0.58, r: 5 }, { bx: 0.92, by: 0.53, r: 7 },
-      ];
+      // scattered bright stars — center-left and center-right below star trail (desktop only)
+      if (!isMobile) {
+        const brightStars = [
+          { bx: 0.08, by: 0.45, r: 8 }, { bx: 0.15, by: 0.5, r: 6 },
+          { bx: 0.22, by: 0.48, r: 9 }, { bx: 0.28, by: 0.52, r: 7 },
+          { bx: 0.32, by: 0.46, r: 5 }, { bx: 0.12, by: 0.55, r: 6 },
+          { bx: 0.25, by: 0.58, r: 5 }, { bx: 0.18, by: 0.53, r: 7 },
+          { bx: 0.68, by: 0.45, r: 8 }, { bx: 0.75, by: 0.5, r: 6 },
+          { bx: 0.82, by: 0.48, r: 9 }, { bx: 0.88, by: 0.52, r: 7 },
+          { bx: 0.72, by: 0.46, r: 5 }, { bx: 0.78, by: 0.55, r: 6 },
+          { bx: 0.85, by: 0.58, r: 5 }, { bx: 0.92, by: 0.53, r: 7 },
+        ];
 
-      for (let i = 0; i < brightStars.length; i++) {
-        const s = brightStars[i];
-        const sx = w * s.bx;
-        const sy = h_screen * s.by;
-        const twinkle = 0.5 + Math.sin(t * 3 + i * 2.5) * 0.5;
-        const sr = s.r * twinkle;
+        for (let i = 0; i < brightStars.length; i++) {
+          const s = brightStars[i];
+          const sx = w * s.bx;
+          const sy = h_screen * s.by;
+          const twinkle = 0.5 + Math.sin(t * 3 + i * 2.5) * 0.5;
+          const sr = s.r * twinkle;
 
-        // 4-pointed star shape with curved sides
-        ctx.beginPath();
-        ctx.moveTo(sx, sy - sr);
-        ctx.quadraticCurveTo(sx + sr * 0.3, sy - sr * 0.3, sx + sr, sy);
-        ctx.quadraticCurveTo(sx + sr * 0.3, sy + sr * 0.3, sx, sy + sr);
-        ctx.quadraticCurveTo(sx - sr * 0.3, sy + sr * 0.3, sx - sr, sy);
-        ctx.quadraticCurveTo(sx - sr * 0.3, sy - sr * 0.3, sx, sy - sr);
-        ctx.closePath();
-        ctx.fillStyle = `rgba(255,255,255,${0.7 * twinkle})`;
-        ctx.fill();
+          // 4-pointed star shape with curved sides
+          ctx.beginPath();
+          ctx.moveTo(sx, sy - sr);
+          ctx.quadraticCurveTo(sx + sr * 0.3, sy - sr * 0.3, sx + sr, sy);
+          ctx.quadraticCurveTo(sx + sr * 0.3, sy + sr * 0.3, sx, sy + sr);
+          ctx.quadraticCurveTo(sx - sr * 0.3, sy + sr * 0.3, sx - sr, sy);
+          ctx.quadraticCurveTo(sx - sr * 0.3, sy - sr * 0.3, sx, sy);
+          ctx.closePath();
+          ctx.fillStyle = `rgba(255,255,255,${0.7 * twinkle})`;
+          ctx.fill();
 
         // glow
         ctx.beginPath();
         ctx.arc(sx, sy, sr * 2.5, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(200,230,255,${0.1 * twinkle})`;
         ctx.fill();
+        }
       }
 
       rafRef.current = requestAnimationFrame(drawStars);
     };
 
-    rafRef.current = requestAnimationFrame(drawStars);
+    const startAnimation = () => {
+      rafRef.current = requestAnimationFrame(drawStars);
+    };
+    startAnimation();
 
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", onResize);
     };
-  }, [drawStatic]);
+  }, [drawStatic, currentSlide]);
 
   return (
     <>
@@ -322,7 +334,7 @@ function Hero() {
         <div className="flex items-center justify-center gap-4 mt-4 mb-2">
           <div className="w-12 h-px bg-[var(--color-ink)] opacity-20" />
           <div className="text-center">
-            <p className="text-base md:text-lg tracking-[0.3em] text-[var(--color-ink)] opacity-50">FRONTEND DEVELOPER</p>
+            <p className="text-base md:text-lg tracking-[0.3em] text-[var(--color-ink)] opacity-80">FRONTEND DEVELOPER</p>
             <p className="text-base md:text-lg tracking-[0.3em]"
               style={{
                 background: "linear-gradient(90deg, #7ad8f0, #c0a0e0, #f0b8d0)",
@@ -338,7 +350,7 @@ function Hero() {
 
       {/* Tagline */}
       <div className="text-center mt-5 fade-in fade-d3">
-        <p className="text-sm md:text-base tracking-[0.2em] text-[var(--color-ink-dim)] opacity-40">
+        <p className="text-sm md:text-base tracking-[0.2em] text-[var(--color-ink-dim)] opacity-70">
           Innovation through iteration
         </p>
       </div>
@@ -421,7 +433,7 @@ function About() {
              FRONTEND DEVELOPER
            </h2>
            <h2 className="text-[36px] md:text-[64px] font-extralight tracking-[0.06em] leading-tight">
-             <span className="text-[var(--color-ink)] opacity-40">&amp;</span>
+              <span className="text-[var(--color-ink)] opacity-70">&amp;</span>
              <span style={{
                background: "linear-gradient(90deg, #3cc8f0, #8060c0, #e070a0)",
                WebkitBackgroundClip: "text",
@@ -468,7 +480,7 @@ function About() {
                    <div className="w-14 h-14 md:w-20 md:h-20 rounded-full border border-white/25 bg-white/5 flex items-center justify-center text-[var(--color-ink)] group-hover:border-[var(--color-cyan)] transition-all">
                     <TechIcon name={t.name} />
                   </div>
-                  <span className="text-[9px] md:text-[13px] tracking-[0.05em] text-[var(--color-ink)] opacity-70 group-hover:opacity-100 transition-opacity">{t.name}</span>
+                  <span className="text-[9px] md:text-[13px] tracking-[0.05em] text-[var(--color-ink)] opacity-100 group-hover:opacity-100 transition-opacity">{t.name}</span>
                 </div>
               ))}
             </div>
@@ -492,122 +504,140 @@ function About() {
    PROJECTS
    ══════════════════════════════════════════════════════════════ */
 function Projects() {
-  const [hoveredProject, setHoveredProject] = useState<number | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [selected, setSelected] = useState(0);
+  const [imageKey, setImageKey] = useState(0);
 
   const projects = [
     {
       id: "001", title: "Redwood Retreats", cat: "CABIN RENTAL PLATFORM",
-      desc: "Full-stack cabin rental platform with real-time canvas animations, dynamic pricing engine, and booking system.",
-      highlight: "Real-time animations + dynamic pricing",
+      desc: "A full-stack cabin rental platform featuring real-time canvas animations, a dynamic pricing engine, and a seamless booking system. Built with performance and user experience in mind, it delivers an immersive way to discover and reserve modern A-frame retreats in nature.",
+      highlights: ["Real-time canvas animations", "Dynamic pricing engine", "Seamless booking system", "Performance optimized"],
       tech: ["Next.js", "TypeScript", "Canvas API", "Tailwind"],
       live: "https://redwood-retreats.vercel.app",
       code: "https://github.com/jewelcruzs0922-dev/redwood-retreats",
       image: "/redwood-preview.png",
+      logo: "/redwood-logo.svg",
     },
     {
       id: "002", title: "Cosmic Ray Solar", cat: "SOLAR ENERGY PLATFORM",
-      desc: "Solar company platform with Stripe payments integration, Sanity CMS for content management, and fully responsive design.",
-      highlight: "Stripe payments + Sanity CMS",
+      desc: "A solar energy company platform with integrated Stripe payments for seamless transactions and Sanity CMS for flexible content management. Fully responsive across all devices, it showcases solar solutions with a clean, modern interface built for conversion.",
+      highlights: ["Stripe payment integration", "Sanity CMS management", "Fully responsive design", "Conversion-focused UI"],
       tech: ["Next.js", "Stripe", "Sanity", "Tailwind"],
       live: "https://cosmicray-solar.netlify.app",
       code: "https://github.com/jewelcruzs0922-dev/cosmicray-solar",
       image: "/cosmicray-preview.png",
+      logo: "/cosmicray-logo.svg",
     },
   ];
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    setMousePos({ x: e.clientX, y: e.clientY });
+  const select = (idx: number) => {
+    if (idx === selected) return;
+    setImageKey((k) => k + 1);
+    setSelected(idx);
   };
 
   return (
-    <section id="projects" className="h-full flex flex-col justify-center py-6 px-4 md:px-6"
-      onMouseMove={handleMouseMove}>
-      <div className="max-w-6xl mx-auto w-full">
+    <section id="projects" className="h-full flex flex-col py-8 md:py-16 pb-24 md:pb-28 px-3 md:px-6">
+      <div className="max-w-6xl mx-auto w-full my-auto">
         {/* Section header */}
-        <div className="flex items-center gap-4 mb-6 md:mb-8">
-          <div className="relative">
-            <div className="w-2.5 h-2.5 rotate-45 bg-[var(--color-cyan)] opacity-60 shadow-[0_0_8px_rgba(120,216,240,0.5)]" />
-            <div className="absolute inset-0 w-2.5 h-2.5 rotate-45 bg-[var(--color-cyan)] opacity-30 blur-sm" />
-          </div>
-          <span className="text-[11px] md:text-[12px] tracking-[0.4em] text-[var(--color-ink)] opacity-70 font-medium">PROJECTS</span>
-          <div className="flex-1 h-px bg-gradient-to-r from-[var(--color-cyan)] via-[var(--color-ink)] to-transparent opacity-20" />
-          <span className="text-[10px] tracking-[0.3em] text-[var(--color-ink-dim)] opacity-50">{projects.length.toString().padStart(2, "0")}</span>
+        <div className="text-center mb-3 md:mb-6">
+          <h2 className="text-xl md:text-6xl lg:text-7xl font-extralight tracking-[0.15em] text-[var(--color-ink)]">
+            PROJECTS
+          </h2>
         </div>
 
-        {/* Project list */}
-        <div className="relative">
-          {projects.map((project, idx) => (
-            <div key={project.id}
-              className="group relative border-b border-white/10 last:border-b-0"
-              onMouseEnter={() => setHoveredProject(idx)}
-              onMouseLeave={() => setHoveredProject(null)}>
+        {/* Circle indicators */}
+        <div className="flex items-center justify-center gap-5 md:gap-4 mb-4 md:mb-8">
+          {Array.from({ length: 5 }).map((_, i) => {
+            const isActive = i === selected;
+            const hasProject = i < projects.length;
+            return (
+              <button key={i}
+                onClick={() => hasProject && select(i)}
+                disabled={!hasProject}
+                className={`relative w-2.5 h-2.5 md:w-3 md:h-3 rounded-full transition-all duration-400 ${
+                  hasProject ? "cursor-pointer" : "cursor-default opacity-20"
+                }`}>
+                {isActive && (
+                  <span className="absolute inset-0 rounded-full bg-[var(--color-cyan)] opacity-30 blur-sm" />
+                )}
+                <span className={`absolute inset-0 rounded-full transition-all duration-400 ${
+                  isActive
+                    ? "bg-[var(--color-cyan)] shadow-[0_0_10px_rgba(120,216,240,0.7)]"
+                    : hasProject
+                      ? "bg-[var(--color-ink)] opacity-40 hover:opacity-60"
+                      : "bg-[var(--color-ink)]"
+                }`} />
+              </button>
+            );
+          })}
+        </div>
 
-              <div className="flex items-baseline gap-4 md:gap-6 py-4 md:py-5 cursor-pointer">
-                {/* Number */}
-                <span className="text-[11px] md:text-[12px] tracking-[0.2em] text-[var(--color-ink-dim)] opacity-30 w-8">
-                  {project.id}
-                </span>
+        {/* Content container */}
+        <div className="border border-white/15 bg-white/[0.08] p-4 md:p-10">
 
-                {/* Title — large */}
-                <h3 className="text-3xl md:text-5xl lg:text-6xl text-[var(--color-ink)] font-light tracking-[0.02em] group-hover:tracking-[0.06em] transition-all duration-500 flex-1">
-                  {project.title}
-                </h3>
+          {/* Two-column layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-12 items-center">
 
-                {/* Category */}
-                <span className="hidden md:block text-[9px] tracking-[0.35em] text-[var(--color-ink-dim)] opacity-40 group-hover:opacity-70 transition-opacity">
-                  {project.cat}
-                </span>
-
-                {/* Arrow */}
-                <svg className="w-4 h-4 text-[var(--color-ink-dim)] opacity-0 group-hover:opacity-60 transition-all duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M7 17L17 7M17 7H7M17 7v10" />
-                </svg>
+            {/* LEFT — Logo, name */}
+            <div className="flex flex-col items-center gap-3 md:gap-6">
+              {/* Logo */}
+              <div key={imageKey} className="w-20 h-20 md:w-52 md:h-52 flex items-center justify-center animate-projectFadeIn">
+                <Image src={projects[selected].logo} alt={`${projects[selected].title} logo`}
+                  width={208} height={208}
+                  className="w-full h-full object-contain animate-logoShine" />
               </div>
 
-              {/* Hover preview image — follows cursor */}
-              {hoveredProject === idx && (
-                <div className="fixed z-50 pointer-events-none hidden md:block"
-                  style={{
-                    left: mousePos.x + 20,
-                    top: mousePos.y - 80,
-                    transform: "translate(-50%, -50%)",
-                  }}>
-                  <div className="w-64 h-40 md:w-80 md:h-48 overflow-hidden border border-white/10 shadow-2xl shadow-black/50">
-                    <img src={project.image} alt={project.title}
-                      className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1a]/60 to-transparent" />
-                    <div className="absolute bottom-3 left-3 right-3">
-                      <div className="flex flex-wrap gap-1.5">
-                        {project.tech.map((t) => (
-                          <span key={t} className="px-2 py-0.5 text-[7px] tracking-[0.12em] text-white/60 border border-white/15 bg-white/10">
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* Project name */}
+              <div className="text-center">
+                <h3 className="text-lg md:text-3xl font-light tracking-[0.08em] text-[var(--color-ink)] opacity-100">
+                  {projects[selected].title}
+                </h3>
+              </div>
             </div>
-          ))}
+
+            {/* RIGHT — Description + buttons */}
+            <div className="flex flex-col gap-2 md:gap-5">
+              {/* Description */}
+              <div>
+                <p className="text-[13px] md:text-xl text-[var(--color-ink)] opacity-100 leading-relaxed">
+                  {projects[selected].desc}
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex justify-center gap-2.5 md:gap-4">
+                <a href={projects[selected].live} target="_blank" rel="noopener noreferrer"
+                  className="px-4 md:px-8 py-2.5 md:py-3.5 border border-[var(--color-cyan)] text-[10px] md:text-[11px] tracking-[0.15em] md:tracking-[0.2em] text-[var(--color-ink)] opacity-100 hover:bg-[var(--color-cyan)] hover:text-white transition-all duration-300">
+                  VIEW LIVE
+                </a>
+                <a href={projects[selected].code} target="_blank" rel="noopener noreferrer"
+                  className="px-4 md:px-8 py-2.5 md:py-3.5 border border-white/20 text-[10px] md:text-[11px] tracking-[0.15em] md:tracking-[0.2em] text-[var(--color-ink)] opacity-100 hover:border-[var(--color-cyan)] transition-all duration-300">
+                  VIEW CODE
+                </a>
+              </div>
+
+              {/* Highlights */}
+              <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 md:gap-x-6 md:gap-y-2">
+                {projects[selected].highlights.map((h) => (
+                  <span key={h} className="text-[10px] md:text-[15px] tracking-[0.03em] md:tracking-[0.05em] text-[var(--color-ink)] opacity-80">
+                    {h}
+                  </span>
+                ))}
+              </div>
+
+              {/* Tech tags */}
+              <div className="flex flex-wrap justify-center gap-1.5 md:gap-3">
+                {projects[selected].tech.map((t) => (
+                  <span key={t} className="px-2.5 py-1 md:px-4 md:py-2 text-[10px] md:text-[13px] tracking-[0.08em] md:tracking-[0.1em] text-[var(--color-ink)] border border-white/20 bg-white/[0.03]">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Links row */}
-        <div className="mt-6 flex items-center gap-6">
-          {projects.map((project) => (
-            <div key={project.id} className="flex gap-4">
-              <a href={project.live} target="_blank" rel="noopener noreferrer"
-                className="text-[10px] tracking-[0.25em] text-[var(--color-ink-dim)] opacity-50 hover:text-[var(--color-cyan)] hover:opacity-100 transition-all">
-                {project.title} LIVE →
-              </a>
-              <a href={project.code} target="_blank" rel="noopener noreferrer"
-                className="text-[10px] tracking-[0.25em] text-[var(--color-ink-dim)] opacity-50 hover:text-[var(--color-cyan)] hover:opacity-100 transition-all">
-                CODE →
-              </a>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );
@@ -617,68 +647,113 @@ function Projects() {
    CONTACT
    ══════════════════════════════════════════════════════════════ */
 function Contact() {
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [errors, setErrors] = useState<{ name?: string; email?: string; message?: string }>({});
+  const [submitted, setSubmitted] = useState(false);
+
+  const validate = () => {
+    const e: typeof errors = {};
+    if (!form.name.trim()) e.name = "Name is required";
+    if (!form.email.trim()) e.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Invalid email";
+    if (!form.message.trim()) e.message = "Message is required";
+    return e;
+  };
+
+  const handleSubmit = (ev: React.FormEvent) => {
+    ev.preventDefault();
+    const e = validate();
+    setErrors(e);
+    if (Object.keys(e).length === 0) setSubmitted(true);
+  };
+
   return (
-    <section id="contact" className="h-full flex items-center justify-center py-16 px-6 overflow-y-auto">
+    <section id="contact" className="h-full flex items-center justify-center py-10 md:py-16 px-4 md:px-6 overflow-y-auto">
       <div className="max-w-6xl mx-auto w-full">
         {/* Section header */}
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-2 h-2 rotate-45 bg-[var(--color-ink)] opacity-30" />
-          <span className="text-[10px] tracking-[0.4em] text-[var(--color-ink)] opacity-60">CONTACT</span>
-          <div className="flex-1 h-px bg-[var(--color-ink)] opacity-10" />
-          <span className="text-[9px] tracking-[0.3em] text-[var(--color-ink-dim)] opacity-40">ACTIVE</span>
+        <div className="text-center mb-6 md:mb-10">
+          <h2 className="text-2xl md:text-5xl font-extralight tracking-[0.15em] text-[var(--color-ink)]">
+            CONTACT
+          </h2>
         </div>
 
-        {/* Bento grid */}
-        <div className="grid grid-cols-12 gap-3">
-          {/* Big CTA — spans 8 cols */}
-          <div className="col-span-12 md:col-span-8 p-6 border border-[var(--color-cyan)] border-opacity-15 bg-[var(--color-cyan)] bg-opacity-[0.03] relative overflow-hidden">
-            <div className="absolute bottom-0 right-0 w-32 h-32 bg-[var(--color-cyan)] opacity-[0.04] rounded-full translate-y-1/2 translate-x-1/2" />
-            <div className="relative z-10">
-              <div className="text-[24px] md:text-[32px] font-extralight tracking-[0.08em] text-[var(--color-ink)] leading-tight mb-1">
-                HAVE A PROJECT
+        <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-5 md:gap-10">
+          {/* Form */}
+          <div className="border border-white/15 bg-white/[0.08] p-4 md:p-8">
+            {submitted ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-4">
+                <div className="w-12 h-12 rotate-45 bg-[var(--color-cyan)] opacity-60 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white -rotate-45" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12l5 5L20 7" />
+                  </svg>
+                </div>
+                <p className="text-lg text-[var(--color-ink)] tracking-wide">Message sent!</p>
+                <p className="text-sm text-[var(--color-ink)] opacity-50">I&apos;ll get back to you soon.</p>
               </div>
-              <div className="text-[24px] md:text-[32px] font-extralight tracking-[0.08em] text-[var(--color-ink)] leading-tight opacity-35 mb-4">
-                IN MIND?
+            ) : (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
+                <div>
+                  <label htmlFor="name" className="block text-[10px] md:text-[11px] tracking-[0.2em] text-[var(--color-ink)] opacity-60 mb-2">NAME</label>
+                  <input id="name" type="text" value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className={`w-full bg-transparent border ${errors.name ? "border-red-400" : "border-white/20"} px-4 py-3.5 md:py-3 text-sm md:text-sm text-[var(--color-ink)] outline-none focus:border-[var(--color-cyan)] transition-colors`} />
+                  {errors.name && <span className="text-[10px] text-red-400 mt-1 block">{errors.name}</span>}
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-[10px] md:text-[11px] tracking-[0.2em] text-[var(--color-ink)] opacity-60 mb-2">EMAIL</label>
+                  <input id="email" type="email" value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    className={`w-full bg-transparent border ${errors.email ? "border-red-400" : "border-white/20"} px-4 py-3.5 md:py-3 text-sm md:text-sm text-[var(--color-ink)] outline-none focus:border-[var(--color-cyan)] transition-colors`} />
+                  {errors.email && <span className="text-[10px] text-red-400 mt-1 block">{errors.email}</span>}
+                </div>
+                <div>
+                  <label htmlFor="message" className="block text-[10px] md:text-[11px] tracking-[0.2em] text-[var(--color-ink)] opacity-60 mb-2">MESSAGE</label>
+                  <textarea id="message" value={form.message} rows={4}
+                    onChange={(e) => setForm({ ...form, message: e.target.value })}
+                    className={`w-full bg-transparent border ${errors.message ? "border-red-400" : "border-white/20"} px-4 py-3.5 md:py-3 text-sm md:text-sm text-[var(--color-ink)] outline-none focus:border-[var(--color-cyan)] transition-colors resize-none`} />
+                  {errors.message && <span className="text-[10px] text-red-400 mt-1 block">{errors.message}</span>}
+                </div>
+                <button type="submit"
+                  className="self-start px-8 py-3.5 border border-[var(--color-cyan)] text-[11px] tracking-[0.2em] text-[var(--color-ink)] hover:bg-[var(--color-cyan)] hover:text-white transition-all duration-300">
+                  SEND MESSAGE
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* Right side — info + links */}
+          <div className="flex flex-col gap-4">
+            {/* Availability */}
+            <div className="border border-white/15 bg-white/[0.05] p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400 opacity-60 animate-pulse" />
+                <span className="text-[9px] tracking-[0.3em] text-[var(--color-ink)] opacity-70">AVAILABLE FOR HIRE</span>
               </div>
-              <p className="text-[12px] text-[var(--color-ink-dim)] leading-relaxed mb-5 max-w-md opacity-60">
-                I&apos;m always open to discussing new projects, creative ideas, or opportunities to be part of your vision.
+              <p className="text-[12px] text-[var(--color-ink)] opacity-60 leading-relaxed">
+                Open for freelance, collaborations, and full-time roles.
               </p>
-              <a href="mailto:jewel@example.com" className="inline-flex items-center gap-2 px-4 py-2.5 border border-[var(--color-cyan)] hover:bg-[var(--color-cyan)] group transition-all duration-300">
-                <div className="w-1.5 h-1.5 rotate-45 bg-[var(--color-cyan)] opacity-50 group-hover:bg-white group-hover:opacity-70 transition-all" />
-                <span className="text-[10px] tracking-[0.2em] text-[var(--color-ink)] group-hover:text-white transition-colors">jewel@example.com</span>
+              <div className="mt-3 text-[9px] tracking-[0.2em] text-[var(--color-ink)] opacity-40">PHILIPPINES • GMT+8</div>
+            </div>
+
+            {/* Link cards */}
+            <div className="grid grid-cols-3 gap-3">
+              <a href="mailto:jewel@example.com"
+                className="p-4 border border-[var(--color-cyan)]/20 bg-white/[0.05] hover:bg-[var(--color-cyan)] group transition-all duration-300 text-center">
+                <div className="w-2 h-2 rotate-45 bg-[var(--color-cyan)] opacity-40 group-hover:bg-white group-hover:opacity-60 transition-all mx-auto mb-2" />
+                <div className="text-[9px] tracking-[0.15em] text-[var(--color-ink)] group-hover:text-white transition-colors">EMAIL</div>
+              </a>
+              <a href="https://github.com/jewelcruzs0922-dev" target="_blank" rel="noopener noreferrer"
+                className="p-4 border border-white/15 bg-white/[0.05] hover:border-[var(--color-cyan)] group transition-all duration-300 text-center">
+                <div className="w-2 h-2 rotate-45 border border-[var(--color-ink)] opacity-25 group-hover:border-[var(--color-cyan)] group-hover:opacity-50 transition-all mx-auto mb-2" />
+                <div className="text-[9px] tracking-[0.15em] text-[var(--color-ink)]">GITHUB</div>
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
+                className="p-4 border border-white/15 bg-white/[0.05] hover:border-[var(--color-cyan)] group transition-all duration-300 text-center">
+                <div className="w-2 h-2 rotate-45 border border-[var(--color-ink)] opacity-25 group-hover:border-[var(--color-cyan)] group-hover:opacity-50 transition-all mx-auto mb-2" />
+                <div className="text-[9px] tracking-[0.15em] text-[var(--color-ink)]">LINKEDIN</div>
               </a>
             </div>
           </div>
-
-          {/* Availability — spans 4 cols */}
-          <div className="col-span-12 md:col-span-4 p-5 border border-white/15 bg-white/5 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400 opacity-60 animate-pulse" />
-                <span className="text-[8px] tracking-[0.3em] text-[var(--color-ink-dim)] opacity-50">AVAILABLE</span>
-              </div>
-              <p className="text-[11px] text-[var(--color-ink-dim)] opacity-50 leading-relaxed">
-                Open for freelance, collaborations, and full-time roles.
-              </p>
-            </div>
-            <div className="mt-4 text-[8px] tracking-[0.2em] text-[var(--color-ink-dim)] opacity-30">PHILIPPINES • GMT+8</div>
-          </div>
-
-          {/* Link cards — 3 equal */}
-          <a href="mailto:jewel@example.com" className="col-span-4 p-5 border border-[var(--color-cyan)] border-opacity-20 bg-white/5 hover:bg-[var(--color-cyan)] group transition-all duration-300 text-center">
-            <div className="w-2 h-2 rotate-45 bg-[var(--color-cyan)] opacity-40 group-hover:bg-white group-hover:opacity-60 transition-all mx-auto mb-3" />
-            <div className="text-[10px] tracking-[0.2em] text-[var(--color-ink)] group-hover:text-white transition-colors">EMAIL</div>
-          </a>
-
-          <a href="https://github.com/jewelcruzs0922-dev" target="_blank" rel="noopener noreferrer" className="col-span-4 p-5 border border-white/15 bg-white/5 hover:border-[var(--color-cyan)] group transition-all duration-300 text-center">
-            <div className="w-2 h-2 rotate-45 border border-[var(--color-ink-dim)] opacity-25 group-hover:border-[var(--color-cyan)] group-hover:opacity-50 transition-all mx-auto mb-3" />
-            <div className="text-[10px] tracking-[0.2em] text-[var(--color-ink)]">GITHUB</div>
-          </a>
-
-          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="col-span-4 p-5 border border-white/15 bg-white/5 hover:border-[var(--color-cyan)] group transition-all duration-300 text-center">
-            <div className="w-2 h-2 rotate-45 border border-[var(--color-ink-dim)] opacity-25 group-hover:border-[var(--color-cyan)] group-hover:opacity-50 transition-all mx-auto mb-3" />
-            <div className="text-[10px] tracking-[0.2em] text-[var(--color-ink)]">LINKEDIN</div>
-          </a>
         </div>
       </div>
     </section>
@@ -693,7 +768,7 @@ function Footer() {
     <footer className="py-6 px-6">
       <div className="max-w-5xl mx-auto flex items-center justify-between opacity-30">
         <span className="text-[8px] tracking-[0.3em] text-[var(--color-ink-dim)]">JC</span>
-        <span className="text-[8px] tracking-[0.3em] text-[var(--color-ink-dim)]">2025</span>
+        <span className="text-[8px] tracking-[0.3em] text-[var(--color-ink-dim)]">{new Date().getFullYear()}</span>
       </div>
     </footer>
   );
@@ -706,6 +781,7 @@ const SLIDES = ["home", "about", "projects", "contact"] as const;
 
 export default function Home() {
   const [current, setCurrent] = useState(0);
+  const touchStart = useRef<number | null>(null);
 
   const goTo = (index: number) => {
     if (index === current) return;
@@ -717,15 +793,29 @@ export default function Home() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") next();
-      if (e.key === "ArrowLeft" || e.key === "ArrowUp") prev();
+      if (e.key === "ArrowRight") next();
+      if (e.key === "ArrowLeft") prev();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   });
 
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStart.current = e.touches[0].clientX;
+  };
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart.current === null) return;
+    const diff = touchStart.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) next();
+      else prev();
+    }
+    touchStart.current = null;
+  };
+
   return (
-    <div className="relative h-screen overflow-hidden">
+    <div className="relative h-screen overflow-hidden" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <main id="main-content" className="relative z-10 h-full">
 
         {/* Slides */}
@@ -733,13 +823,16 @@ export default function Home() {
           {/* Hero — full hexagon + star trail background */}
           <div className={`slide ${current === 0 ? "slide-active" : ""}`}>
             <Background currentSlide={current} />
+            {/* Decorative gradient orbs */}
+            <div className="absolute top-[20%] left-[15%] w-72 h-72 rounded-full bg-[var(--color-cyan)] opacity-[0.06] blur-3xl z-[2]" />
+            <div className="absolute bottom-[25%] right-[10%] w-80 h-80 rounded-full bg-[var(--color-pink)] opacity-[0.07] blur-3xl z-[2]" />
             <Hero />
           </div>
 
           {/* About — marble texture */}
           <div className={`slide ${current === 1 ? "slide-active" : ""}`}>
             <div className="absolute inset-0 z-0" style={{
-              background: "linear-gradient(135deg, #c8e4f8 0%, #d8e8f4 20%, #e4e0f0 40%, #f0e0ec 60%, #f4d8e4 80%, #f8d0dc 100%)"
+              background: "linear-gradient(135deg, #b4daf0 0%, #c8e4f4 20%, #dcd8f0 40%, #ecd0e8 60%, #f4c0d8 80%, #f8b0c8 100%)"
             }} />
             <div className="noise-overlay" />
 
@@ -808,11 +901,68 @@ export default function Home() {
             <div className="relative z-10 h-full"><About /></div>
           </div>
 
-          {/* Projects — darker shift */}
+          {/* Projects — blue pink */}
           <div className={`slide ${current === 2 ? "slide-active" : ""}`}>
             <div className="absolute inset-0 z-0" style={{
-              background: "linear-gradient(200deg, #bcdcf0 0%, #c8e2f4 30%, #d0e4f0 60%, #d8dce8 100%)"
+              background: "linear-gradient(135deg, #9acce8 0%, #a8d8f0 25%, #c0e8f8 45%, #e0d8f4 65%, #f0c8e0 80%, #f4d0d8 100%)"
             }} />
+            {/* Abstract overlapping diagonal shapes */}
+            <svg className="absolute inset-0 w-full h-full z-[1] pointer-events-none" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="whiteGlow">
+                  <feGaussianBlur stdDeviation="5" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <g filter="url(#whiteGlow)">
+                <g className="diamond-float diamond-1">
+                  <rect x="-200" y="-100" width="900" height="900" rx="20" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2">
+                    <animateTransform attributeName="transform" type="rotate" values="-30 250 350;-22 250 350;-30 250 350" dur="8s" repeatCount="indefinite" />
+                  </rect>
+                </g>
+                <g className="diamond-float diamond-2">
+                  <rect x="100" y="-200" width="800" height="800" rx="20" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.8">
+                    <animateTransform attributeName="transform" type="rotate" values="-30 500 200;-38 500 200;-30 500 200" dur="10s" repeatCount="indefinite" />
+                  </rect>
+                </g>
+                <g className="diamond-float diamond-3">
+                  <rect x="400" y="-100" width="700" height="700" rx="20" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.8">
+                    <animateTransform attributeName="transform" type="rotate" values="-30 750 250;-22 750 250;-30 750 250" dur="9s" repeatCount="indefinite" />
+                  </rect>
+                </g>
+                <g className="diamond-float diamond-4">
+                  <rect x="600" y="0" width="600" height="600" rx="20" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5">
+                    <animateTransform attributeName="transform" type="rotate" values="-30 900 300;-38 900 300;-30 900 300" dur="11s" repeatCount="indefinite" />
+                  </rect>
+                </g>
+                <g className="diamond-float diamond-5">
+                  <rect x="300" y="200" width="500" height="500" rx="20" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5">
+                    <animateTransform attributeName="transform" type="rotate" values="-30 550 450;-22 550 450;-30 550 450" dur="7s" repeatCount="indefinite" />
+                  </rect>
+                </g>
+                <g className="diamond-float diamond-6">
+                  <rect x="100" y="100" width="600" height="600" rx="20" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.2">
+                    <animateTransform attributeName="transform" type="rotate" values="-30 400 400;-38 400 400;-30 400 400" dur="12s" repeatCount="indefinite" />
+                  </rect>
+                </g>
+                <g className="diamond-float diamond-7">
+                  <rect x="200" y="50" width="400" height="400" rx="10" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1">
+                    <animateTransform attributeName="transform" type="rotate" values="-30 400 250;-22 400 250;-30 400 250" dur="9s" repeatCount="indefinite" />
+                  </rect>
+                </g>
+                <g className="diamond-float diamond-8">
+                  <rect x="500" y="150" width="350" height="350" rx="10" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8">
+                    <animateTransform attributeName="transform" type="rotate" values="-30 675 325;-38 675 325;-30 675 325" dur="10s" repeatCount="indefinite" />
+                  </rect>
+                </g>
+              </g>
+            </svg>
+            {/* Decorative gradient orbs */}
+            <div className="absolute top-[15%] left-[10%] w-64 h-64 rounded-full bg-[var(--color-cyan)] opacity-[0.07] blur-3xl" />
+            <div className="absolute bottom-[20%] right-[15%] w-80 h-80 rounded-full bg-[var(--color-pink)] opacity-[0.08] blur-3xl" />
             <div className="noise-overlay" />
             <div className="relative z-10 h-full"><Projects /></div>
           </div>
@@ -820,8 +970,30 @@ export default function Home() {
           {/* Contact — deepest tone */}
           <div className={`slide ${current === 3 ? "slide-active" : ""}`}>
             <div className="absolute inset-0 z-0" style={{
-              background: "linear-gradient(160deg, #c4dced 0%, #d0e4f0 30%, #dce0e8 60%, #e8d8e0 100%)"
+              background: "linear-gradient(135deg, #a8d0e8 0%, #bcd8f0 25%, #d0d4ec 45%, #e4c8e0 65%, #f0bcd0 80%, #f8b0c0 100%)"
             }} />
+            {/* Abstract diagonal shapes */}
+            <svg className="absolute inset-0 w-full h-full z-[1] pointer-events-none" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="contactGlow">
+                  <feGaussianBlur stdDeviation="4" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <g filter="url(#contactGlow)">
+                <rect className="diamond-float diamond-1" x="-100" y="50" width="700" height="700" rx="15" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" transform="rotate(-30 250 400)" />
+                <rect className="diamond-float diamond-3" x="300" y="-50" width="600" height="600" rx="15" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.2" transform="rotate(-30 600 250)" />
+                <rect className="diamond-float diamond-5" x="600" y="100" width="500" height="500" rx="15" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1" transform="rotate(-30 850 350)" />
+                <rect className="diamond-float diamond-7" x="150" y="300" width="400" height="400" rx="10" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.8" transform="rotate(-30 350 500)" />
+                <rect className="diamond-float diamond-2" x="750" y="400" width="350" height="350" rx="10" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="0.7" transform="rotate(-30 925 575)" />
+              </g>
+            </svg>
+            {/* Decorative gradient orbs */}
+            <div className="absolute top-[15%] right-[15%] w-64 h-64 rounded-full bg-[var(--color-cyan)] opacity-[0.06] blur-3xl z-[2]" />
+            <div className="absolute bottom-[20%] left-[10%] w-72 h-72 rounded-full bg-[var(--color-pink)] opacity-[0.07] blur-3xl z-[2]" />
             <div className="noise-overlay" />
             <div className="relative z-10 h-full">
               <Contact />
@@ -840,13 +1012,11 @@ export default function Home() {
                 <path d="M15 19l-7-7 7-7" />
               </svg>
             </div>
-            <span className="hud text-[8px] tracking-[0.4em] text-[var(--color-ink-dim)] opacity-0 group-hover:opacity-60 transition-opacity -ml-2">PREV</span>
           </button>
         )}
         {current < SLIDES.length - 1 && (
           <button onClick={next} aria-label="Next slide"
             className="fixed right-6 top-1/2 -translate-y-1/2 z-50 hidden md:flex items-center gap-3 group">
-            <span className="hud text-[8px] tracking-[0.4em] text-[var(--color-ink-dim)] opacity-0 group-hover:opacity-60 transition-opacity -mr-2">NEXT</span>
             <div className="relative w-12 h-12 flex items-center justify-center">
               <div className="absolute inset-0 border border-[var(--color-ink-dim)] opacity-30 rotate-45 group-hover:border-[var(--color-cyan)] group-hover:opacity-60 transition-all duration-300" />
               <svg className="w-5 h-5 text-[var(--color-ink-dim)] group-hover:text-[var(--color-cyan)] transition-colors relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -864,7 +1034,7 @@ export default function Home() {
               const isPast = i < current;
               return (
                 <button key={i} onClick={() => goTo(i)} aria-label={`Go to ${name}`}
-                  className="flex flex-col items-center gap-2.5 group outline-none focus:outline-none focus:ring-0 active:outline-none"
+                  className="tap-feedback flex flex-col items-center gap-2.5 py-2 px-3 group outline-none focus:outline-none focus:ring-0 active:outline-none"
                   style={{ WebkitTapHighlightColor: "transparent" }}>
                   {/* Crystal */}
                   <div className="relative">
@@ -883,7 +1053,7 @@ export default function Home() {
                   </div>
                   {/* Label */}
                   <span className={`text-[9px] tracking-[0.25em] transition-opacity duration-200 ${
-                    isActive ? "text-[var(--color-ink)]" : "text-[var(--color-ink-dim)] opacity-50 group-hover:opacity-80"
+                    isActive ? "text-[var(--color-ink)]" : "text-[var(--color-ink-dim)] opacity-70 group-hover:opacity-100"
                   }`}>
                     {name.toUpperCase()}
                   </span>
