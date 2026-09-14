@@ -677,9 +677,30 @@ function Contact() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-5 md:gap-10">
-          {/* Form */}
-          <div className="border border-white/15 bg-white/[0.08] p-4 md:p-8">
+        {/* Creative layout — illustration large on right, form overlapping on left */}
+        <div className="relative">
+
+          {/* Anime girl illustration — large, right side, bleeds out */}
+          <div className="relative md:absolute md:right-0 md:top-0 md:bottom-0 md:w-[45%] border border-white/15 bg-white/[0.05] aspect-[3/4] md:aspect-auto flex items-center justify-center overflow-hidden mb-6 md:mb-0">
+            {/* Replace this div with your <Image> tag once you have the illustration */}
+            <div className="flex flex-col items-center gap-3 opacity-30">
+              <svg className="w-16 h-16 text-[var(--color-ink)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <path d="M21 15l-5-5L5 21" />
+              </svg>
+              <span className="text-[10px] tracking-[0.2em] text-[var(--color-ink)]">ILLUSTRATION HERE</span>
+            </div>
+            {/* Decorative corner accents */}
+            <div className="absolute top-3 left-3 w-6 h-6 border-t border-l border-[var(--color-cyan)] opacity-30" />
+            <div className="absolute bottom-3 right-3 w-6 h-6 border-b border-r border-[var(--color-cyan)] opacity-30" />
+            {/* Gradient overlays */}
+            <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-white/[0.06] to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white/[0.08] to-transparent pointer-events-none" />
+          </div>
+
+          {/* Form — overlaps illustration on desktop */}
+          <div className="relative md:w-[60%] z-10 border border-white/15 bg-[#a8d0e8]/80 backdrop-blur-sm p-5 md:p-8">
             {submitted ? (
               <div className="flex flex-col items-center justify-center py-12 gap-4">
                 <div className="w-12 h-12 rotate-45 bg-[var(--color-cyan)] opacity-60 flex items-center justify-center">
@@ -691,69 +712,61 @@ function Contact() {
                 <p className="text-sm text-[var(--color-ink)] opacity-50">I&apos;ll get back to you soon.</p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
-                <div>
-                  <label htmlFor="name" className="block text-[10px] md:text-[11px] tracking-[0.2em] text-[var(--color-ink)] opacity-60 mb-2">NAME</label>
-                  <input id="name" type="text" value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className={`w-full bg-transparent border ${errors.name ? "border-red-400" : "border-white/20"} px-4 py-3.5 md:py-3 text-sm md:text-sm text-[var(--color-ink)] outline-none focus:border-[var(--color-cyan)] transition-colors`} />
-                  {errors.name && <span className="text-[10px] text-red-400 mt-1 block">{errors.name}</span>}
-                </div>
-                <div>
-                  <label htmlFor="email" className="block text-[10px] md:text-[11px] tracking-[0.2em] text-[var(--color-ink)] opacity-60 mb-2">EMAIL</label>
-                  <input id="email" type="email" value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className={`w-full bg-transparent border ${errors.email ? "border-red-400" : "border-white/20"} px-4 py-3.5 md:py-3 text-sm md:text-sm text-[var(--color-ink)] outline-none focus:border-[var(--color-cyan)] transition-colors`} />
-                  {errors.email && <span className="text-[10px] text-red-400 mt-1 block">{errors.email}</span>}
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:gap-5" noValidate>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+                  <div>
+                    <label htmlFor="name" className="block text-[10px] md:text-[11px] tracking-[0.2em] text-[var(--color-ink)] opacity-60 mb-2">NAME</label>
+                    <input id="name" type="text" value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      className={`w-full bg-transparent border ${errors.name ? "border-red-400" : "border-white/30"} px-4 py-3 text-sm text-[var(--color-ink)] outline-none focus:border-[var(--color-cyan)] transition-colors`} />
+                    {errors.name && <span className="text-[10px] text-red-400 mt-1 block">{errors.name}</span>}
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-[10px] md:text-[11px] tracking-[0.2em] text-[var(--color-ink)] opacity-60 mb-2">EMAIL</label>
+                    <input id="email" type="email" value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      className={`w-full bg-transparent border ${errors.email ? "border-red-400" : "border-white/30"} px-4 py-3 text-sm text-[var(--color-ink)] outline-none focus:border-[var(--color-cyan)] transition-colors`} />
+                    {errors.email && <span className="text-[10px] text-red-400 mt-1 block">{errors.email}</span>}
+                  </div>
                 </div>
                 <div>
                   <label htmlFor="message" className="block text-[10px] md:text-[11px] tracking-[0.2em] text-[var(--color-ink)] opacity-60 mb-2">MESSAGE</label>
                   <textarea id="message" value={form.message} rows={4}
                     onChange={(e) => setForm({ ...form, message: e.target.value })}
-                    className={`w-full bg-transparent border ${errors.message ? "border-red-400" : "border-white/20"} px-4 py-3.5 md:py-3 text-sm md:text-sm text-[var(--color-ink)] outline-none focus:border-[var(--color-cyan)] transition-colors resize-none`} />
+                    className={`w-full bg-transparent border ${errors.message ? "border-red-400" : "border-white/30"} px-4 py-3 text-sm text-[var(--color-ink)] outline-none focus:border-[var(--color-cyan)] transition-colors resize-none`} />
                   {errors.message && <span className="text-[10px] text-red-400 mt-1 block">{errors.message}</span>}
                 </div>
-                <button type="submit"
-                  className="self-start px-8 py-3.5 border border-[var(--color-cyan)] text-[11px] tracking-[0.2em] text-[var(--color-ink)] hover:bg-[var(--color-cyan)] hover:text-white transition-all duration-300">
-                  SEND MESSAGE
-                </button>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <button type="submit"
+                    className="self-start px-8 py-3 border border-[var(--color-cyan)] text-[11px] tracking-[0.2em] text-[var(--color-ink)] hover:bg-[var(--color-cyan)] hover:text-white transition-all duration-300">
+                    SEND MESSAGE
+                  </button>
+                  {/* Inline info */}
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-400 opacity-60 animate-pulse" />
+                    <span className="text-[9px] tracking-[0.2em] text-[var(--color-ink)] opacity-50">AVAILABLE • PHILIPPINES • GMT+8</span>
+                  </div>
+                </div>
               </form>
             )}
           </div>
 
-          {/* Right side — info + links */}
-          <div className="flex flex-col gap-4">
-            {/* Availability */}
-            <div className="border border-white/15 bg-white/[0.05] p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400 opacity-60 animate-pulse" />
-                <span className="text-[9px] tracking-[0.3em] text-[var(--color-ink)] opacity-70">AVAILABLE FOR HIRE</span>
-              </div>
-              <p className="text-[12px] text-[var(--color-ink)] opacity-60 leading-relaxed">
-                Open for freelance, collaborations, and full-time roles.
-              </p>
-              <div className="mt-3 text-[9px] tracking-[0.2em] text-[var(--color-ink)] opacity-40">PHILIPPINES • GMT+8</div>
-            </div>
-
-            {/* Link cards */}
-            <div className="grid grid-cols-3 gap-3">
-              <a href="mailto:jewel@example.com"
-                className="p-4 border border-[var(--color-cyan)]/20 bg-white/[0.05] hover:bg-[var(--color-cyan)] group transition-all duration-300 text-center">
-                <div className="w-2 h-2 rotate-45 bg-[var(--color-cyan)] opacity-40 group-hover:bg-white group-hover:opacity-60 transition-all mx-auto mb-2" />
-                <div className="text-[9px] tracking-[0.15em] text-[var(--color-ink)] group-hover:text-white transition-colors">EMAIL</div>
-              </a>
-              <a href="https://github.com/jewelcruzs0922-dev" target="_blank" rel="noopener noreferrer"
-                className="p-4 border border-white/15 bg-white/[0.05] hover:border-[var(--color-cyan)] group transition-all duration-300 text-center">
-                <div className="w-2 h-2 rotate-45 border border-[var(--color-ink)] opacity-25 group-hover:border-[var(--color-cyan)] group-hover:opacity-50 transition-all mx-auto mb-2" />
-                <div className="text-[9px] tracking-[0.15em] text-[var(--color-ink)]">GITHUB</div>
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
-                className="p-4 border border-white/15 bg-white/[0.05] hover:border-[var(--color-cyan)] group transition-all duration-300 text-center">
-                <div className="w-2 h-2 rotate-45 border border-[var(--color-ink)] opacity-25 group-hover:border-[var(--color-cyan)] group-hover:opacity-50 transition-all mx-auto mb-2" />
-                <div className="text-[9px] tracking-[0.15em] text-[var(--color-ink)]">LINKEDIN</div>
-              </a>
-            </div>
+          {/* Floating link cards — positioned below form on left */}
+          <div className="md:w-[50%] mt-4 md:mt-5 flex gap-3">
+            <a href="mailto:jewel@example.com"
+              className="flex-1 p-3 border border-[var(--color-cyan)]/20 bg-white/[0.05] hover:bg-[var(--color-cyan)] group transition-all duration-300 text-center">
+              <div className="text-[9px] tracking-[0.15em] text-[var(--color-ink)] group-hover:text-white transition-colors">EMAIL</div>
+            </a>
+            <a href="https://github.com/jewelcruzs0922-dev" target="_blank" rel="noopener noreferrer"
+              className="flex-1 p-3 border border-white/15 bg-white/[0.05] hover:border-[var(--color-cyan)] group transition-all duration-300 text-center">
+              <div className="text-[9px] tracking-[0.15em] text-[var(--color-ink)]">GITHUB</div>
+            </a>
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
+              className="flex-1 p-3 border border-white/15 bg-white/[0.05] hover:border-[var(--color-cyan)] group transition-all duration-300 text-center">
+              <div className="text-[9px] tracking-[0.15em] text-[var(--color-ink)]">LINKEDIN</div>
+            </a>
           </div>
+
         </div>
       </div>
     </section>
