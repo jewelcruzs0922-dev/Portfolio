@@ -17,7 +17,7 @@ function HexagonCanvas({ currentSlide }: { currentSlide: number }) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = window.innerWidth < 768 ? 1 : window.devicePixelRatio || 1;
     const w = window.innerWidth;
     const h_screen = window.innerHeight;
     canvas.width = w * dpr;
@@ -30,8 +30,8 @@ function HexagonCanvas({ currentSlide }: { currentSlide: number }) {
     const isMobile = w < 768;
     const size = isMobile ? 28 : 40;
     const hexH = size * Math.sqrt(3);
-    const cols = Math.ceil(w / (size * 1.5)) + 6;
-    const rows = Math.ceil(h_screen * 0.5 / hexH) + 2;
+    const cols = Math.ceil(w / (size * 1.5)) + (isMobile ? 2 : 6);
+    const rows = Math.ceil(h_screen * 0.5 / hexH) + (isMobile ? 0 : 2);
     const cutoffY = isMobile ? 0.4 : 0.45;
 
     const cx = w / 2;
@@ -127,6 +127,8 @@ function HexagonCanvas({ currentSlide }: { currentSlide: number }) {
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReduced) return () => window.removeEventListener("resize", onResize);
 
+    const isMobileView = window.innerWidth < 768;
+
     const starCanvas = starRef.current;
     if (!starCanvas) return;
     const ctx = starCanvas.getContext("2d");
@@ -151,7 +153,7 @@ function HexagonCanvas({ currentSlide }: { currentSlide: number }) {
     }
 
     const drawStars = (time: number) => {
-      if (currentSlide !== 0) {
+      if (!isMobileView && currentSlide !== 0) {
         rafRef.current = requestAnimationFrame(drawStars);
         return;
       }
@@ -267,10 +269,16 @@ function HexagonCanvas({ currentSlide }: { currentSlide: number }) {
         }
       }
 
-      rafRef.current = requestAnimationFrame(drawStars);
+      if (!isMobileView) {
+        rafRef.current = requestAnimationFrame(drawStars);
+      }
     };
 
     const startAnimation = () => {
+      if (isMobileView) {
+        drawStars(performance.now());
+        return;
+      }
       rafRef.current = requestAnimationFrame(drawStars);
     };
     startAnimation();
