@@ -193,6 +193,28 @@ body {
 .marble-vein-4 { animation: marbleWave 16s ease-in-out infinite, marbleBreathe 8s ease-in-out infinite; }
 .marble-vein-5 { animation: marbleWave 20s ease-in-out infinite reverse, marbleBreathe 10s ease-in-out infinite reverse; }
 
+@media (max-width: 768px) {
+  .marble-vein-1,
+  .marble-vein-2,
+  .marble-vein-3,
+  .marble-vein-4,
+  .marble-vein-5 {
+    animation: none;
+  }
+}
+
+/* ── Marquee animation ── */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.333%); }
+}
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+.pause-marquee {
+  animation-play-state: paused;
+}
+
 /* ── HUD label ── */
 .hud {
   font-family: var(--font-jetbrains), monospace;
