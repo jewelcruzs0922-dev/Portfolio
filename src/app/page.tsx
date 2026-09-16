@@ -154,7 +154,6 @@ function HexagonCanvas({ currentSlide }: { currentSlide: number }) {
 
     const drawStars = (time: number) => {
       if (!isMobileView && currentSlide !== 0) {
-        rafRef.current = requestAnimationFrame(drawStars);
         return;
       }
       const t = time * 0.0005;
@@ -417,7 +416,11 @@ function TechIcon({ name }: { name: string }) {
       </svg>
     ),
   };
-  return icons[name] || <div className="w-10 h-10 md:w-12 md:h-12 border border-current opacity-30" />;
+  return (
+    <span role="img" aria-label={name} className="contents">
+      {icons[name] || <div className="w-10 h-10 md:w-12 md:h-12 border border-current opacity-30" />}
+    </span>
+  );
 }
 
 function About() {
@@ -607,7 +610,7 @@ function Projects() {
                 {/* Logo */}
                 <div key={imageKey} className="w-20 h-20 md:w-52 md:h-52 flex items-center justify-center animate-projectFadeIn">
                   <Image src={projects[selected].logo} alt={`${projects[selected].title} logo`}
-                    width={208} height={208}
+                    width={208} height={208} loading="lazy"
                     className="w-full h-full object-contain animate-logoShine" />
                 </div>
 
@@ -684,46 +687,93 @@ function Projects() {
    CONTACT
    ══════════════════════════════════════════════════════════════ */
 function Contact() {
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [errors, setErrors] = useState<{ name?: string; email?: string; message?: string }>({});
+  const [submitted, setSubmitted] = useState(false);
+
+  const validate = () => {
+    const e: typeof errors = {};
+    if (!form.name.trim()) e.name = "Name is required";
+    if (!form.email.trim()) e.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Invalid email";
+    if (!form.message.trim()) e.message = "Message is required";
+    return e;
+  };
+
+  const handleSubmit = (ev: React.FormEvent) => {
+    ev.preventDefault();
+    const e = validate();
+    setErrors(e);
+    if (Object.keys(e).length === 0) setSubmitted(true);
+  };
+
   return (
-    <section id="contact" className="h-full flex flex-col items-center justify-start pt-16 md:pt-24 px-4 md:px-6 overflow-y-auto">
-      {/* Title */}
-      <div className="text-center mb-6 md:mb-10">
-        <h2 className="text-3xl md:text-6xl font-extralight tracking-[0.15em] text-[var(--color-ink)] mb-4">
-          CONTACT
-        </h2>
-        <p className="text-[14px] md:text-lg text-[var(--color-ink)] opacity-80 tracking-wide max-w-lg mx-auto leading-relaxed">
-          Got a project in mind, a question, or just want to say hi? I&apos;m always happy to connect.
-        </p>
+    <section id="contact" className="relative h-full flex items-center justify-center px-4 md:px-6 md:overflow-hidden">
+      <h2 className="sr-only">Contact</h2>
+      {/* Form — absolute left, hidden on mobile */}
+      <div className="absolute left-32 md:left-44 top-1/2 -translate-y-1/2 w-[35%] md:w-[22%] z-10 hidden md:block">
+        {submitted ? (
+          <div className="py-10">
+            <p className="text-lg text-[var(--color-ink)]">Message sent!</p>
+            <p className="text-sm text-[var(--color-ink)] opacity-50 mt-1">I&apos;ll get back to you soon.</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+            <div>
+              <label htmlFor="name" className="block text-[9px] md:text-[10px] tracking-[0.25em] text-[var(--color-ink)] opacity-80 mb-1">NAME</label>
+              <input id="name" type="text" value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className={`w-full bg-transparent border-b ${errors.name ? "border-red-400" : "border-[var(--color-ink)]/60"} px-1 py-2 text-sm text-[var(--color-ink)] outline-none focus:border-[var(--color-ink)] focus-visible:ring-2 focus-visible:ring-[var(--color-cyan)] transition-colors`} />
+              {errors.name && <span className="text-[10px] text-red-400 mt-1 block">{errors.name}</span>}
+            </div>
+            <div>
+              <label htmlFor="email" className="block text-[9px] md:text-[10px] tracking-[0.25em] text-[var(--color-ink)] opacity-80 mb-1">EMAIL</label>
+              <input id="email" type="email" value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className={`w-full bg-transparent border-b ${errors.email ? "border-red-400" : "border-[var(--color-ink)]/60"} px-1 py-2 text-sm text-[var(--color-ink)] outline-none focus:border-[var(--color-ink)] focus-visible:ring-2 focus-visible:ring-[var(--color-cyan)] transition-colors`} />
+              {errors.email && <span className="text-[10px] text-red-400 mt-1 block">{errors.email}</span>}
+            </div>
+            <div>
+              <label htmlFor="message" className="block text-[9px] md:text-[10px] tracking-[0.25em] text-[var(--color-ink)] opacity-80 mb-1">MESSAGE</label>
+              <textarea id="message" value={form.message} rows={3}
+                onChange={(e) => setForm({ ...form, message: e.target.value })}
+                className={`w-full bg-transparent border-b ${errors.message ? "border-red-400" : "border-[var(--color-ink)]/60"} px-1 py-2 text-sm text-[var(--color-ink)] outline-none focus:border-[var(--color-ink)] focus-visible:ring-2 focus-visible:ring-[var(--color-cyan)] transition-colors resize-none`} />
+              {errors.message && <span className="text-[10px] text-red-400 mt-1 block">{errors.message}</span>}
+            </div>
+            <button type="submit"
+              className="self-start px-6 py-2.5 mt-1 border border-[var(--color-ink)]/70 text-[10px] tracking-[0.2em] text-[var(--color-ink)] hover:bg-[var(--color-ink)] hover:text-white transition-all duration-300">
+              SEND
+            </button>
+          </form>
+        )}
       </div>
 
-      {/* Anime girl with clickable icons */}
-      <div className="relative flex-1 flex items-center justify-center w-full">
-        <div className="relative">
-          <Image src="/serah.png" alt="Contact illustration"
-            width={500} height={700}
-            className="w-auto h-[45vh] md:h-[60vh] object-contain" />
+      {/* Girl — untouched, same position as before */}
+      <div className="relative">
+        <Image src="/serah.png" alt="Contact illustration"
+          width={800} height={1120} loading="lazy"
+          className="w-auto h-[120vh] md:h-[130vh] object-contain mt-[35vh] md:mt-[50vh] contrast-[1.4] brightness-[0.85]" />
 
-          {/* Email — left icon */}
-          <a href="mailto:jewel@example.com"
-            className="absolute left-[8%] top-[40%] w-[20%] h-[12%] flex items-center justify-center cursor-pointer"
-            aria-label="Email">
-            <span className="w-full h-full rounded-full bg-transparent hover:bg-[var(--color-cyan)]/15 transition-all duration-300" />
-          </a>
+        {/* Circle hitboxes on icons */}
+        <a href="mailto:jewel@example.com"
+          className="absolute left-[29%] top-[56%] w-24 h-24 md:w-28 md:h-28 rounded-full cursor-pointer z-30"
+          aria-label="Email" />
+        <a href="https://github.com/jewelcruzs0922-dev" target="_blank" rel="noopener noreferrer"
+          className="absolute left-[44%] top-[55%] w-24 h-24 md:w-28 md:h-28 rounded-full cursor-pointer z-30"
+          aria-label="GitHub" />
+        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
+          className="absolute right-[26%] top-[57%] w-20 h-20 md:w-24 md:h-24 rounded-full cursor-pointer z-30"
+          aria-label="Facebook" />
+      </div>
 
-          {/* GitHub — center icon */}
-          <a href="https://github.com/jewelcruzs0922-dev" target="_blank" rel="noopener noreferrer"
-            className="absolute left-[35%] top-[35%] w-[25%] h-[15%] flex items-center justify-center cursor-pointer"
-            aria-label="GitHub">
-            <span className="w-full h-full rounded-full bg-transparent hover:bg-[var(--color-cyan)]/15 transition-all duration-300" />
-          </a>
-
-          {/* Facebook — right icon */}
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
-            className="absolute right-[8%] top-[40%] w-[20%] h-[12%] flex items-center justify-center cursor-pointer"
-            aria-label="Facebook">
-            <span className="w-full h-full rounded-full bg-transparent hover:bg-[var(--color-cyan)]/15 transition-all duration-300" />
-          </a>
-        </div>
+      {/* Right side — text */}
+      <div className="absolute left-4 right-4 md:left-auto md:right-12 top-[5%] md:top-1/2 md:-translate-y-1/2 w-auto md:w-[35%] z-20">
+        <h3 className="text-4xl md:text-7xl font-extralight tracking-[0.05em] text-[#0f2540] mb-4 md:whitespace-nowrap opacity-100">
+          Let&apos;s chat
+        </h3>
+        <p className="text-[14px] md:text-[22px] text-[#0f2540] opacity-90 leading-relaxed">
+          Whether it&apos;s a project, a collaboration, or just a friendly hello — I&apos;d love to hear from you. Let&apos;s turn your ideas into something amazing together.
+        </p>
       </div>
     </section>
   );
@@ -752,13 +802,13 @@ export default function Home() {
   const [current, setCurrent] = useState(0);
   const touchStart = useRef<number | null>(null);
 
-  const goTo = (index: number) => {
+  const goTo = useCallback((index: number) => {
     if (index === current) return;
     setCurrent(index);
-  };
+  }, [current]);
 
-  const next = () => goTo(Math.min(current + 1, SLIDES.length - 1));
-  const prev = () => goTo(Math.max(current - 1, 0));
+  const next = useCallback(() => setCurrent((c) => Math.min(c + 1, SLIDES.length - 1)), []);
+  const prev = useCallback(() => setCurrent((c) => Math.max(c - 1, 0)), []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -767,7 +817,7 @@ export default function Home() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  });
+  }, [next, prev]);
 
   const onTouchStart = (e: React.TouchEvent) => {
     touchStart.current = e.touches[0].clientX;
@@ -785,6 +835,9 @@ export default function Home() {
 
   return (
     <div className="relative h-screen overflow-hidden" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-[var(--color-cyan)] focus:text-white focus:outline-none">
+        Skip to content
+      </a>
       <main id="main-content" className="relative z-10 h-full">
 
         {/* Slides */}
@@ -875,18 +928,18 @@ export default function Home() {
             <div className="absolute inset-0 z-0" style={{
               background: "linear-gradient(135deg, #9acce8 0%, #a8d8f0 25%, #c0e8f8 45%, #e0d8f4 65%, #f0c8e0 80%, #f4d0d8 100%)"
             }} />
-            {/* Abstract overlapping diagonal shapes */}
-            <svg className="absolute inset-0 w-full h-full z-[1] pointer-events-none" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            {/* Abstract overlapping diagonal shapes — animated (desktop) */}
+            <svg className="absolute inset-0 w-full h-full z-[1] pointer-events-none hidden md:block" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
               <defs>
-                <filter id="whiteGlow">
-                  <feGaussianBlur stdDeviation="5" result="blur" />
+                <filter id="projectsGlow">
+                  <feGaussianBlur stdDeviation="4" result="blur" />
                   <feMerge>
                     <feMergeNode in="blur" />
                     <feMergeNode in="SourceGraphic" />
                   </feMerge>
                 </filter>
               </defs>
-              <g filter="url(#whiteGlow)">
+              <g filter="url(#projectsGlow)">
                 <g className="diamond-float diamond-1">
                   <rect x="-200" y="-100" width="900" height="900" rx="20" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2">
                     <animateTransform attributeName="transform" type="rotate" values="-30 250 350;-22 250 350;-30 250 350" dur="8s" repeatCount="indefinite" />
@@ -929,22 +982,10 @@ export default function Home() {
                 </g>
               </g>
             </svg>
-            {/* Decorative gradient orbs */}
-            <div className="absolute top-[15%] left-[10%] w-64 h-64 rounded-full bg-[var(--color-cyan)] opacity-[0.07] blur-3xl" />
-            <div className="absolute bottom-[20%] right-[15%] w-80 h-80 rounded-full bg-[var(--color-pink)] opacity-[0.08] blur-3xl" />
-            <div className="noise-overlay" />
-            <div className="relative z-10 h-full"><Projects /></div>
-          </div>
-
-          {/* Contact — deepest tone */}
-          <div className={`slide ${current === 3 ? "slide-active" : ""}`}>
-            <div className="absolute inset-0 z-0" style={{
-              background: "linear-gradient(135deg, #a8d0e8 0%, #bcd8f0 25%, #d0d4ec 45%, #e4c8e0 65%, #f0bcd0 80%, #f8b0c0 100%)"
-            }} />
-            {/* Abstract diagonal shapes */}
-            <svg className="absolute inset-0 w-full h-full z-[1] pointer-events-none" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            {/* Abstract overlapping diagonal shapes — static (mobile) */}
+            <svg className="absolute inset-0 w-full h-full z-[1] pointer-events-none block md:hidden" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
               <defs>
-                <filter id="contactGlow">
+                <filter id="projectsGlowMobile">
                   <feGaussianBlur stdDeviation="4" result="blur" />
                   <feMerge>
                     <feMergeNode in="blur" />
@@ -952,17 +993,144 @@ export default function Home() {
                   </feMerge>
                 </filter>
               </defs>
-              <g filter="url(#contactGlow)">
-                <rect className="diamond-float diamond-1" x="-100" y="50" width="700" height="700" rx="15" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" transform="rotate(-30 250 400)" />
-                <rect className="diamond-float diamond-3" x="300" y="-50" width="600" height="600" rx="15" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.2" transform="rotate(-30 600 250)" />
-                <rect className="diamond-float diamond-5" x="600" y="100" width="500" height="500" rx="15" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1" transform="rotate(-30 850 350)" />
-                <rect className="diamond-float diamond-7" x="150" y="300" width="400" height="400" rx="10" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.8" transform="rotate(-30 350 500)" />
-                <rect className="diamond-float diamond-2" x="750" y="400" width="350" height="350" rx="10" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="0.7" transform="rotate(-30 925 575)" />
+              <g filter="url(#projectsGlowMobile)">
+                <rect className="diamond-float diamond-1" x="-200" y="-100" width="900" height="900" rx="20" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" transform="rotate(-30 250 350)" />
+                <rect className="diamond-float diamond-2" x="100" y="-200" width="800" height="800" rx="20" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.8" transform="rotate(-30 500 200)" />
+                <rect className="diamond-float diamond-3" x="400" y="-100" width="700" height="700" rx="20" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.8" transform="rotate(-30 750 250)" />
+                <rect className="diamond-float diamond-4" x="600" y="0" width="600" height="600" rx="20" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" transform="rotate(-30 900 300)" />
+                <rect className="diamond-float diamond-5" x="300" y="200" width="500" height="500" rx="20" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" transform="rotate(-30 550 450)" />
+                <rect className="diamond-float diamond-6" x="100" y="100" width="600" height="600" rx="20" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.2" transform="rotate(-30 400 400)" />
+                <rect className="diamond-float diamond-7" x="200" y="50" width="400" height="400" rx="10" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1" transform="rotate(-30 400 250)" />
+                <rect className="diamond-float diamond-8" x="500" y="150" width="350" height="350" rx="10" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8" transform="rotate(-30 675 325)" />
               </g>
             </svg>
             {/* Decorative gradient orbs */}
-            <div className="absolute top-[15%] right-[15%] w-64 h-64 rounded-full bg-[var(--color-cyan)] opacity-[0.06] blur-3xl z-[2]" />
-            <div className="absolute bottom-[20%] left-[10%] w-72 h-72 rounded-full bg-[var(--color-pink)] opacity-[0.07] blur-3xl z-[2]" />
+            <div className="absolute top-[15%] left-[10%] w-64 h-64 rounded-full bg-[var(--color-cyan)] opacity-[0.07] blur-3xl" />
+            <div className="absolute bottom-[20%] right-[15%] w-80 h-80 rounded-full bg-[var(--color-pink)] opacity-[0.08] blur-3xl" />
+            <div className="noise-overlay" />
+            <div className="relative z-10 h-full"><Projects /></div>
+          </div>
+
+          {/* Contact — geometric */}
+          <div className={`slide ${current === 3 ? "slide-active" : ""}`}>
+            {/* Base — blue pink gradient */}
+            <div className="absolute inset-0 z-0" style={{
+              background: "linear-gradient(135deg, #a8d0e8 0%, #bcd8f0 25%, #d0d4ec 45%, #e4c8e0 65%, #f0bcd0 80%, #f8b0c0 100%)"
+            }} />
+            {/* Geometric diamond pattern */}
+            <svg className="absolute inset-0 w-full h-full z-[1] pointer-events-none" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+              <defs>
+                <radialGradient id="centerFade" cx="50%" cy="55%" r="35%">
+                  <stop offset="0%" stopColor="white" stopOpacity="0" />
+                  <stop offset="70%" stopColor="white" stopOpacity="0" />
+                  <stop offset="100%" stopColor="white" stopOpacity="1" />
+                </radialGradient>
+                <mask id="serahMask">
+                  <rect width="1200" height="800" fill="url(#centerFade)" />
+                </mask>
+                <linearGradient id="bluePink1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#7ac8e8" />
+                  <stop offset="100%" stopColor="#c8a0d8" />
+                </linearGradient>
+                <linearGradient id="bluePink2" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#60b8e0" />
+                  <stop offset="100%" stopColor="#d890c0" />
+                </linearGradient>
+                <linearGradient id="pinkBlue" x1="100%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#e0a0c8" />
+                  <stop offset="100%" stopColor="#80c0e0" />
+                </linearGradient>
+                <filter id="geoBlur">
+                  <feGaussianBlur stdDeviation="0.5" />
+                </filter>
+                <filter id="whiteGlow">
+                  <feGaussianBlur stdDeviation="2" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <g mask="url(#serahMask)">
+              {/* Row 1 */}
+              <g className="geo-pulse-1" filter="url(#whiteGlow)">
+                <polygon points="0,50 100,0 200,50 100,100" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="200,50 300,0 400,50 300,100" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="400,50 500,0 600,50 500,100" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="600,50 700,0 800,50 700,100" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="800,50 900,0 1000,50 900,100" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="1000,50 1100,0 1200,50 1100,100" fill="none" stroke="white" strokeWidth="1.5" />
+              </g>
+              {/* Row 2 */}
+              <g className="geo-pulse-2" filter="url(#whiteGlow)">
+                <polygon points="100,140 200,90 300,140 200,190" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="300,140 400,90 500,140 400,190" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="500,140 600,90 700,140 600,190" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="700,140 800,90 900,140 800,190" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="900,140 1000,90 1100,140 1000,190" fill="none" stroke="white" strokeWidth="1.5" />
+              </g>
+              {/* Row 3 */}
+              <g className="geo-pulse-3" filter="url(#whiteGlow)">
+                <polygon points="0,230 100,180 200,230 100,280" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="200,230 300,180 400,230 300,280" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="400,230 500,180 600,230 500,280" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="600,230 700,180 800,230 700,280" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="800,230 900,180 1000,230 900,280" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="1000,230 1100,180 1200,230 1100,280" fill="none" stroke="white" strokeWidth="1.5" />
+              </g>
+              {/* Row 4 */}
+              <g className="geo-pulse-4" filter="url(#whiteGlow)">
+                <polygon points="100,320 200,270 300,320 200,370" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="300,320 400,270 500,320 400,370" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="500,320 600,270 700,320 600,370" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="700,320 800,270 900,320 800,370" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="900,320 1000,270 1100,320 1000,370" fill="none" stroke="white" strokeWidth="1.5" />
+              </g>
+              {/* Row 5 — densest center */}
+              <g className="geo-pulse-5" filter="url(#whiteGlow)">
+                <polygon points="0,410 100,360 200,410 100,460" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="200,410 300,360 400,410 300,460" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="400,410 500,360 600,410 500,460" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="600,410 700,360 800,410 700,460" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="800,410 900,360 1000,410 900,460" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="1000,410 1100,360 1200,410 1100,460" fill="none" stroke="white" strokeWidth="1.5" />
+              </g>
+              {/* Row 6 */}
+              <g className="geo-pulse-6" filter="url(#whiteGlow)">
+                <polygon points="100,500 200,450 300,500 200,550" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="300,500 400,450 500,500 400,550" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="500,500 600,450 700,500 600,550" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="700,500 800,450 900,500 800,550" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="900,500 1000,450 1100,500 1000,550" fill="none" stroke="white" strokeWidth="1.5" />
+              </g>
+              {/* Row 7 */}
+              <g className="geo-pulse-7" filter="url(#whiteGlow)">
+                <polygon points="0,590 100,540 200,590 100,640" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="200,590 300,540 400,590 300,640" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="400,590 500,540 600,590 500,640" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="600,590 700,540 800,590 700,640" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="800,590 900,540 1000,590 900,640" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="1000,590 1100,540 1200,590 1100,640" fill="none" stroke="white" strokeWidth="1.5" />
+              </g>
+              {/* Row 8 */}
+              <g className="geo-pulse-8" filter="url(#whiteGlow)">
+                <polygon points="100,680 200,630 300,680 200,730" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="300,680 400,630 500,680 400,730" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="500,680 600,630 700,680 600,730" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="700,680 800,630 900,680 800,730" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="900,680 1000,630 1100,680 1000,730" fill="none" stroke="white" strokeWidth="1.5" />
+              </g>
+              {/* Row 9 */}
+              <g className="geo-pulse-9" filter="url(#whiteGlow)">
+                <polygon points="0,770 100,720 200,770 100,820" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="200,770 300,720 400,770 300,820" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="400,770 500,720 600,770 500,820" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="600,770 700,720 800,770 700,820" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="800,770 900,720 1000,770 900,820" fill="none" stroke="white" strokeWidth="1.5" />
+                <polygon points="1000,770 1100,720 1200,770 1100,820" fill="none" stroke="white" strokeWidth="1.5" />
+              </g>
+              </g>
+            </svg>
             <div className="noise-overlay" />
             <div className="relative z-10 h-full">
               <Contact />

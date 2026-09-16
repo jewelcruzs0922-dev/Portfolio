@@ -21,7 +21,9 @@ export const metadata: Metadata = {
   },
   description:
     "Frontend developer from the Philippines building production-grade web applications. Next.js, React, TypeScript — 100+ tests, Lighthouse 100 performance.",
-  metadataBase: new URL("https://jewelcruz.dev"),
+  metadataBase: process.env.VERCEL_URL
+    ? new URL(`https://${process.env.VERCEL_URL}`)
+    : new URL("http://localhost:3000"),
   alternates: {
     canonical: "/",
   },

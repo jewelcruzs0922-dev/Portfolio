@@ -289,6 +289,23 @@ body {
 .diamond-7 { animation-duration: 9s; animation-delay: -6s; }
 .diamond-8 { animation-duration: 10s; animation-delay: -7s; }
 
+@keyframes geoPulse {
+  0%, 100% { opacity: var(--pulse-start); }
+  50% { opacity: var(--pulse-end); }
+}
+
+@media (min-width: 768px) {
+  .geo-pulse-1 { animation: geoPulse 4s ease-in-out infinite; --pulse-start: 0.15; --pulse-end: 0.6; }
+  .geo-pulse-2 { animation: geoPulse 5s ease-in-out infinite; --pulse-start: 0.2; --pulse-end: 0.7; }
+  .geo-pulse-3 { animation: geoPulse 6s ease-in-out infinite; --pulse-start: 0.25; --pulse-end: 0.8; }
+  .geo-pulse-4 { animation: geoPulse 5.5s ease-in-out infinite; --pulse-start: 0.3; --pulse-end: 0.85; }
+  .geo-pulse-5 { animation: geoPulse 4.5s ease-in-out infinite; --pulse-start: 0.35; --pulse-end: 0.95; }
+  .geo-pulse-6 { animation: geoPulse 5s ease-in-out infinite; --pulse-start: 0.3; --pulse-end: 0.85; }
+  .geo-pulse-7 { animation: geoPulse 6s ease-in-out infinite; --pulse-start: 0.25; --pulse-end: 0.8; }
+  .geo-pulse-8 { animation: geoPulse 5.5s ease-in-out infinite; --pulse-start: 0.2; --pulse-end: 0.7; }
+  .geo-pulse-9 { animation: geoPulse 4s ease-in-out infinite; --pulse-start: 0.15; --pulse-end: 0.6; }
+}
+
 /* ── Slides ── */
 @keyframes canvasReveal {
   0% {
@@ -315,7 +332,6 @@ body {
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
   transform: scale(0.98);
-  overflow: hidden;
   will-change: opacity, transform;
 }
 .slide-active {
