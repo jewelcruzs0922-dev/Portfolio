@@ -752,7 +752,7 @@ function Contact() {
       <div className="relative">
         <Image src="/serah.png" alt="Contact illustration"
           width={800} height={1120} loading="lazy"
-          className="w-auto h-[120vh] md:h-[130vh] object-contain mt-[35vh] md:mt-[50vh] contrast-[1.4] brightness-[0.85]" />
+          className="w-auto h-[100vh] md:h-[130vh] object-contain mt-[35vh] md:mt-[50vh] contrast-[1.4] brightness-[0.85] scale-[1.8] md:scale-100" />
 
         {/* Circle hitboxes on icons */}
         <a href="mailto:jewel@example.com"
