@@ -2,6 +2,9 @@
 
 import { useEffect, useState, useRef, useCallback, type JSX } from "react";
 import Image from "next/image";
+import Faq from "@/components/Faq";
+import { CONTACT, PROJECTS, SLIDES } from "@/lib/site";
+import { EMPTY_CONTACT_FORM, validateContact } from "@/lib/validate";
 
 /* ══════════════════════════════════════════════════════════════
    HEXAGON CANVAS BACKGROUND
@@ -128,6 +131,9 @@ function HexagonCanvas({ currentSlide }: { currentSlide: number }) {
     if (prefersReduced) return () => window.removeEventListener("resize", onResize);
 
     const isMobileView = window.innerWidth < 768;
+    const isTouch = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+    const frameInterval = isTouch ? 1000 / 30 : 0;
+    let lastFrame = 0;
 
     const starCanvas = starRef.current;
     if (!starCanvas) return;
@@ -153,9 +159,14 @@ function HexagonCanvas({ currentSlide }: { currentSlide: number }) {
     }
 
     const drawStars = (time: number) => {
-      if (!isMobileView && currentSlide !== 0) {
+      if (currentSlide !== 0) {
         return;
       }
+      if (frameInterval && time - lastFrame < frameInterval) {
+        rafRef.current = requestAnimationFrame(drawStars);
+        return;
+      }
+      lastFrame = time;
       const t = time * 0.0005;
       ctx.clearRect(0, 0, w, h_screen);
 
@@ -295,8 +306,7 @@ function HexagonCanvas({ currentSlide }: { currentSlide: number }) {
         zIndex: 2,
         opacity: currentSlide === 0 ? 1 : 0,
         transform: currentSlide === 0 ? "translateY(0) scale(1)" : "translateY(20px) scale(0.95)",
-        filter: currentSlide === 0 ? "blur(0px)" : "blur(6px)",
-        transition: "opacity 0.6s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), filter 0.6s ease",
+        transition: "opacity 0.6s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1)",
       }} />
     </>
   );
@@ -311,11 +321,11 @@ function Background({ currentSlide }: { currentSlide: number }) {
       <div className="fixed inset-0 z-0" style={{
         background: "linear-gradient(180deg, #b8ddef 0%, #c0e2f4 15%, #cce8f6 30%, #d4ecf8 45%, #dcf0fa 55%, #e4ecf2 65%, #ecdce6 78%, #f4c8dc 90%, #f8b8cc 100%)"
       }} />
-      <div className="absolute top-0 left-0 w-full h-screen overflow-hidden z-[1]">
+      <div className="absolute top-0 left-0 w-full h-dvh overflow-hidden z-[1]">
         <HexagonCanvas currentSlide={currentSlide} />
         <div className="noise-overlay" />
         <div className="absolute bottom-0 left-0 right-0 h-[85vh] z-[3] opacity-0 animate-mountainReveal" style={{
-          backgroundImage: "url(/grid-bg.png)",
+          backgroundImage: "url(/grid-bg.webp)",
           backgroundSize: "cover",
           backgroundPosition: "center top",
           maskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 30%, transparent 80%)",
@@ -341,14 +351,12 @@ function Hero() {
         <div className="flex items-center justify-center gap-4 mt-4 mb-2">
           <div className="w-12 h-px bg-[var(--color-ink)] opacity-20" />
           <div className="text-center">
-            <p className="text-base md:text-lg tracking-[0.3em] text-[var(--color-ink)] opacity-80">FRONTEND DEVELOPER</p>
-            <p className="text-base md:text-lg tracking-[0.3em]"
+            <p className="text-base md:text-lg tracking-[0.3em] text-[var(--color-ink)] font-medium">FRONTEND DEVELOPER</p>
+            <p className="text-base md:text-lg tracking-[0.3em] font-medium"
               style={{
-                background: "linear-gradient(90deg, #7ad8f0, #c0a0e0, #f0b8d0)",
+                background: "linear-gradient(90deg, #1ec8f5, #9b6bf0, #f04f96)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
-                textShadow: "0 0 30px rgba(120,216,240,0.5), 0 0 60px rgba(240,184,208,0.4)",
-                filter: "drop-shadow(0 0 12px rgba(120,216,240,0.5)) drop-shadow(0 0 24px rgba(240,184,208,0.4))",
               }}>WEB DESIGNER</p>
           </div>
           <div className="w-12 h-px bg-[var(--color-ink)] opacity-20" />
@@ -357,7 +365,7 @@ function Hero() {
 
       {/* Tagline */}
       <div className="text-center mt-5 fade-in fade-d3">
-        <p className="text-sm md:text-base tracking-[0.2em] text-[var(--color-ink-dim)] opacity-70">
+        <p className="text-sm md:text-base tracking-[0.2em] text-[var(--color-ink-dim)] font-medium">
           Innovation through iteration
         </p>
       </div>
@@ -506,6 +514,11 @@ function About() {
             </div>
           </div>
         </div>
+
+        {/* FAQ */}
+        <div className="mt-8 md:mt-12">
+          <Faq />
+        </div>
       </div>
     </section>
   );
@@ -518,28 +531,7 @@ function Projects() {
   const [selected, setSelected] = useState(0);
   const [imageKey, setImageKey] = useState(0);
 
-  const projects = [
-    {
-      id: "001", title: "Redwood Retreats", cat: "CABIN RENTAL PLATFORM",
-      desc: "A full-stack cabin rental platform featuring real-time canvas animations, a dynamic pricing engine, and a seamless booking system. Built with performance and user experience in mind, it delivers an immersive way to discover and reserve modern A-frame retreats in nature.",
-      highlights: ["Real-time canvas animations", "Dynamic pricing engine", "Seamless booking system", "Performance optimized"],
-      tech: ["Next.js", "TypeScript", "Canvas API", "Tailwind"],
-      live: "https://redwood-retreats.vercel.app",
-      code: "https://github.com/jewelcruzs0922-dev/redwood-retreats",
-      image: "/redwood-preview.png",
-      logo: "/redwood-logo.svg",
-    },
-    {
-      id: "002", title: "Cosmic Ray Solar", cat: "SOLAR ENERGY PLATFORM",
-      desc: "A solar energy company platform with integrated Stripe payments for seamless transactions and Sanity CMS for flexible content management. Fully responsive across all devices, it showcases solar solutions with a clean, modern interface built for conversion.",
-      highlights: ["Stripe payment integration", "Sanity CMS management", "Fully responsive design", "Conversion-focused UI"],
-      tech: ["Next.js", "Stripe", "Sanity", "Tailwind"],
-      live: "https://cosmicray-solar.netlify.app",
-      code: "https://github.com/jewelcruzs0922-dev/cosmicray-solar",
-      image: "/cosmicray-preview.png",
-      logo: "/cosmicray-logo.svg",
-    },
-  ];
+  const projects = PROJECTS;
 
   const select = (idx: number) => {
     if (idx === selected) return;
@@ -687,22 +679,13 @@ function Projects() {
    CONTACT
    ══════════════════════════════════════════════════════════════ */
 function Contact() {
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const [errors, setErrors] = useState<{ name?: string; email?: string; message?: string }>({});
+  const [form, setForm] = useState(EMPTY_CONTACT_FORM);
+  const [errors, setErrors] = useState<ReturnType<typeof validateContact>>({});
   const [submitted, setSubmitted] = useState(false);
-
-  const validate = () => {
-    const e: typeof errors = {};
-    if (!form.name.trim()) e.name = "Name is required";
-    if (!form.email.trim()) e.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Invalid email";
-    if (!form.message.trim()) e.message = "Message is required";
-    return e;
-  };
 
   const handleSubmit = (ev: React.FormEvent) => {
     ev.preventDefault();
-    const e = validate();
+    const e = validateContact(form);
     setErrors(e);
     if (Object.keys(e).length === 0) setSubmitted(true);
   };
@@ -710,70 +693,183 @@ function Contact() {
   return (
     <section id="contact" className="relative h-full flex items-center justify-center px-4 md:px-6 md:overflow-hidden">
       <h2 className="sr-only">Contact</h2>
-      {/* Form — absolute left, hidden on mobile */}
-      <div className="absolute left-32 md:left-44 top-1/2 -translate-y-1/2 w-[35%] md:w-[22%] z-10 hidden md:block">
+      {/* Form — absolute left, hidden on mobile and tablet */}
+      <div className="absolute left-6 md:left-20 lg:left-44 top-1/2 -translate-y-1/2 w-[35%] md:w-[25%] lg:w-[22%] z-10 hidden lg:block">
         {submitted ? (
           <div className="py-10">
             <p className="text-lg text-[var(--color-ink)]">Message sent!</p>
-            <p className="text-sm text-[var(--color-ink)] opacity-50 mt-1">I&apos;ll get back to you soon.</p>
+            <p className="text-sm text-[var(--color-ink)] opacity-75 mt-1">I&apos;ll get back to you soon.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-            <div>
-              <label htmlFor="name" className="block text-[9px] md:text-[10px] tracking-[0.25em] text-[var(--color-ink)] opacity-80 mb-1">NAME</label>
-              <input id="name" type="text" value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className={`w-full bg-transparent border-b ${errors.name ? "border-red-400" : "border-[var(--color-ink)]/60"} px-1 py-2 text-sm text-[var(--color-ink)] outline-none focus:border-[var(--color-ink)] focus-visible:ring-2 focus-visible:ring-[var(--color-cyan)] transition-colors`} />
-              {errors.name && <span className="text-[10px] text-red-400 mt-1 block">{errors.name}</span>}
+            {/* Header */}
+            <div className="flex items-center gap-3">
+              <svg className="w-4 h-4 text-[var(--color-ink)]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 1 Q13 10 23 12 Q13 14 12 23 Q11 14 1 12 Q11 10 12 1 Z" />
+              </svg>
+              <span className="text-[10px] tracking-[0.3em] text-[var(--color-ink)] font-medium">GET IN TOUCH</span>
+              <div className="flex-1 h-px bg-[var(--color-ink)] opacity-25" />
             </div>
+
+            {/* NAME */}
             <div>
-              <label htmlFor="email" className="block text-[9px] md:text-[10px] tracking-[0.25em] text-[var(--color-ink)] opacity-80 mb-1">EMAIL</label>
-              <input id="email" type="email" value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className={`w-full bg-transparent border-b ${errors.email ? "border-red-400" : "border-[var(--color-ink)]/60"} px-1 py-2 text-sm text-[var(--color-ink)] outline-none focus:border-[var(--color-ink)] focus-visible:ring-2 focus-visible:ring-[var(--color-cyan)] transition-colors`} />
-              {errors.email && <span className="text-[10px] text-red-400 mt-1 block">{errors.email}</span>}
+              <div className="group relative">
+                <div className={`absolute inset-0 panel-clip transition-colors ${errors.name ? "bg-[var(--color-danger)]/80" : "bg-white/40 group-focus-within:bg-[var(--color-cyan)]"} `} aria-hidden="true" />
+                <div className="relative m-px panel-clip glass-panel">
+                  <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-[var(--color-ink)]/10">
+                    <div className="flex items-center gap-2 text-[var(--color-ink)]">
+                      <svg aria-hidden="true" className="w-[15px] h-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                      <label htmlFor="name" className="text-[10px] tracking-[0.25em] font-medium">NAME</label>
+                    </div>
+                  </div>
+                  <input id="name" type="text" value={form.name} placeholder="Your name here..."
+                    aria-invalid={errors.name ? true : undefined}
+                    aria-describedby={errors.name ? "name-error" : undefined}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="w-full bg-transparent px-4 pt-2.5 pb-3.5 text-[13px] text-[var(--color-ink)] placeholder:text-[var(--color-ink)]/60 outline-none" />
+                </div>
+              </div>
+              {errors.name && (
+                <span id="name-error" role="alert" className="text-[10px] text-[var(--color-danger)] mt-1 block">{errors.name}</span>
+              )}
             </div>
+
+            {/* E-MAIL */}
             <div>
-              <label htmlFor="message" className="block text-[9px] md:text-[10px] tracking-[0.25em] text-[var(--color-ink)] opacity-80 mb-1">MESSAGE</label>
-              <textarea id="message" value={form.message} rows={3}
-                onChange={(e) => setForm({ ...form, message: e.target.value })}
-                className={`w-full bg-transparent border-b ${errors.message ? "border-red-400" : "border-[var(--color-ink)]/60"} px-1 py-2 text-sm text-[var(--color-ink)] outline-none focus:border-[var(--color-ink)] focus-visible:ring-2 focus-visible:ring-[var(--color-cyan)] transition-colors resize-none`} />
-              {errors.message && <span className="text-[10px] text-red-400 mt-1 block">{errors.message}</span>}
+              <div className="group relative">
+                <div className={`absolute inset-0 panel-clip transition-colors ${errors.email ? "bg-[var(--color-danger)]/80" : "bg-white/40 group-focus-within:bg-[var(--color-cyan)]"} `} aria-hidden="true" />
+                <div className="relative m-px panel-clip glass-panel">
+                  <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-[var(--color-ink)]/10">
+                    <div className="flex items-center gap-2 text-[var(--color-ink)]">
+                      <svg aria-hidden="true" className="w-[15px] h-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <rect x="2" y="4" width="20" height="16" rx="2" />
+                        <path d="M22 4L12 13L2 4" />
+                      </svg>
+                      <label htmlFor="email" className="text-[10px] tracking-[0.25em] font-medium">E-MAIL</label>
+                    </div>
+                  </div>
+                  <input id="email" type="email" value={form.email} placeholder="you@example.com"
+                    aria-invalid={errors.email ? true : undefined}
+                    aria-describedby={errors.email ? "email-error" : undefined}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    className="w-full bg-transparent px-4 pt-2.5 pb-3.5 text-[13px] text-[var(--color-ink)] placeholder:text-[var(--color-ink)]/60 outline-none" />
+                </div>
+              </div>
+              {errors.email && (
+                <span id="email-error" role="alert" className="text-[10px] text-[var(--color-danger)] mt-1 block">{errors.email}</span>
+              )}
             </div>
-            <button type="submit"
-              className="self-start px-6 py-2.5 mt-1 border border-[var(--color-ink)]/70 text-[10px] tracking-[0.2em] text-[var(--color-ink)] hover:bg-[var(--color-ink)] hover:text-white transition-all duration-300">
-              SEND
-            </button>
+
+            {/* MESSAGE */}
+            <div>
+              <div className="group relative">
+                <div className={`absolute inset-0 panel-clip transition-colors ${errors.message ? "bg-[var(--color-danger)]/80" : "bg-white/40 group-focus-within:bg-[var(--color-cyan)]"} `} aria-hidden="true" />
+                <div className="relative m-px panel-clip glass-panel">
+                  <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-[var(--color-ink)]/10">
+                    <div className="flex items-center gap-2 text-[var(--color-ink)]">
+                      <svg aria-hidden="true" className="w-[15px] h-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                      </svg>
+                      <label htmlFor="message" className="text-[10px] tracking-[0.25em] font-medium">MESSAGE</label>
+                    </div>
+                  </div>
+                  <textarea id="message" value={form.message} rows={3} placeholder="What would you like to talk about?"
+                    aria-invalid={errors.message ? true : undefined}
+                    aria-describedby={errors.message ? "message-error" : undefined}
+                    onChange={(e) => setForm({ ...form, message: e.target.value })}
+                    className="w-full bg-transparent px-4 pt-2.5 pb-3.5 text-[13px] text-[var(--color-ink)] placeholder:text-[var(--color-ink)]/60 outline-none resize-none" />
+                </div>
+              </div>
+              {errors.message && (
+                <span id="message-error" role="alert" className="text-[10px] text-[var(--color-danger)] mt-1 block">{errors.message}</span>
+              )}
+            </div>
+
+            {/* Send */}
+            <div className="flex items-center gap-3 mt-1">
+              <div className="drop-shadow-[0_6px_14px_rgba(26,58,90,0.35)]">
+                <button type="submit"
+                  className="flex items-center gap-2 px-7 py-3 bg-gradient-to-r from-[#2c4c6e] to-[#16304a] text-white text-[11px] tracking-[0.2em] font-medium hover:from-[#36597f] hover:to-[#1c3c5c] transition-all duration-300 clip-path-hex">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M22 2L11 13" /><path d="M22 2L15 22L11 13L2 9L22 2Z" />
+                  </svg>
+                  SEND
+                </button>
+              </div>
+              <div className="flex items-center gap-2 flex-1">
+                <div className="flex-1 h-px bg-[var(--color-ink)] opacity-25" />
+                <svg className="w-3 h-3 text-[var(--color-ink)] opacity-50 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 1 Q13 10 23 12 Q13 14 12 23 Q11 14 1 12 Q11 10 12 1 Z" />
+                </svg>
+                <span className="text-[9px] tracking-[0.2em] text-[var(--color-ink)] opacity-75 whitespace-nowrap">I&apos;LL REPLY SOON</span>
+              </div>
+            </div>
           </form>
         )}
       </div>
 
-      {/* Girl — untouched, same position as before */}
-      <div className="relative">
-        <Image src="/serah.png" alt="Contact illustration"
-          width={800} height={1120} loading="lazy"
-          className="w-auto h-[100vh] md:h-[130vh] object-contain mt-[35vh] md:mt-[50vh] contrast-[1.4] brightness-[0.85] scale-[1.8] md:scale-100" />
+      {/* Girl — feathered white silhouette behind, line art on top */}
+      <div className="relative grid">
+        <Image src="/serah-tint.webp" alt="" aria-hidden loading="lazy"
+          width={896} height={1200}
+          className="col-start-1 row-start-1 w-auto h-[100vh] md:h-[120vh] lg:h-[130vh] object-contain mt-[35vh] md:mt-[40vh] lg:mt-[50vh] scale-[1.5] md:scale-[1.1] lg:scale-100 pointer-events-none select-none" />
+        <Image src="/serah.webp" alt="Contact illustration" loading="lazy"
+          width={896} height={1200}
+          className="col-start-1 row-start-1 w-auto h-[100vh] md:h-[120vh] lg:h-[130vh] object-contain mt-[35vh] md:mt-[40vh] lg:mt-[50vh] contrast-[1.4] brightness-[0.85] scale-[1.5] md:scale-[1.1] lg:scale-100" />
 
         {/* Circle hitboxes on icons */}
-        <a href="mailto:jewel@example.com"
-          className="absolute left-[29%] top-[56%] w-24 h-24 md:w-28 md:h-28 rounded-full cursor-pointer z-30"
+        <a href={`mailto:${CONTACT.email}`}
+          className="absolute left-[29%] top-[56%] w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full cursor-pointer z-30 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-focus)]"
           aria-label="Email" />
-        <a href="https://github.com/jewelcruzs0922-dev" target="_blank" rel="noopener noreferrer"
-          className="absolute left-[44%] top-[55%] w-24 h-24 md:w-28 md:h-28 rounded-full cursor-pointer z-30"
+        <a href={CONTACT.github} target="_blank" rel="noopener noreferrer"
+          className="absolute left-[44%] top-[55%] w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full cursor-pointer z-30 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-focus)]"
           aria-label="GitHub" />
-        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
-          className="absolute right-[26%] top-[57%] w-20 h-20 md:w-24 md:h-24 rounded-full cursor-pointer z-30"
+        <a href={CONTACT.facebook} target="_blank" rel="noopener noreferrer"
+          className="absolute right-[26%] top-[57%] w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full cursor-pointer z-30 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-focus)]"
           aria-label="Facebook" />
       </div>
 
       {/* Right side — text */}
-      <div className="absolute left-4 right-4 md:left-auto md:right-12 top-[5%] md:top-1/2 md:-translate-y-1/2 w-auto md:w-[35%] z-20">
-        <h3 className="text-4xl md:text-7xl font-extralight tracking-[0.05em] text-[#0f2540] mb-4 md:whitespace-nowrap opacity-100">
+      <div className="absolute left-0 right-0 top-8 md:top-[8%] lg:left-auto lg:right-12 lg:top-1/2 lg:-translate-y-1/2 w-full lg:w-[35%] z-20 text-center lg:text-left">
+        {/* Label */}
+        <div className="hidden lg:flex items-center gap-3 mb-3">
+          <svg className="w-3 h-3 text-[var(--color-ink)]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 1 Q13 10 23 12 Q13 14 12 23 Q11 14 1 12 Q11 10 12 1 Z" />
+          </svg>
+          <span className="text-[9px] tracking-[0.3em] text-[var(--color-ink)] opacity-80">LET&apos;S CONNECT</span>
+          <div className="flex-1 h-px bg-[var(--color-ink)] opacity-20" />
+        </div>
+        <h3 className="text-[56px] md:text-6xl lg:text-7xl font-extralight tracking-[0.05em] text-[#0f2540] mb-4 md:whitespace-nowrap opacity-100">
           Let&apos;s chat
         </h3>
-        <p className="text-[14px] md:text-[22px] text-[#0f2540] opacity-90 leading-relaxed">
+        {/* Mobile / tablet CTA — the form below is desktop-only, and the
+            illustration hitboxes have no visible affordance */}
+        <nav aria-label="Contact links" className="lg:hidden flex flex-wrap items-center justify-center gap-3 mb-2">
+          <a href={`mailto:${CONTACT.email}`}
+            className="min-h-11 inline-flex items-center px-5 text-[10px] tracking-[0.25em] font-medium text-[var(--color-ink)] border border-[var(--color-ink)]/25 hover:border-[var(--color-focus)] hover:text-[var(--color-focus)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus)]">
+            EMAIL
+          </a>
+          <a href={CONTACT.github} target="_blank" rel="noopener noreferrer"
+            className="min-h-11 inline-flex items-center px-5 text-[10px] tracking-[0.25em] font-medium text-[var(--color-ink)] border border-[var(--color-ink)]/25 hover:border-[var(--color-focus)] hover:text-[var(--color-focus)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus)]">
+            GITHUB
+          </a>
+          <a href={CONTACT.facebook} target="_blank" rel="noopener noreferrer"
+            className="min-h-11 inline-flex items-center px-5 text-[10px] tracking-[0.25em] font-medium text-[var(--color-ink)] border border-[var(--color-ink)]/25 hover:border-[var(--color-focus)] hover:text-[var(--color-focus)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus)]">
+            FACEBOOK
+          </a>
+        </nav>
+        <p className="hidden lg:block text-[14px] md:text-[16px] lg:text-[22px] text-[#0f2540] opacity-90 leading-relaxed mb-6">
           Whether it&apos;s a project, a collaboration, or just a friendly hello — I&apos;d love to hear from you. Let&apos;s turn your ideas into something amazing together.
         </p>
+        {/* Tagline */}
+        <div className="hidden lg:flex items-center gap-3">
+          <div className="flex-1 h-px bg-[var(--color-ink)] opacity-20" />
+          <span className="text-[9px] tracking-[0.25em] text-[var(--color-ink)] opacity-75">IDEAS ✦ PROJECTS ✦ TOGETHER</span>
+          <div className="flex-1 h-px bg-[var(--color-ink)] opacity-20" />
+        </div>
       </div>
     </section>
   );
@@ -785,7 +881,7 @@ function Contact() {
 function Footer() {
   return (
     <footer className="py-6 px-6">
-      <div className="max-w-5xl mx-auto flex items-center justify-between opacity-30">
+      <div className="max-w-5xl mx-auto flex items-center justify-between opacity-70">
         <span className="text-[8px] tracking-[0.3em] text-[var(--color-ink-dim)]">JC</span>
         <span className="text-[8px] tracking-[0.3em] text-[var(--color-ink-dim)]">{new Date().getFullYear()}</span>
       </div>
@@ -796,11 +892,15 @@ function Footer() {
 /* ══════════════════════════════════════════════════════════════
    MAIN
    ══════════════════════════════════════════════════════════════ */
-const SLIDES = ["home", "about", "projects", "contact"] as const;
-
 export default function Home() {
   const [current, setCurrent] = useState(0);
+  const [settled, setSettled] = useState(0);
   const touchStart = useRef<number | null>(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => setSettled(current), 400);
+    return () => clearTimeout(t);
+  }, [current]);
 
   const goTo = useCallback((index: number) => {
     if (index === current) return;
@@ -834,7 +934,7 @@ export default function Home() {
   };
 
   return (
-    <div className="relative h-screen overflow-hidden" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+    <div className="relative h-dvh overflow-hidden" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-[var(--color-cyan)] focus:text-white focus:outline-none">
         Skip to content
       </a>
@@ -842,17 +942,22 @@ export default function Home() {
 
         {/* Slides */}
         <div className="relative h-full">
-          {/* Hero — full hexagon + star trail background */}
-          <div className={`slide ${current === 0 ? "slide-active" : ""}`}>
+          {/* Global background — hoisted out of the Home slide so it stays
+              visible on every slide and inactive slides can skip rendering */}
+          <div className="absolute inset-0 z-0 pointer-events-none">
             <Background currentSlide={current} />
+          </div>
+
+          {/* Hero — full hexagon + star trail background */}
+          <div className={`slide ${current === 0 ? "slide-active" : ""} ${current !== 0 && settled !== 0 ? "slide-idle" : ""}`}>
             {/* Decorative gradient orbs */}
-            <div className="absolute top-[20%] left-[15%] w-72 h-72 rounded-full bg-[var(--color-cyan)] opacity-[0.06] blur-3xl z-[2]" />
-            <div className="absolute bottom-[25%] right-[10%] w-80 h-80 rounded-full bg-[var(--color-pink)] opacity-[0.07] blur-3xl z-[2]" />
+            <div className="absolute top-[20%] left-[15%] w-72 h-72 rounded-full z-[2]" style={{ background: "radial-gradient(circle, rgba(122,216,240,0.10) 0%, rgba(122,216,240,0) 70%)" }} />
+            <div className="absolute bottom-[25%] right-[10%] w-80 h-80 rounded-full z-[2]" style={{ background: "radial-gradient(circle, rgba(240,216,232,0.12) 0%, rgba(240,216,232,0) 70%)" }} />
             <Hero />
           </div>
 
           {/* About — marble texture */}
-          <div className={`slide ${current === 1 ? "slide-active" : ""}`}>
+          <div className={`slide ${current === 1 ? "slide-active" : ""} ${current !== 1 && settled !== 1 ? "slide-idle" : ""}`}>
             <div className="absolute inset-0 z-0" style={{
               background: "linear-gradient(135deg, #b4daf0 0%, #c8e4f4 20%, #dcd8f0 40%, #ecd0e8 60%, #f4c0d8 80%, #f8b0c8 100%)"
             }} />
@@ -924,7 +1029,7 @@ export default function Home() {
           </div>
 
           {/* Projects — blue pink */}
-          <div className={`slide ${current === 2 ? "slide-active" : ""}`}>
+          <div className={`slide ${current === 2 ? "slide-active" : ""} ${current !== 2 && settled !== 2 ? "slide-idle" : ""}`}>
             <div className="absolute inset-0 z-0" style={{
               background: "linear-gradient(135deg, #9acce8 0%, #a8d8f0 25%, #c0e8f8 45%, #e0d8f4 65%, #f0c8e0 80%, #f4d0d8 100%)"
             }} />
@@ -939,7 +1044,7 @@ export default function Home() {
                   </feMerge>
                 </filter>
               </defs>
-              <g filter="url(#projectsGlow)">
+              <g className="glow-anim" filter="url(#projectsGlow)">
                 <g className="diamond-float diamond-1">
                   <rect x="-200" y="-100" width="900" height="900" rx="20" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2">
                     <animateTransform attributeName="transform" type="rotate" values="-30 250 350;-22 250 350;-30 250 350" dur="8s" repeatCount="indefinite" />
@@ -1005,129 +1110,62 @@ export default function Home() {
               </g>
             </svg>
             {/* Decorative gradient orbs */}
-            <div className="absolute top-[15%] left-[10%] w-64 h-64 rounded-full bg-[var(--color-cyan)] opacity-[0.07] blur-3xl" />
-            <div className="absolute bottom-[20%] right-[15%] w-80 h-80 rounded-full bg-[var(--color-pink)] opacity-[0.08] blur-3xl" />
+            <div className="absolute top-[15%] left-[10%] w-64 h-64 rounded-full" style={{ background: "radial-gradient(circle, rgba(122,216,240,0.12) 0%, rgba(122,216,240,0) 70%)" }} />
+            <div className="absolute bottom-[20%] right-[15%] w-80 h-80 rounded-full" style={{ background: "radial-gradient(circle, rgba(240,216,232,0.14) 0%, rgba(240,216,232,0) 70%)" }} />
             <div className="noise-overlay" />
             <div className="relative z-10 h-full"><Projects /></div>
           </div>
 
           {/* Contact — geometric */}
-          <div className={`slide ${current === 3 ? "slide-active" : ""}`}>
+          <div className={`slide ${current === 3 ? "slide-active" : ""} ${current !== 3 && settled !== 3 ? "slide-idle" : ""}`}>
             {/* Base — blue pink gradient */}
             <div className="absolute inset-0 z-0" style={{
-              background: "linear-gradient(135deg, #a8d0e8 0%, #bcd8f0 25%, #d0d4ec 45%, #e4c8e0 65%, #f0bcd0 80%, #f8b0c0 100%)"
+              background: "linear-gradient(135deg, #aedaf3 0%, #c1e2f7 18%, #d6dff5 38%, #ecd9f0 58%, #f8d1e7 78%, #fbc7de 100%)"
             }} />
             {/* Geometric diamond pattern */}
             <svg className="absolute inset-0 w-full h-full z-[1] pointer-events-none" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
               <defs>
-                <radialGradient id="centerFade" cx="50%" cy="55%" r="35%">
+                <radialGradient id="centerFade" cx="50%" cy="55%" r="26%">
                   <stop offset="0%" stopColor="white" stopOpacity="0" />
-                  <stop offset="70%" stopColor="white" stopOpacity="0" />
+                  <stop offset="60%" stopColor="white" stopOpacity="0" />
                   <stop offset="100%" stopColor="white" stopOpacity="1" />
                 </radialGradient>
                 <mask id="serahMask">
                   <rect width="1200" height="800" fill="url(#centerFade)" />
                 </mask>
-                <linearGradient id="bluePink1" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#7ac8e8" />
-                  <stop offset="100%" stopColor="#c8a0d8" />
-                </linearGradient>
-                <linearGradient id="bluePink2" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#60b8e0" />
-                  <stop offset="100%" stopColor="#d890c0" />
-                </linearGradient>
-                <linearGradient id="pinkBlue" x1="100%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#e0a0c8" />
-                  <stop offset="100%" stopColor="#80c0e0" />
-                </linearGradient>
-                <filter id="geoBlur">
-                  <feGaussianBlur stdDeviation="0.5" />
-                </filter>
-                <filter id="whiteGlow">
-                  <feGaussianBlur stdDeviation="2" result="blur" />
+                <filter id="geoGlow">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
                   <feMerge>
                     <feMergeNode in="blur" />
                     <feMergeNode in="SourceGraphic" />
                   </feMerge>
                 </filter>
+                <path id="sparkle" d="M0,-11 Q2.4,-2.4 11,0 Q2.4,2.4 0,11 Q-2.4,2.4 -11,0 Q-2.4,-2.4 0,-11 Z" />
               </defs>
               <g mask="url(#serahMask)">
-              {/* Row 1 */}
-              <g className="geo-pulse-1" filter="url(#whiteGlow)">
-                <polygon points="0,50 100,0 200,50 100,100" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="200,50 300,0 400,50 300,100" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="400,50 500,0 600,50 500,100" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="600,50 700,0 800,50 700,100" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="800,50 900,0 1000,50 900,100" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="1000,50 1100,0 1200,50 1100,100" fill="none" stroke="white" strokeWidth="1.5" />
+              {/* Large rounded diamonds */}
+              <g className="geo-pulse-5 glow-anim" filter="url(#geoGlow)" opacity="0.6">
+                <rect x="-140" y="-190" width="660" height="660" rx="52" fill="none" stroke="white" strokeWidth="2" transform="rotate(45 190 140)" />
+                <rect x="330" y="-230" width="720" height="720" rx="58" fill="none" stroke="white" strokeWidth="2" transform="rotate(45 690 130)" />
+                <rect x="-230" y="200" width="640" height="640" rx="50" fill="none" stroke="white" strokeWidth="1.8" transform="rotate(45 90 520)" />
+                <rect x="300" y="120" width="780" height="780" rx="62" fill="none" stroke="white" strokeWidth="2" transform="rotate(45 690 510)" />
+                <rect x="810" y="150" width="640" height="640" rx="50" fill="none" stroke="white" strokeWidth="1.8" transform="rotate(45 1130 470)" />
+                <rect x="380" y="560" width="580" height="580" rx="46" fill="none" stroke="white" strokeWidth="1.5" transform="rotate(45 670 850)" />
               </g>
-              {/* Row 2 */}
-              <g className="geo-pulse-2" filter="url(#whiteGlow)">
-                <polygon points="100,140 200,90 300,140 200,190" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="300,140 400,90 500,140 400,190" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="500,140 600,90 700,140 600,190" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="700,140 800,90 900,140 800,190" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="900,140 1000,90 1100,140 1000,190" fill="none" stroke="white" strokeWidth="1.5" />
-              </g>
-              {/* Row 3 */}
-              <g className="geo-pulse-3" filter="url(#whiteGlow)">
-                <polygon points="0,230 100,180 200,230 100,280" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="200,230 300,180 400,230 300,280" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="400,230 500,180 600,230 500,280" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="600,230 700,180 800,230 700,280" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="800,230 900,180 1000,230 900,280" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="1000,230 1100,180 1200,230 1100,280" fill="none" stroke="white" strokeWidth="1.5" />
-              </g>
-              {/* Row 4 */}
-              <g className="geo-pulse-4" filter="url(#whiteGlow)">
-                <polygon points="100,320 200,270 300,320 200,370" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="300,320 400,270 500,320 400,370" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="500,320 600,270 700,320 600,370" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="700,320 800,270 900,320 800,370" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="900,320 1000,270 1100,320 1000,370" fill="none" stroke="white" strokeWidth="1.5" />
-              </g>
-              {/* Row 5 — densest center */}
-              <g className="geo-pulse-5" filter="url(#whiteGlow)">
-                <polygon points="0,410 100,360 200,410 100,460" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="200,410 300,360 400,410 300,460" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="400,410 500,360 600,410 500,460" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="600,410 700,360 800,410 700,460" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="800,410 900,360 1000,410 900,460" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="1000,410 1100,360 1200,410 1100,460" fill="none" stroke="white" strokeWidth="1.5" />
-              </g>
-              {/* Row 6 */}
-              <g className="geo-pulse-6" filter="url(#whiteGlow)">
-                <polygon points="100,500 200,450 300,500 200,550" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="300,500 400,450 500,500 400,550" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="500,500 600,450 700,500 600,550" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="700,500 800,450 900,500 800,550" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="900,500 1000,450 1100,500 1000,550" fill="none" stroke="white" strokeWidth="1.5" />
-              </g>
-              {/* Row 7 */}
-              <g className="geo-pulse-7" filter="url(#whiteGlow)">
-                <polygon points="0,590 100,540 200,590 100,640" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="200,590 300,540 400,590 300,640" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="400,590 500,540 600,590 500,640" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="600,590 700,540 800,590 700,640" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="800,590 900,540 1000,590 900,640" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="1000,590 1100,540 1200,590 1100,640" fill="none" stroke="white" strokeWidth="1.5" />
-              </g>
-              {/* Row 8 */}
-              <g className="geo-pulse-8" filter="url(#whiteGlow)">
-                <polygon points="100,680 200,630 300,680 200,730" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="300,680 400,630 500,680 400,730" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="500,680 600,630 700,680 600,730" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="700,680 800,630 900,680 800,730" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="900,680 1000,630 1100,680 1000,730" fill="none" stroke="white" strokeWidth="1.5" />
-              </g>
-              {/* Row 9 */}
-              <g className="geo-pulse-9" filter="url(#whiteGlow)">
-                <polygon points="0,770 100,720 200,770 100,820" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="200,770 300,720 400,770 300,820" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="400,770 500,720 600,770 500,820" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="600,770 700,720 800,770 700,820" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="800,770 900,720 1000,770 900,820" fill="none" stroke="white" strokeWidth="1.5" />
-                <polygon points="1000,770 1100,720 1200,770 1100,820" fill="none" stroke="white" strokeWidth="1.5" />
+              {/* Sparkles */}
+              <g opacity="0.85" fill="white">
+                <use href="#sparkle" transform="translate(300,120) scale(0.7)" />
+                <use href="#sparkle" transform="translate(510,78) scale(0.5)" />
+                <use href="#sparkle" transform="translate(880,140) scale(0.6)" />
+                <use href="#sparkle" transform="translate(1085,88) scale(0.45)" />
+                <use href="#sparkle" transform="translate(150,330) scale(0.55)" />
+                <use href="#sparkle" transform="translate(1150,235) scale(0.7)" />
+                <use href="#sparkle" transform="translate(420,430) scale(0.5)" />
+                <use href="#sparkle" transform="translate(965,420) scale(0.55)" />
+                <use href="#sparkle" transform="translate(240,645) scale(0.6)" />
+                <use href="#sparkle" transform="translate(1010,660) scale(0.65)" />
+                <use href="#sparkle" transform="translate(765,740) scale(0.5)" />
+                <use href="#sparkle" transform="translate(120,760) scale(0.45)" />
               </g>
               </g>
             </svg>
@@ -1180,17 +1218,17 @@ export default function Home() {
                       <div className="absolute -inset-2 rotate-45 bg-[var(--color-cyan)] opacity-40 blur-md" />
                     )}
                     {/* Crystal body */}
-                    <div className={`relative w-4 h-4 rotate-45 transition-all duration-300 border border-transparent ${
+                    <div className={`relative w-4 h-4 rotate-45 transition-all duration-300 border ${
                       isActive
-                        ? "bg-[var(--color-cyan)] shadow-[0_0_20px_rgba(120,216,240,0.8)]"
+                        ? "bg-[var(--color-cyan)] border-[var(--color-cyan-bright)] shadow-[0_0_20px_rgba(120,216,240,0.9)]"
                         : isPast
-                          ? "bg-white/50 shadow-[0_0_6px_rgba(255,255,255,0.3)]"
-                          : "bg-white/30 border-white/40 group-hover:bg-white/50 group-hover:shadow-[0_0_8px_rgba(255,255,255,0.3)]"
+                          ? "bg-white/85 border-white/80 shadow-[0_0_10px_rgba(255,255,255,1),0_0_22px_rgba(255,255,255,0.75)]"
+                          : "bg-white/65 border-white/80 shadow-[0_0_10px_rgba(255,255,255,0.95),0_0_22px_rgba(255,255,255,0.6)] group-hover:bg-white/85 group-hover:shadow-[0_0_12px_rgba(255,255,255,1),0_0_26px_rgba(255,255,255,0.8)]"
                     }`} />
                   </div>
                   {/* Label */}
-                  <span className={`text-[9px] tracking-[0.25em] transition-opacity duration-200 ${
-                    isActive ? "text-[var(--color-ink)]" : "text-[var(--color-ink-dim)] opacity-70 group-hover:opacity-100"
+                  <span className={`text-[9px] tracking-[0.25em] transition-opacity duration-200 font-medium ${
+                    isActive ? "text-[var(--color-ink)]" : "text-[var(--color-ink-dim)]"
                   }`}>
                     {name.toUpperCase()}
                   </span>

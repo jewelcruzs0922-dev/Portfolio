@@ -2,10 +2,16 @@
 
 @theme inline {
   --color-ink: #1a3a5a;
-  --color-ink-dim: #5a8ab4;
+  /* darkened from #5a8ab4 — the old value measured 2.10:1 against the
+     section gradients, far below the 4.5:1 AA minimum for body text */
+  --color-ink-dim: #23507c;
   --color-cyan: #7ad8f0;
   --color-cyan-bright: #a0eaff;
   --color-pink: #f0d8e8;
+  /* focus ring needs 3:1 against every gradient stop (WCAG 1.4.11);
+     --color-cyan only reached 1.01:1 */
+  --color-focus: #26689e;
+  --color-danger: #991b1b;
 }
 
 html { overflow: hidden; }
@@ -15,7 +21,7 @@ body {
   background: #d8eef8;
   color: var(--color-ink);
   overflow: hidden;
-  height: 100vh;
+  height: 100dvh;
   width: 100vw;
   max-width: 100vw;
 }
@@ -89,38 +95,6 @@ body {
   }
 }
 
-/* ── Perspective floor grid ── */
-.perspective-floor {
-  position: absolute;
-  bottom: 0;
-  left: -30%;
-  right: -30%;
-  height: 50vh;
-  background: linear-gradient(to top, rgba(255,255,255,0.3), transparent 90%);
-  pointer-events: none;
-  z-index: 0;
-  transform: perspective(250px) rotateX(42deg);
-  transform-origin: bottom center;
-}
-.perspective-floor::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.35) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.35) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-.perspective-floor::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.18) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.18) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-
 /* ── Noise texture ── */
 .noise-overlay {
   position: fixed;
@@ -133,45 +107,32 @@ body {
 
 /* ── Marble vein animations ── */
 @keyframes marbleFlow1 {
-  0% { transform: translate(0, 0) scaleX(1) skewX(0deg); filter: brightness(1); }
-  12% { transform: translate(6px, -4px) scaleX(1.04) skewX(1deg); filter: brightness(1.15); }
-  25% { transform: translate(-4px, 2px) scaleX(0.96) skewX(-0.5deg); filter: brightness(0.9); }
-  37% { transform: translate(2px, -6px) scaleX(1.02) skewX(0.8deg); filter: brightness(1.1); }
-  50% { transform: translate(-6px, 4px) scaleX(0.97) skewX(-1deg); filter: brightness(0.95); }
-  62% { transform: translate(4px, -2px) scaleX(1.03) skewX(0.3deg); filter: brightness(1.08); }
-  75% { transform: translate(-2px, 5px) scaleX(0.98) skewX(-0.7deg); filter: brightness(0.92); }
-  87% { transform: translate(5px, -3px) scaleX(1.01) skewX(0.5deg); filter: brightness(1.05); }
-  100% { transform: translate(0, 0) scaleX(1) skewX(0deg); filter: brightness(1); }
+  0% { transform: translate(0, 0) scaleX(1) skewX(0deg); }
+  12% { transform: translate(6px, -4px) scaleX(1.04) skewX(1deg); }
+  25% { transform: translate(-4px, 2px) scaleX(0.96) skewX(-0.5deg); }
+  37% { transform: translate(2px, -6px) scaleX(1.02) skewX(0.8deg); }
+  50% { transform: translate(-6px, 4px) scaleX(0.97) skewX(-1deg); }
+  62% { transform: translate(4px, -2px) scaleX(1.03) skewX(0.3deg); }
+  75% { transform: translate(-2px, 5px) scaleX(0.98) skewX(-0.7deg); }
+  87% { transform: translate(5px, -3px) scaleX(1.01) skewX(0.5deg); }
+  100% { transform: translate(0, 0) scaleX(1) skewX(0deg); }
 }
 @keyframes marbleFlow2 {
-  0% { transform: translate(0, 0) scaleY(1) skewY(0deg); filter: brightness(1); }
-  16% { transform: translate(-4px, 6px) scaleY(1.03) skewY(0.8deg); filter: brightness(1.12); }
-  33% { transform: translate(5px, -3px) scaleY(0.97) skewY(-0.6deg); filter: brightness(0.88); }
-  50% { transform: translate(-3px, -5px) scaleY(1.02) skewY(0.4deg); filter: brightness(1.06); }
-  66% { transform: translate(4px, 3px) scaleY(0.98) skewY(-0.8deg); filter: brightness(0.94); }
-  83% { transform: translate(-5px, -2px) scaleY(1.01) skewY(0.3deg); filter: brightness(1.03); }
-  100% { transform: translate(0, 0) scaleY(1) skewY(0deg); filter: brightness(1); }
+  0% { transform: translate(0, 0) scaleY(1) skewY(0deg); }
+  16% { transform: translate(-4px, 6px) scaleY(1.03) skewY(0.8deg); }
+  33% { transform: translate(5px, -3px) scaleY(0.97) skewY(-0.6deg); }
+  50% { transform: translate(-3px, -5px) scaleY(1.02) skewY(0.4deg); }
+  66% { transform: translate(4px, 3px) scaleY(0.98) skewY(-0.8deg); }
+  83% { transform: translate(-5px, -2px) scaleY(1.01) skewY(0.3deg); }
+  100% { transform: translate(0, 0) scaleY(1) skewY(0deg); }
 }
 @keyframes marbleFlow3 {
-  0% { transform: translate(0, 0) rotate(0deg) scale(1); filter: brightness(1); }
-  20% { transform: translate(4px, 2px) rotate(0.8deg) scale(1.02); filter: brightness(1.1); }
-  40% { transform: translate(-3px, -4px) rotate(-0.5deg) scale(0.98); filter: brightness(0.88); }
-  60% { transform: translate(5px, -1px) rotate(0.6deg) scale(1.01); filter: brightness(1.06); }
-  80% { transform: translate(-2px, 3px) rotate(-0.3deg) scale(0.99); filter: brightness(0.95); }
-  100% { transform: translate(0, 0) rotate(0deg) scale(1); filter: brightness(1); }
-}
-@keyframes marbleShimmer {
-  0%, 100% { opacity: 0.30; filter: brightness(1) blur(0px); }
-  20% { opacity: 0.40; filter: brightness(1.2) blur(1px); }
-  40% { opacity: 0.22; filter: brightness(0.85) blur(0px); }
-  60% { opacity: 0.35; filter: brightness(1.1) blur(0.5px); }
-  80% { opacity: 0.28; filter: brightness(0.95) blur(0px); }
-}
-@keyframes marbleShimmer2 {
-  0%, 100% { opacity: 0.22; filter: brightness(1); }
-  25% { opacity: 0.30; filter: brightness(1.15); }
-  50% { opacity: 0.16; filter: brightness(0.85); }
-  75% { opacity: 0.26; filter: brightness(1.05); }
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  20% { transform: translate(4px, 2px) rotate(0.8deg) scale(1.02); }
+  40% { transform: translate(-3px, -4px) rotate(-0.5deg) scale(0.98); }
+  60% { transform: translate(5px, -1px) rotate(0.6deg) scale(1.01); }
+  80% { transform: translate(-2px, 3px) rotate(-0.3deg) scale(0.99); }
+  100% { transform: translate(0, 0) rotate(0deg) scale(1); }
 }
 @keyframes marbleWave {
   0% { transform: translateX(0) skewX(0deg) scaleY(1); }
@@ -181,12 +142,6 @@ body {
   80% { transform: translateX(-3px) skewX(-0.5deg) scaleY(0.99); }
   100% { transform: translateX(0) skewX(0deg) scaleY(1); }
 }
-@keyframes marbleBreathe {
-  0%, 100% { transform: scale(1) translateY(0); opacity: 0.08; }
-  30% { transform: scale(1.05) translateY(-2px); opacity: 0.14; }
-  60% { transform: scale(0.97) translateY(1px); opacity: 0.06; }
-}
-
 .marble-vein-1 { animation: marbleFlow1 20s ease-in-out infinite; }
 .marble-vein-2 { animation: marbleFlow2 24s ease-in-out infinite; }
 .marble-vein-3 { animation: marbleFlow3 28s ease-in-out infinite; }
@@ -206,42 +161,19 @@ body {
   }
 }
 
-.slide:not(.slide-active) .diamond-float,
-.slide:not(.slide-active) .marble-vein-1,
-.slide:not(.slide-active) .marble-vein-2,
-.slide:not(.slide-active) .marble-vein-3,
-.slide:not(.slide-active) .marble-vein-4,
-.slide:not(.slide-active) .marble-vein-5 {
+.slide:not(.slide-active) [class*="marble-vein"],
+.slide:not(.slide-active) [class*="geo-pulse"],
+.slide:not(.slide-active) [class*="diamond-float"],
+.slide:not(.slide-active) [class*="logoShine"] {
   animation-play-state: paused !important;
 }
 
-.marble-vein-1,
-.marble-vein-2,
-.marble-vein-3,
-.marble-vein-4,
-.marble-vein-5 {
+.slide-active .marble-vein-1,
+.slide-active .marble-vein-2,
+.slide-active .marble-vein-3,
+.slide-active .marble-vein-4,
+.slide-active .marble-vein-5 {
   will-change: transform, opacity;
-}
-
-/* ── Marquee animation ── */
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-33.333%); }
-}
-.animate-marquee {
-  animation: marquee 20s linear infinite;
-}
-.pause-marquee {
-  animation-play-state: paused;
-}
-
-/* ── HUD label ── */
-.hud {
-  font-family: var(--font-jetbrains), monospace;
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(90,138,180,0.45);
 }
 
 /* ── Animations ── */
@@ -306,6 +238,21 @@ body {
   .geo-pulse-9 { animation: geoPulse 4s ease-in-out infinite; --pulse-start: 0.15; --pulse-end: 0.6; }
 }
 
+/* ── Hex button clip path ── */
+.clip-path-hex {
+  clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+}
+
+/* ── Sci-fi chamfered panel (contact fields) ── */
+.panel-clip {
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+}
+
+/* ── Glass panel (contact fields) — border outline only ── */
+.glass-panel {
+  position: relative;
+}
+
 /* ── Slides ── */
 @keyframes canvasReveal {
   0% {
@@ -322,31 +269,36 @@ body {
 }
 
 .canvas-reveal {
-  animation: canvasReveal 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: canvasReveal 1.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .slide {
   position: absolute;
   inset: 0;
+  z-index: 2;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
   transform: scale(0.98);
-  will-change: opacity, transform;
 }
 .slide-active {
   opacity: 1;
   pointer-events: auto;
   transform: scale(1);
+  will-change: opacity, transform;
 }
 
-.bg-grid-canvas { will-change: transform; }
+/* Skipped once the crossfade has finished — the whole subtree stops being
+   laid out and painted until the slide is shown again. */
+.slide-idle {
+  content-visibility: hidden;
+}
 
 button {
   -webkit-tap-highlight-color: transparent;
 }
 button:focus-visible {
-  outline: 2px solid var(--color-cyan);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
@@ -362,13 +314,49 @@ button:focus-visible {
   }
 }
 
-@keyframes fadeOutLoader {
-  0% { opacity: 1; }
-  70% { opacity: 1; }
-  100% { opacity: 0; pointer-events: none; }
+/* ══════════════════════════════════════════════════════════════
+   TOUCH DEVICES (mobile + tablet)
+   Animating blur(), clip-path or drop-shadow on a fullscreen layer
+   forces the CPU to re-rasterize the whole layer every frame. These
+   swap in opacity / transform, which the GPU composites by itself.
+   ══════════════════════════════════════════════════════════════ */
+@media (hover: none) and (pointer: coarse) {
+  .hex-static {
+    filter: none;
+    animation: hexFadeIn 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .animate-mountainReveal {
+    animation: mountainFadeIn 1.6s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+  }
+  .canvas-reveal {
+    animation: canvasFadeIn 1s ease;
+  }
+  .animate-logoShine {
+    animation: logoPulse 3s ease-in-out infinite;
+  }
+  /* Animating anything inside a filtered SVG group invalidates the whole
+     filter, so a fullscreen Gaussian blur gets re-rendered every frame.
+     Dropping the glow keeps the motion, which is the part you see. */
+  .glow-anim {
+    filter: none;
+  }
 }
-.animate-fadeOutLoader {
-  animation: fadeOutLoader 1.8s ease forwards;
+
+@keyframes hexFadeIn {
+  from { opacity: 0; transform: scale(1.06); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes mountainFadeIn {
+  from { opacity: 0; transform: translateY(24px) scale(1.03); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes canvasFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes logoPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.72; }
 }
 
 @media (prefers-reduced-motion: reduce) {
