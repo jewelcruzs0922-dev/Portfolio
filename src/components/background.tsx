@@ -1,6 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import HexagonCanvas from "./hexagon-canvas";
+
+const MOUNTAIN_MASK =
+  "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 30%, transparent 80%)";
 
 export default function Background({ currentSlide }: { currentSlide: number }) {
   return (
@@ -12,12 +16,19 @@ export default function Background({ currentSlide }: { currentSlide: number }) {
         <HexagonCanvas currentSlide={currentSlide} />
         <div className="noise-overlay" />
         <div className="absolute bottom-0 left-0 right-0 h-[85vh] z-[3] opacity-0 animate-mountainReveal" style={{
-          backgroundImage: "url(/grid-bg.webp)",
-          backgroundSize: "cover",
-          backgroundPosition: "center top",
-          maskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 30%, transparent 80%)",
-          WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 30%, transparent 80%)",
-        }} />
+          maskImage: MOUNTAIN_MASK,
+          WebkitMaskImage: MOUNTAIN_MASK,
+        }}>
+          <Image
+            src="/grid-bg.webp"
+            alt=""
+            aria-hidden
+            fill
+            preload
+            sizes="100vw"
+            className="object-cover object-top"
+          />
+        </div>
       </div>
     </>
   );
