@@ -6,21 +6,6 @@ export const CONTACT = {
 
 export const SLIDES = ["home", "about", "projects", "contact"] as const;
 
-export const FAQ = [
-  {
-    q: "What does Jewel Cruz do?",
-    a: "Frontend developer specialising in Next.js, React and TypeScript. Builds production-grade web applications with comprehensive automated testing.",
-  },
-  {
-    q: "What technologies does Jewel use?",
-    a: "Next.js 16, React 19, TypeScript, Tailwind CSS, Vitest, Playwright, Sanity CMS and Stripe.",
-  },
-  {
-    q: "How can I get in touch?",
-    a: `Email ${CONTACT.email}, or connect on GitHub and Facebook.`,
-  },
-] as const;
-
 export interface Project {
   id: string;
   title: string;

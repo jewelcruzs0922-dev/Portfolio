@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback, type JSX } from "react";
 import Image from "next/image";
-import Faq from "@/components/Faq";
 import { CONTACT, PROJECTS, SLIDES } from "@/lib/site";
 import { EMPTY_CONTACT_FORM, validateContact } from "@/lib/validate";
 
@@ -514,11 +513,6 @@ function About() {
             </div>
           </div>
         </div>
-
-        {/* FAQ */}
-        <div className="mt-8 md:mt-12">
-          <Faq />
-        </div>
       </div>
     </section>
   );
@@ -845,22 +839,6 @@ function Contact() {
         <h3 className="text-[56px] md:text-6xl lg:text-7xl font-extralight tracking-[0.05em] text-[#0f2540] mb-4 md:whitespace-nowrap opacity-100">
           Let&apos;s chat
         </h3>
-        {/* Mobile / tablet CTA — the form below is desktop-only, and the
-            illustration hitboxes have no visible affordance */}
-        <nav aria-label="Contact links" className="lg:hidden flex flex-wrap items-center justify-center gap-3 mb-2">
-          <a href={`mailto:${CONTACT.email}`}
-            className="min-h-11 inline-flex items-center px-5 text-[10px] tracking-[0.25em] font-medium text-[var(--color-ink)] border border-[var(--color-ink)]/25 hover:border-[var(--color-focus)] hover:text-[var(--color-focus)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus)]">
-            EMAIL
-          </a>
-          <a href={CONTACT.github} target="_blank" rel="noopener noreferrer"
-            className="min-h-11 inline-flex items-center px-5 text-[10px] tracking-[0.25em] font-medium text-[var(--color-ink)] border border-[var(--color-ink)]/25 hover:border-[var(--color-focus)] hover:text-[var(--color-focus)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus)]">
-            GITHUB
-          </a>
-          <a href={CONTACT.facebook} target="_blank" rel="noopener noreferrer"
-            className="min-h-11 inline-flex items-center px-5 text-[10px] tracking-[0.25em] font-medium text-[var(--color-ink)] border border-[var(--color-ink)]/25 hover:border-[var(--color-focus)] hover:text-[var(--color-focus)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus)]">
-            FACEBOOK
-          </a>
-        </nav>
         <p className="hidden lg:block text-[14px] md:text-[16px] lg:text-[22px] text-[#0f2540] opacity-90 leading-relaxed mb-6">
           Whether it&apos;s a project, a collaboration, or just a friendly hello — I&apos;d love to hear from you. Let&apos;s turn your ideas into something amazing together.
         </p>

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { CONTACT, FAQ, PROJECTS, SLIDES } from "../src/lib/site.ts";
+import { CONTACT, PROJECTS, SLIDES } from "../src/lib/site.ts";
 
 test("contact email is a plausible address", () => {
   assert.match(CONTACT.email, /^[^\s@]+@[^\s@]+\.[^\s@]+$/);
@@ -38,21 +38,5 @@ test("no dead asset references remain", () => {
   const referenced = PROJECTS.map((p) => p.logo).join(" ");
   for (const dead of removed) {
     assert.ok(!referenced.includes(dead), `dead asset referenced: ${dead}`);
-  }
-});
-
-test("faq entries are non-empty and unique", () => {
-  assert.ok(FAQ.length > 0);
-  for (const { q, a } of FAQ) {
-    assert.ok(q.trim().length > 0);
-    assert.ok(a.trim().length > 0);
-  }
-  const questions = FAQ.map((f) => f.q);
-  assert.equal(new Set(questions).size, questions.length);
-});
-
-test("faq answers do not reference a placeholder domain", () => {
-  for (const { a } of FAQ) {
-    assert.ok(!a.includes("example.com"), `placeholder leaked into: ${a}`);
   }
 });

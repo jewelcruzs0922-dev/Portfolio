@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
-import { CONTACT, FAQ } from "@/lib/site";
+import { CONTACT } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({
@@ -126,15 +126,6 @@ export default function RootLayout({
           "Tailwind CSS",
           "Web Accessibility",
         ],
-      },
-      {
-        "@type": "FAQPage",
-        "@id": `${BASE}/#faq`,
-        mainEntity: FAQ.map(({ q, a }) => ({
-          "@type": "Question",
-          name: q,
-          acceptedAnswer: { "@type": "Answer", text: a },
-        })),
       },
     ],
   };
