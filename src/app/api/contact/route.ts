@@ -4,6 +4,32 @@ import { CONTACT } from "@/lib/site";
 
 const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
 const ACCESS_KEY = process.env.WEB3FORMS_ACCESS_KEY;
+const REQUEST_TIMEOUT_MS = 10_000;
+
+interface UpstreamBody {
+  success?: boolean;
+  message?: string;
+}
+
+function parseUpstream(raw: string): UpstreamBody {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (parsed && typeof parsed === "object") return parsed as UpstreamBody;
+  } catch {
+    // Not JSON — e.g. a Cloudflare challenge page or a gateway error.
+  }
+  return {};
+}
+
+function failureMessage(status: number, data: UpstreamBody): string {
+  if (status === 429) {
+    return "Too many messages right now. Please try again in a little while.";
+  }
+  if (typeof data.message === "string" && data.message.trim()) {
+    return data.message.trim();
+  }
+  return "Could not send your message right now. Please try again later.";
+}
 
 export async function POST(request: Request) {
   if (!ACCESS_KEY) {
@@ -37,10 +63,14 @@ export async function POST(request: Request) {
     );
   }
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
   try {
     const res = await fetch(WEB3FORMS_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
       body: JSON.stringify({
         access_key: ACCESS_KEY,
         name: form.name!.trim(),
@@ -53,20 +83,28 @@ export async function POST(request: Request) {
       }),
     });
 
-    const data = await res.json();
+    const data = parseUpstream(await res.text());
 
     if (!res.ok || !data.success) {
       return NextResponse.json(
-        { success: false, message: data.message ?? "Failed to send message." },
-        { status: 502 },
+        { success: false, message: failureMessage(res.status, data) },
+        { status: res.status === 429 ? 429 : 502 },
       );
     }
 
     return NextResponse.json({ success: true, message: "Message sent!" });
-  } catch {
+  } catch (error) {
+    const timedOut = error instanceof Error && error.name === "AbortError";
     return NextResponse.json(
-      { success: false, message: "Network error. Please try again." },
+      {
+        success: false,
+        message: timedOut
+          ? "The email service took too long to respond. Please try again."
+          : "Could not reach the email service. Please try again.",
+      },
       { status: 503 },
     );
+  } finally {
+    clearTimeout(timer);
   }
 }
