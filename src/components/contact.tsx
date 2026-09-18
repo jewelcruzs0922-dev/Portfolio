@@ -5,6 +5,8 @@ import Image from "next/image";
 import { CONTACT } from "@/lib/site";
 import { EMPTY_CONTACT_FORM, validateContact } from "@/lib/validate";
 
+const WEB3FORMS_KEY = "b37e1a0c-4a00-492b-abb6-7ea0983dd360";
+
 export default function Contact() {
   const [form, setForm] = useState(EMPTY_CONTACT_FORM);
   const [errors, setErrors] = useState<ReturnType<typeof validateContact>>({});
@@ -20,10 +22,19 @@ export default function Contact() {
     setStatus("loading");
     setErrorMsg("");
     try {
-      const res = await fetch("/api/contact", {
+      const res = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          name: form.name.trim(),
+          email: form.email.trim(),
+          message: form.message.trim(),
+          subject: `Portfolio Contact — ${form.name.trim()}`,
+          from_name: "Jewel Cruz Portfolio",
+          replyto: form.email.trim(),
+          to: CONTACT.email,
+        }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
