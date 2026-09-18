@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import { CONTACT } from "@/lib/site";
+import { CONTACT, THEME_COLOR } from "@/lib/site";
+import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const inter = Inter({
@@ -9,12 +10,7 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-const SITE_URL = new URL(
-  process.env.NEXT_PUBLIC_SITE_URL ??
-    (process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000"),
-);
+const SITE_URL = getSiteUrl();
 const BASE = SITE_URL.origin;
 
 const DESCRIPTION =
@@ -69,7 +65,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#d8eef8",
+  themeColor: THEME_COLOR,
   colorScheme: "light",
 };
 

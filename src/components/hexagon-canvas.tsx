@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useCallback } from "react";
 
+const STAR_WHITE_RGB = "255,255,255";
+const STAR_HALO_RGB = "200,230,255";
+
 export default function HexagonCanvas({ currentSlide }: { currentSlide: number }) {
   const staticRef = useRef<HTMLCanvasElement>(null);
   const starRef = useRef<HTMLCanvasElement>(null);
@@ -180,7 +183,7 @@ export default function HexagonCanvas({ currentSlide }: { currentSlide: number }
 
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, sa, sa + arcLen);
-        ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+        ctx.strokeStyle = `rgba(${STAR_WHITE_RGB},${alpha})`;
         ctx.lineWidth = lw;
         ctx.stroke();
 
@@ -188,7 +191,7 @@ export default function HexagonCanvas({ currentSlide }: { currentSlide: number }
         const hy = centerY + radius * Math.sin(sa + arcLen);
 
         const headGrad = ctx.createRadialGradient(hx, hy, 0, hx, hy, 5);
-        headGrad.addColorStop(0, `rgba(255,255,255,${alpha * 0.9})`);
+        headGrad.addColorStop(0, `rgba(${STAR_WHITE_RGB},${alpha * 0.9})`);
         headGrad.addColorStop(0.3, `rgba(${cr},${cg},${cb},${alpha * 0.5})`);
         headGrad.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
         ctx.beginPath();
@@ -198,7 +201,7 @@ export default function HexagonCanvas({ currentSlide }: { currentSlide: number }
 
         ctx.beginPath();
         ctx.arc(hx, hy, 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${Math.min(alpha * 1.5, 1)})`;
+        ctx.fillStyle = `rgba(${STAR_WHITE_RGB},${Math.min(alpha * 1.5, 1)})`;
         ctx.fill();
 
         const particleCount = isMobile ? 1 : 3;
@@ -210,7 +213,7 @@ export default function HexagonCanvas({ currentSlide }: { currentSlide: number }
           const pAlpha = alpha * (0.45 - p * 0.12) * (0.7 + Math.sin(t * 5 + i * 3 + p * 2) * 0.3);
           ctx.beginPath();
           ctx.arc(px, py, 0.6 + Math.sin(t * 4 + i + p) * 0.3, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255,255,255,${pAlpha})`;
+          ctx.fillStyle = `rgba(${STAR_WHITE_RGB},${pAlpha})`;
           ctx.fill();
         }
       }
@@ -241,12 +244,12 @@ export default function HexagonCanvas({ currentSlide }: { currentSlide: number }
           ctx.quadraticCurveTo(sx - sr * 0.3, sy + sr * 0.3, sx - sr, sy);
           ctx.quadraticCurveTo(sx - sr * 0.3, sy - sr * 0.3, sx, sy);
           ctx.closePath();
-          ctx.fillStyle = `rgba(255,255,255,${0.7 * twinkle})`;
+          ctx.fillStyle = `rgba(${STAR_WHITE_RGB},${0.7 * twinkle})`;
           ctx.fill();
 
           ctx.beginPath();
           ctx.arc(sx, sy, sr * 2.5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(200,230,255,${0.1 * twinkle})`;
+          ctx.fillStyle = `rgba(${STAR_HALO_RGB},${0.1 * twinkle})`;
           ctx.fill();
         }
       }

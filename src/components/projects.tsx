@@ -27,21 +27,25 @@ export default function Projects() {
         </div>
 
         {/* Circle indicators */}
-        <div className="flex items-center justify-center gap-5 md:gap-4 mb-4 md:mb-8">
+        <div className="flex items-center justify-center gap-1 mb-1 md:mb-5">
           {Array.from({ length: projects.length }).map((_, i) => {
             const isActive = i === selected;
             return (
               <button key={i}
                 onClick={() => select(i)}
-                className={`relative w-2.5 h-2.5 md:w-3 md:h-3 rounded-full transition-all duration-400 cursor-pointer`}>
-                {isActive && (
-                  <span className="absolute inset-0 rounded-full bg-[var(--color-cyan)] opacity-30 blur-sm" />
-                )}
-                <span className={`absolute inset-0 rounded-full transition-all duration-400 ${
-                  isActive
-                    ? "bg-[var(--color-cyan)] shadow-[0_0_10px_rgba(120,216,240,0.7)]"
-                    : "bg-[var(--color-ink)] opacity-40 hover:opacity-60"
-                }`} />
+                aria-label={`Show ${projects[i].title}`}
+                aria-current={isActive ? "true" : undefined}
+                className="group/dot flex items-center justify-center w-11 h-11 cursor-pointer">
+                <span className="relative block w-2.5 h-2.5 md:w-3 md:h-3 rounded-full transition-all duration-400">
+                  {isActive && (
+                    <span className="absolute inset-0 rounded-full bg-[var(--color-cyan)] opacity-30 blur-sm" />
+                  )}
+                  <span className={`absolute inset-0 rounded-full transition-all duration-400 ${
+                    isActive
+                      ? "bg-[var(--color-cyan)] shadow-[var(--glow-cyan-soft)]"
+                      : "bg-[var(--color-ink)] opacity-40 group-hover/dot:opacity-60"
+                  }`} />
+                </span>
               </button>
             );
           })}
@@ -60,6 +64,7 @@ export default function Projects() {
                 {/* Prev arrow */}
                 <button onClick={() => select(Math.max(selected - 1, 0))}
                   disabled={selected === 0}
+                  aria-label="Previous project"
                   className={`w-8 h-8 md:w-10 md:h-10 flex items-center justify-center border border-white/20 transition-all duration-300 ${
                     selected === 0
                       ? "opacity-20 cursor-default"
@@ -81,6 +86,7 @@ export default function Projects() {
                 {/* Next arrow */}
                 <button onClick={() => select(Math.min(selected + 1, projects.length - 1))}
                   disabled={selected === projects.length - 1}
+                  aria-label="Next project"
                   className={`w-8 h-8 md:w-10 md:h-10 flex items-center justify-center border border-white/20 transition-all duration-300 ${
                     selected === projects.length - 1
                       ? "opacity-20 cursor-default"

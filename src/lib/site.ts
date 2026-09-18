@@ -4,6 +4,10 @@ export const CONTACT = {
   facebook: "https://www.facebook.com/share/1CvHGC47uM/",
 } as const;
 
+export const SITE_URL_FALLBACK = "https://jewelcruz.dev";
+
+export const THEME_COLOR = "#d8eef8";
+
 export const SLIDES = ["home", "about", "projects", "contact"] as const;
 
 export interface Project {
@@ -53,9 +57,9 @@ export const PROJECTS: Project[] = [
   },
   {
     id: "003",
-    title: "Leaf & Root",
+    title: "Emerald Garden",
     cat: "BONSAI STOREFRONT",
-    desc: "A bonsai storefront with a working commerce flow: 10 statically generated product pages, a checkout that re-prices the basket on the server, and an order pipeline with atomic stock reservation and a swappable payment provider. The design system is bespoke — hand-authored SVG illustration and self-hosted type, with no UI framework. 57 Playwright tests, ESLint and Prettier, CI, and a WCAG AA contrast audit.",
+    desc: "A bonsai storefront with a working commerce flow: 10 SSG product pages, a server-priced checkout, and an order pipeline with atomic stock reservation and a swappable payment provider. A bespoke design system — hand-authored SVG and self-hosted type — backed by 57 Playwright tests and a WCAG AA contrast audit.",
     highlights: [
       "10 product pages · SSG",
       "Server-priced checkout",
@@ -63,8 +67,8 @@ export const PROJECTS: Project[] = [
       "57 tests · WCAG AA audit",
     ],
     tech: ["Next.js", "TypeScript", "Playwright", "Custom CSS"],
-    live: "https://leaf-and-root-jet.vercel.app",
-    code: "https://github.com/jewelcruzs0922-dev/leaf-and-root",
-    logo: "/leafandroot-logo.svg",
+    live: "https://emerald-garden.vercel.app",
+    code: "https://github.com/jewelcruzs0922-dev/emerald-garden",
+    logo: "/emeraldgarden-logo.svg",
   },
 ];

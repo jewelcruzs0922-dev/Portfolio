@@ -23,7 +23,7 @@ export default function About() {
            <h2 className="text-[36px] md:text-[64px] font-extralight tracking-[0.06em] leading-tight">
               <span className="text-[var(--color-ink)] opacity-70">&amp;</span>
              <span style={{
-               background: "linear-gradient(90deg, #3cc8f0, #8060c0, #e070a0)",
+               background: "var(--gradient-brand-text-soft)",
                WebkitBackgroundClip: "text",
                WebkitTextFillColor: "transparent",
              }}> WEB DESIGNER</span>
@@ -51,7 +51,7 @@ export default function About() {
             <div className="w-px h-full bg-gradient-to-b from-transparent via-[var(--color-ink)] to-transparent opacity-30" />
             {/* Diamond with glow */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-              <div className="w-5 h-5 rotate-45 bg-[var(--color-ink)] shadow-[0_0_16px_rgba(26,58,90,0.4)]" />
+              <div className="w-5 h-5 rotate-45 bg-[var(--color-ink)] shadow-[var(--glow-diamond)]" />
             </div>
             {/* Small dots along the line */}
             <div className="absolute top-1/4 w-2 h-2 rounded-full bg-[var(--color-ink)] opacity-25" />

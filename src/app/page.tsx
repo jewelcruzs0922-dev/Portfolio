@@ -68,16 +68,14 @@ export default function Home() {
           {/* Hero — full hexagon + star trail background */}
           <div className={`slide ${current === 0 ? "slide-active" : ""} ${current !== 0 && settled !== 0 ? "slide-idle" : ""}`}>
             {/* Decorative gradient orbs */}
-            <div className="absolute top-[20%] left-[15%] w-72 h-72 rounded-full z-[2]" style={{ background: "radial-gradient(circle, rgba(122,216,240,0.10) 0%, rgba(122,216,240,0) 70%)" }} />
-            <div className="absolute bottom-[25%] right-[10%] w-80 h-80 rounded-full z-[2]" style={{ background: "radial-gradient(circle, rgba(240,216,232,0.12) 0%, rgba(240,216,232,0) 70%)" }} />
+            <div className="absolute top-[20%] left-[15%] w-72 h-72 rounded-full z-[2]" style={{ background: "var(--gradient-orb-cyan)" }} />
+            <div className="absolute bottom-[25%] right-[10%] w-80 h-80 rounded-full z-[2]" style={{ background: "var(--gradient-orb-pink)" }} />
             <Hero />
           </div>
 
           {/* About — marble texture */}
           <div className={`slide ${current === 1 ? "slide-active" : ""} ${current !== 1 && settled !== 1 ? "slide-idle" : ""}`}>
-            <div className="absolute inset-0 z-0" style={{
-              background: "linear-gradient(135deg, #b4daf0 0%, #c8e4f4 20%, #dcd8f0 40%, #ecd0e8 60%, #f4c0d8 80%, #f8b0c8 100%)"
-            }} />
+            <div className="absolute inset-0 z-0" style={{ background: "var(--gradient-about)" }} />
             <div className="noise-overlay" />
 
             {/* Primary veins */}
@@ -91,7 +89,7 @@ export default function Home() {
                   </feMerge>
                 </filter>
               </defs>
-              <g fill="none" stroke="#ffffff" strokeWidth="2" filter="url(#whiteGlow)">
+              <g fill="none" stroke="white" strokeWidth="2" filter="url(#whiteGlow)">
                 <path d="M0 50 Q100 30 200 60 T400 40" />
                 <path d="M0 100 Q80 80 160 110 T320 90 T400 100" />
                 <path d="M0 150 Q120 130 240 160 T400 140" />
@@ -104,7 +102,7 @@ export default function Home() {
 
             {/* Secondary veins */}
             <svg className="absolute inset-0 w-full h-full z-[1] opacity-[0.22] marble-vein-2" viewBox="0 0 400 400" preserveAspectRatio="none">
-              <g fill="none" stroke="#ffffff" strokeWidth="1.5" filter="url(#whiteGlow)">
+              <g fill="none" stroke="white" strokeWidth="1.5" filter="url(#whiteGlow)">
                 <path d="M0 70 Q120 50 240 80 T400 65" />
                 <path d="M0 130 Q80 110 160 140 T320 120 T400 135" />
                 <path d="M0 180 Q100 160 200 190 T400 175" />
@@ -116,7 +114,7 @@ export default function Home() {
 
             {/* Tertiary veins */}
             <svg className="absolute inset-0 w-full h-full z-[1] opacity-[0.15] marble-vein-3" viewBox="0 0 400 400" preserveAspectRatio="none">
-              <g fill="none" stroke="#ffffff" strokeWidth="1" filter="url(#whiteGlow)">
+              <g fill="none" stroke="white" strokeWidth="1" filter="url(#whiteGlow)">
                 <path d="M0 80 Q140 60 280 90 T400 75" />
                 <path d="M0 160 Q90 140 180 170 T360 150 T400 165" />
                 <path d="M0 240 Q110 220 220 250 T400 235" />
@@ -127,7 +125,7 @@ export default function Home() {
 
             {/* Cyan tint veins */}
             <svg className="absolute inset-0 w-full h-full z-[2] opacity-[0.08] marble-vein-4" viewBox="0 0 400 400" preserveAspectRatio="none">
-              <g fill="none" stroke="#ffffff" strokeWidth="1" filter="url(#whiteGlow)">
+              <g fill="none" stroke="white" strokeWidth="1" filter="url(#whiteGlow)">
                 <path d="M0 75 Q100 55 200 85 T400 70" />
                 <path d="M0 195 Q120 175 240 205 T400 190" />
                 <path d="M0 315 Q90 295 180 325 T360 305 T400 318" />
@@ -136,7 +134,7 @@ export default function Home() {
 
             {/* Pink tint veins */}
             <svg className="absolute inset-0 w-full h-full z-[2] opacity-[0.08] marble-vein-5" viewBox="0 0 400 400" preserveAspectRatio="none">
-              <g fill="none" stroke="#ffffff" strokeWidth="1" filter="url(#whiteGlow)">
+              <g fill="none" stroke="white" strokeWidth="1" filter="url(#whiteGlow)">
                 <path d="M0 115 Q80 95 160 125 T320 105 T400 118" />
                 <path d="M0 255 Q100 235 200 265 T400 252" />
               </g>
@@ -147,9 +145,7 @@ export default function Home() {
 
           {/* Projects — blue pink */}
           <div className={`slide ${current === 2 ? "slide-active" : ""} ${current !== 2 && settled !== 2 ? "slide-idle" : ""}`}>
-            <div className="absolute inset-0 z-0" style={{
-              background: "linear-gradient(135deg, #9acce8 0%, #a8d8f0 25%, #c0e8f8 45%, #e0d8f4 65%, #f0c8e0 80%, #f4d0d8 100%)"
-            }} />
+            <div className="absolute inset-0 z-0" style={{ background: "var(--gradient-projects)" }} />
             {/* Abstract overlapping diagonal shapes — animated (desktop) */}
             <svg className="absolute inset-0 w-full h-full z-[1] pointer-events-none hidden md:block" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
               <defs>
@@ -163,42 +159,42 @@ export default function Home() {
               </defs>
               <g className="glow-anim" filter="url(#projectsGlow)">
                 <g className="diamond-float diamond-1">
-                  <rect x="-200" y="-100" width="900" height="900" rx="20" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2">
+                  <rect x="-200" y="-100" width="900" height="900" rx="20" fill="none" stroke="white" strokeOpacity="0.5" strokeWidth="2">
                     <animateTransform attributeName="transform" type="rotate" values="-30 250 350;-22 250 350;-30 250 350" dur="8s" repeatCount="indefinite" />
                   </rect>
                 </g>
                 <g className="diamond-float diamond-2">
-                  <rect x="100" y="-200" width="800" height="800" rx="20" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.8">
+                  <rect x="100" y="-200" width="800" height="800" rx="20" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="1.8">
                     <animateTransform attributeName="transform" type="rotate" values="-30 500 200;-38 500 200;-30 500 200" dur="10s" repeatCount="indefinite" />
                   </rect>
                 </g>
                 <g className="diamond-float diamond-3">
-                  <rect x="400" y="-100" width="700" height="700" rx="20" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.8">
+                  <rect x="400" y="-100" width="700" height="700" rx="20" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="1.8">
                     <animateTransform attributeName="transform" type="rotate" values="-30 750 250;-22 750 250;-30 750 250" dur="9s" repeatCount="indefinite" />
                   </rect>
                 </g>
                 <g className="diamond-float diamond-4">
-                  <rect x="600" y="0" width="600" height="600" rx="20" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5">
+                  <rect x="600" y="0" width="600" height="600" rx="20" fill="none" stroke="white" strokeOpacity="0.4" strokeWidth="1.5">
                     <animateTransform attributeName="transform" type="rotate" values="-30 900 300;-38 900 300;-30 900 300" dur="11s" repeatCount="indefinite" />
                   </rect>
                 </g>
                 <g className="diamond-float diamond-5">
-                  <rect x="300" y="200" width="500" height="500" rx="20" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5">
+                  <rect x="300" y="200" width="500" height="500" rx="20" fill="none" stroke="white" strokeOpacity="0.4" strokeWidth="1.5">
                     <animateTransform attributeName="transform" type="rotate" values="-30 550 450;-22 550 450;-30 550 450" dur="7s" repeatCount="indefinite" />
                   </rect>
                 </g>
                 <g className="diamond-float diamond-6">
-                  <rect x="100" y="100" width="600" height="600" rx="20" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.2">
+                  <rect x="100" y="100" width="600" height="600" rx="20" fill="none" stroke="white" strokeOpacity="0.35" strokeWidth="1.2">
                     <animateTransform attributeName="transform" type="rotate" values="-30 400 400;-38 400 400;-30 400 400" dur="12s" repeatCount="indefinite" />
                   </rect>
                 </g>
                 <g className="diamond-float diamond-7">
-                  <rect x="200" y="50" width="400" height="400" rx="10" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1">
+                  <rect x="200" y="50" width="400" height="400" rx="10" fill="none" stroke="white" strokeOpacity="0.3" strokeWidth="1">
                     <animateTransform attributeName="transform" type="rotate" values="-30 400 250;-22 400 250;-30 400 250" dur="9s" repeatCount="indefinite" />
                   </rect>
                 </g>
                 <g className="diamond-float diamond-8">
-                  <rect x="500" y="150" width="350" height="350" rx="10" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8">
+                  <rect x="500" y="150" width="350" height="350" rx="10" fill="none" stroke="white" strokeOpacity="0.25" strokeWidth="0.8">
                     <animateTransform attributeName="transform" type="rotate" values="-30 675 325;-38 675 325;-30 675 325" dur="10s" repeatCount="indefinite" />
                   </rect>
                 </g>
@@ -216,19 +212,19 @@ export default function Home() {
                 </filter>
               </defs>
               <g filter="url(#projectsGlowMobile)">
-                <rect className="diamond-float diamond-1" x="-200" y="-100" width="900" height="900" rx="20" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" transform="rotate(-30 250 350)" />
-                <rect className="diamond-float diamond-2" x="100" y="-200" width="800" height="800" rx="20" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.8" transform="rotate(-30 500 200)" />
-                <rect className="diamond-float diamond-3" x="400" y="-100" width="700" height="700" rx="20" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.8" transform="rotate(-30 750 250)" />
-                <rect className="diamond-float diamond-4" x="600" y="0" width="600" height="600" rx="20" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" transform="rotate(-30 900 300)" />
-                <rect className="diamond-float diamond-5" x="300" y="200" width="500" height="500" rx="20" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" transform="rotate(-30 550 450)" />
-                <rect className="diamond-float diamond-6" x="100" y="100" width="600" height="600" rx="20" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.2" transform="rotate(-30 400 400)" />
-                <rect className="diamond-float diamond-7" x="200" y="50" width="400" height="400" rx="10" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1" transform="rotate(-30 400 250)" />
-                <rect className="diamond-float diamond-8" x="500" y="150" width="350" height="350" rx="10" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="0.8" transform="rotate(-30 675 325)" />
+                <rect className="diamond-float diamond-1" x="-200" y="-100" width="900" height="900" rx="20" fill="none" stroke="white" strokeOpacity="0.5" strokeWidth="2" transform="rotate(-30 250 350)" />
+                <rect className="diamond-float diamond-2" x="100" y="-200" width="800" height="800" rx="20" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="1.8" transform="rotate(-30 500 200)" />
+                <rect className="diamond-float diamond-3" x="400" y="-100" width="700" height="700" rx="20" fill="none" stroke="white" strokeOpacity="0.45" strokeWidth="1.8" transform="rotate(-30 750 250)" />
+                <rect className="diamond-float diamond-4" x="600" y="0" width="600" height="600" rx="20" fill="none" stroke="white" strokeOpacity="0.4" strokeWidth="1.5" transform="rotate(-30 900 300)" />
+                <rect className="diamond-float diamond-5" x="300" y="200" width="500" height="500" rx="20" fill="none" stroke="white" strokeOpacity="0.4" strokeWidth="1.5" transform="rotate(-30 550 450)" />
+                <rect className="diamond-float diamond-6" x="100" y="100" width="600" height="600" rx="20" fill="none" stroke="white" strokeOpacity="0.35" strokeWidth="1.2" transform="rotate(-30 400 400)" />
+                <rect className="diamond-float diamond-7" x="200" y="50" width="400" height="400" rx="10" fill="none" stroke="white" strokeOpacity="0.3" strokeWidth="1" transform="rotate(-30 400 250)" />
+                <rect className="diamond-float diamond-8" x="500" y="150" width="350" height="350" rx="10" fill="none" stroke="white" strokeOpacity="0.25" strokeWidth="0.8" transform="rotate(-30 675 325)" />
               </g>
             </svg>
             {/* Decorative gradient orbs */}
-            <div className="absolute top-[15%] left-[10%] w-64 h-64 rounded-full" style={{ background: "radial-gradient(circle, rgba(122,216,240,0.12) 0%, rgba(122,216,240,0) 70%)" }} />
-            <div className="absolute bottom-[20%] right-[15%] w-80 h-80 rounded-full" style={{ background: "radial-gradient(circle, rgba(240,216,232,0.14) 0%, rgba(240,216,232,0) 70%)" }} />
+            <div className="absolute top-[15%] left-[10%] w-64 h-64 rounded-full" style={{ background: "var(--gradient-orb-cyan-strong)" }} />
+            <div className="absolute bottom-[20%] right-[15%] w-80 h-80 rounded-full" style={{ background: "var(--gradient-orb-pink-strong)" }} />
             <div className="noise-overlay" />
             <div className="relative z-10 h-full"><Projects /></div>
           </div>
@@ -236,9 +232,7 @@ export default function Home() {
           {/* Contact — geometric */}
           <div className={`slide ${current === 3 ? "slide-active" : ""} ${current !== 3 && settled !== 3 ? "slide-idle" : ""}`}>
             {/* Base — blue pink gradient */}
-            <div className="absolute inset-0 z-0" style={{
-              background: "linear-gradient(135deg, #aedaf3 0%, #c1e2f7 18%, #d6dff5 38%, #ecd9f0 58%, #f8d1e7 78%, #fbc7de 100%)"
-            }} />
+            <div className="absolute inset-0 z-0" style={{ background: "var(--gradient-contact)" }} />
             {/* Geometric diamond pattern */}
             <svg className="absolute inset-0 w-full h-full z-[1] pointer-events-none" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
               <defs>
@@ -326,7 +320,7 @@ export default function Home() {
               const isPast = i < current;
               return (
                 <button key={i} onClick={() => goTo(i)} aria-label={`Go to ${name}`}
-                  className="tap-feedback flex flex-col items-center gap-2.5 py-2 px-3 group outline-none focus:outline-none focus:ring-0 active:outline-none"
+                  className="tap-feedback flex flex-col items-center gap-2.5 py-2 px-3 group"
                   style={{ WebkitTapHighlightColor: "transparent" }}>
                   {/* Crystal */}
                   <div className="relative">
@@ -337,10 +331,10 @@ export default function Home() {
                     {/* Crystal body */}
                     <div className={`relative w-4 h-4 rotate-45 transition-all duration-300 border ${
                       isActive
-                        ? "bg-[var(--color-cyan)] border-[var(--color-cyan-bright)] shadow-[0_0_20px_rgba(120,216,240,0.9)]"
+                        ? "bg-[var(--color-cyan)] border-[var(--color-cyan-bright)] shadow-[var(--glow-cyan)]"
                         : isPast
-                          ? "bg-white/85 border-white/80 shadow-[0_0_10px_rgba(255,255,255,1),0_0_22px_rgba(255,255,255,0.75)]"
-                          : "bg-white/65 border-white/80 shadow-[0_0_10px_rgba(255,255,255,0.95),0_0_22px_rgba(255,255,255,0.6)] group-hover:bg-white/85 group-hover:shadow-[0_0_12px_rgba(255,255,255,1),0_0_26px_rgba(255,255,255,0.8)]"
+                          ? "bg-white/85 border-white/80 shadow-[var(--glow-white-solid)]"
+                          : "bg-white/65 border-white/80 shadow-[var(--glow-white-soft)] group-hover:bg-white/85 group-hover:shadow-[var(--glow-white-hover)]"
                     }`} />
                   </div>
                   {/* Label */}

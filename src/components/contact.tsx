@@ -56,7 +56,7 @@ export default function Contact() {
       {/* Form — absolute left, hidden on mobile and tablet */}
       <div className="absolute left-6 md:left-20 lg:left-44 top-1/2 -translate-y-1/2 w-[35%] md:w-[25%] lg:w-[22%] z-10 hidden lg:block">
         {status === "success" ? (
-          <div className="py-10">
+          <div className="py-10" role="status" aria-live="polite">
             <p className="text-lg text-[var(--color-ink)]">Message sent!</p>
             <p className="text-sm text-[var(--color-ink)] opacity-75 mt-1">I&apos;ll get back to you soon.</p>
           </div>
@@ -155,9 +155,9 @@ export default function Contact() {
               </div>
             )}
             <div className="flex items-center gap-3 mt-1">
-              <div className="drop-shadow-[0_6px_14px_rgba(26,58,90,0.35)]">
+              <div className="drop-shadow-[var(--glow-btn)]">
                 <button type="submit" disabled={status === "loading"}
-                  className="flex items-center gap-2 px-7 py-3 bg-gradient-to-r from-[#2c4c6e] to-[#16304a] text-white text-[11px] tracking-[0.2em] font-medium hover:from-[#36597f] hover:to-[#1c3c5c] transition-all duration-300 clip-path-hex disabled:opacity-60 disabled:cursor-not-allowed">
+                  className="flex items-center gap-2 px-7 py-3 bg-gradient-to-r from-[var(--color-btn-start)] to-[var(--color-btn-end)] text-white text-[11px] tracking-[0.2em] font-medium hover:from-[var(--color-btn-start-hover)] hover:to-[var(--color-btn-end-hover)] transition-all duration-300 clip-path-hex disabled:opacity-60 disabled:cursor-not-allowed">
                   {status === "loading" ? (
                     <>
                       <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -219,10 +219,10 @@ export default function Contact() {
           <span className="text-[9px] tracking-[0.3em] text-[var(--color-ink)] opacity-80">LET&apos;S CONNECT</span>
           <div className="flex-1 h-px bg-[var(--color-ink)] opacity-20" />
         </div>
-        <h3 className="text-[56px] md:text-6xl lg:text-7xl font-extralight tracking-[0.05em] text-[#0f2540] mb-4 md:whitespace-nowrap opacity-100">
+        <h3 className="text-[56px] md:text-6xl lg:text-7xl font-extralight tracking-[0.05em] text-[var(--color-ink-deep)] mb-4 md:whitespace-nowrap opacity-100">
           Let&apos;s chat
         </h3>
-        <p className="hidden lg:block text-[14px] md:text-[16px] lg:text-[22px] text-[#0f2540] opacity-90 leading-relaxed mb-6">
+        <p className="hidden lg:block text-[14px] md:text-[16px] lg:text-[22px] text-[var(--color-ink-deep)] opacity-90 leading-relaxed mb-6">
           Whether it&apos;s a project, a collaboration, or just a friendly hello — I&apos;d love to hear from you. Let&apos;s turn your ideas into something amazing together.
         </p>
         {/* Tagline */}

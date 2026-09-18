@@ -14,7 +14,7 @@ const csp = `
   style-src 'self' 'unsafe-inline';
   img-src 'self' blob: data:;
   font-src 'self';
-  connect-src 'self'${isDev ? " ws: wss:" : ""};
+  connect-src 'self' https://api.web3forms.com${isDev ? " ws: wss:" : ""};
   object-src 'none';
   base-uri 'self';
   form-action 'self';

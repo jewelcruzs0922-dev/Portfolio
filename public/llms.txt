@@ -4,15 +4,14 @@
 
 ## Sections
 
-- [Portfolio](https://jewelcruz.dev): Selected work including luxury cabin rental platform and solar energy company platform.
-- [Skills](https://jewelcruz.dev#skills): React/Next.js, TypeScript, Tailwind CSS, UI/UX Design, Node.js, Testing.
-- [About](https://jewelcruz.dev#about): 2+ years building, 100+ tests written, Lighthouse 100 performance.
+- [Portfolio](https://jewelcruz.dev#projects): Selected work — Redwood Retreats (cabin rental), Cosmic Ray Solar (solar energy), and Emerald Garden (bonsai storefront).
+- [About](https://jewelcruz.dev#about): Skills and background — React, Next.js, TypeScript, Tailwind CSS, Node.js, Vitest, Playwright.
 - [Contact](https://jewelcruz.dev#contact): Email, GitHub, Facebook.
 
 ## Frequently asked questions
 
 - **What does Jewel Cruz do?** Frontend developer specializing in Next.js, React, and TypeScript. Builds production-grade web applications with comprehensive testing.
-- **What technologies does Jewel use?** Next.js 16, React 19, TypeScript, Tailwind CSS, Vitest, Playwright, Sanity CMS, Stripe.
+- **What technologies does Jewel use?** Next.js 16, React 19, TypeScript, Tailwind CSS, Node.js, Vitest, Playwright, Sanity.
 - **How can I contact Jewel?** Email at jewelcruzs0922@gmail.com or connect on GitHub and Facebook.
 
 ## Contact
