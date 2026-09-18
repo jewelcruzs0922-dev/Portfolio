@@ -70,10 +70,11 @@ export default function Projects() {
                   </svg>
                 </button>
 
-                {/* Logo */}
+                {/* Logo — SVGs bypass the optimizer, which refuses them unless
+                    dangerouslyAllowSVG is enabled, and which they don't need. */}
                 <div key={imageKey} className="w-20 h-20 md:w-52 md:h-52 flex items-center justify-center animate-projectFadeIn">
                   <Image src={projects[selected].logo} alt={`${projects[selected].title} logo`}
-                    width={208} height={208} loading="lazy"
+                    width={208} height={208} loading="lazy" unoptimized
                     className="w-full h-full object-contain animate-logoShine" />
                 </div>
 
