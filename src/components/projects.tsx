@@ -80,7 +80,7 @@ export default function Projects() {
                 <div key={imageKey} className="w-20 h-20 md:w-52 md:h-52 flex items-center justify-center animate-projectFadeIn">
                   <Image src={projects[selected].logo} alt={`${projects[selected].title} logo`}
                     width={208} height={208} loading="lazy" unoptimized
-                    className="w-full h-full object-contain animate-logoShine" />
+                    className="w-20 h-20 md:w-52 md:h-52 object-contain" />
                 </div>
 
                 {/* Next arrow */}
