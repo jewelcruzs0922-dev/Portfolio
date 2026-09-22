@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import { CONTACT, THEME_COLOR } from "@/lib/site";
+import { CONTACT } from "@/lib/site";
 import { getSiteUrl } from "@/lib/site-url";
+import { getThemeColor } from "@/lib/theme-color";
 import "./globals.css";
 
 const inter = Inter({
@@ -65,7 +66,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: THEME_COLOR,
+  themeColor: getThemeColor(),
   colorScheme: "light",
 };
 

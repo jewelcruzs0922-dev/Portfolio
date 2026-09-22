@@ -5,7 +5,7 @@ import Image from "next/image";
 import { CONTACT } from "@/lib/site";
 import { EMPTY_CONTACT_FORM, validateContact } from "@/lib/validate";
 
-const WEB3FORMS_KEY = "b37e1a0c-4a00-492b-abb6-7ea0983dd360";
+const WEB3FORMS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY ?? "";
 
 export default function Contact() {
   const [form, setForm] = useState(EMPTY_CONTACT_FORM);
@@ -18,6 +18,12 @@ export default function Contact() {
     const e = validateContact(form);
     setErrors(e);
     if (Object.keys(e).length > 0) return;
+
+    if (!WEB3FORMS_KEY) {
+      setStatus("error");
+      setErrorMsg("Contact form is not configured. Please email me directly.");
+      return;
+    }
 
     setStatus("loading");
     setErrorMsg("");

@@ -29,6 +29,14 @@ export default function Home() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      const target = e.target;
+      if (
+        target instanceof HTMLElement &&
+        target.closest("input, textarea, select, [contenteditable='true'], [contenteditable='']")
+      ) {
+        return;
+      }
       if (e.key === "ArrowRight") next();
       if (e.key === "ArrowLeft") prev();
     };
@@ -312,6 +320,11 @@ export default function Home() {
           </button>
         )}
 
+        {/* Announce slide changes to screen readers */}
+        <div role="status" aria-live="polite" className="sr-only">
+          {`Slide ${current + 1} of ${SLIDES.length}: ${SLIDES[current]}`}
+        </div>
+
         {/* Slide indicator — pink crystals */}
         <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50" aria-label="Slide navigation">
           <div className="flex items-center gap-6">
@@ -320,6 +333,7 @@ export default function Home() {
               const isPast = i < current;
               return (
                 <button key={i} onClick={() => goTo(i)} aria-label={`Go to ${name}`}
+                  aria-current={isActive ? "true" : undefined}
                   className="tap-feedback flex flex-col items-center gap-2.5 py-2 px-3 group"
                   style={{ WebkitTapHighlightColor: "transparent" }}>
                   {/* Crystal */}

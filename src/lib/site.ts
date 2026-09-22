@@ -6,8 +6,6 @@ export const CONTACT = {
 
 export const SITE_URL_FALLBACK = "https://jewelcruz.dev";
 
-export const THEME_COLOR = "#d8eef8";
-
 export const SLIDES = ["home", "about", "projects", "contact"] as const;
 
 export interface Project {
