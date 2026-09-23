@@ -69,4 +69,20 @@ export const PROJECTS: Project[] = [
     code: "https://github.com/jewelcruzs0922-dev/emerald-garden",
     logo: "/emeraldgarden-logo.svg",
   },
+  {
+    id: "004",
+    title: "HIRO",
+    cat: "E-BIKE LANDING PAGE",
+    desc: "A premium e-bike landing page with a three-bike configurator, slide-over cart, and a simulated checkout flow. 37 unit + 16 Playwright e2e tests, with axe WCAG A/AA enforced in CI.",
+    highlights: [
+      "Bike configurator + cart",
+      "Simulated checkout flow",
+      "37 unit + 16 e2e tests",
+      "Lighthouse 95 · axe AA in CI",
+    ],
+    tech: ["Next.js", "TypeScript", "Tailwind", "Framer Motion"],
+    live: "https://hiro-azurite2.vercel.app",
+    code: "https://github.com/jewelcruzs0922-dev/HIRO",
+    logo: "/hiro-logo.webp",
+  },
 ];
