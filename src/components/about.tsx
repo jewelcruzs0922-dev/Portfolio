@@ -13,7 +13,7 @@ const technologies = [
 
 export default function About() {
   return (
-    <section id="about" className="h-full flex items-start justify-center pt-6 md:pt-10 pb-8 md:pb-12 px-4 md:px-6 overflow-y-auto">
+    <section id="about" tabIndex={0} aria-label="About" className="h-full flex items-start justify-center pt-6 md:pt-10 pb-8 md:pb-12 px-4 md:px-6 overflow-y-auto">
       <div className="max-w-6xl mx-auto w-full">
          {/* Title */}
          <div className="mb-4 md:mb-8">

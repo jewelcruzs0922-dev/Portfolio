@@ -1,16 +1,35 @@
 import type { NextConfig } from "next";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 const isDev = process.env.NODE_ENV === "development";
 
 /**
  * Static-generation-friendly CSP (see next/dist/docs .../content-security-policy.md).
  * Nonce-based CSP requires dynamic rendering, which would opt this fully static
- * page out of CDN caching — a bad trade for a portfolio. Everything else is locked
- * down: no plugins, no external origins, no form hijacking, no framing.
+ * page out of CDN caching — a bad trade for a portfolio. Production therefore
+ * allowlists the exact inline scripts present in the prerendered HTML via
+ * sha256 hashes (generated post-build by scripts/generate-csp-hashes.mjs),
+ * dropping 'unsafe-inline' from script-src entirely. Dev keeps 'unsafe-inline'
+ * because the dev server injects instrumentation the build pipeline can't hash.
  */
+function scriptSrc(): string {
+  if (isDev) return "'self' 'unsafe-inline' 'unsafe-eval'";
+  try {
+    const raw = readFileSync(join(process.cwd(), ".next", "csp-hashes.json"), "utf8");
+    const hashes = JSON.parse(raw) as string[];
+    if (hashes.length > 0) return ["'self'", ...hashes].join(" ");
+    throw new Error("empty hash list");
+  } catch {
+    // First-ever build has no hash file yet — scripts/generate-csp-hashes.mjs
+    // patches routes-manifest.json with the real hashes after `next build`.
+    return "'self' 'unsafe-inline'";
+  }
+}
+
 const csp = `
   default-src 'self';
-  script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""};
+  script-src ${scriptSrc()};
   style-src 'self' 'unsafe-inline';
   img-src 'self' blob: data:;
   font-src 'self';

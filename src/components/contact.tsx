@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { CONTACT } from "@/lib/site";
-import { EMPTY_CONTACT_FORM, validateContact } from "@/lib/validate";
+import { EMPTY_CONTACT_FORM, LIMITS, validateContact } from "@/lib/validate";
 
 const WEB3FORMS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY ?? "";
 
@@ -79,7 +79,7 @@ export default function Contact() {
 
             {/* NAME */}
             <div>
-              <div className="group relative">
+              <div className="group relative group-focus-within:outline-2 group-focus-within:outline-offset-2 group-focus-within:outline-[var(--color-focus)]">
                 <div className={`absolute inset-0 panel-clip transition-colors ${errors.name ? "bg-[var(--color-danger)]/80" : "bg-white/40 group-focus-within:bg-[var(--color-cyan)]"} `} aria-hidden="true" />
                 <div className="relative m-px panel-clip glass-panel">
                   <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-[var(--color-ink)]/10">
@@ -92,6 +92,7 @@ export default function Contact() {
                     </div>
                   </div>
                   <input id="name" type="text" value={form.name} placeholder="Your name here..."
+                    maxLength={LIMITS.name}
                     aria-invalid={errors.name ? true : undefined}
                     aria-describedby={errors.name ? "name-error" : undefined}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -105,7 +106,7 @@ export default function Contact() {
 
             {/* E-MAIL */}
             <div>
-              <div className="group relative">
+              <div className="group relative group-focus-within:outline-2 group-focus-within:outline-offset-2 group-focus-within:outline-[var(--color-focus)]">
                 <div className={`absolute inset-0 panel-clip transition-colors ${errors.email ? "bg-[var(--color-danger)]/80" : "bg-white/40 group-focus-within:bg-[var(--color-cyan)]"} `} aria-hidden="true" />
                 <div className="relative m-px panel-clip glass-panel">
                   <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-[var(--color-ink)]/10">
@@ -118,6 +119,7 @@ export default function Contact() {
                     </div>
                   </div>
                   <input id="email" type="email" value={form.email} placeholder="you@example.com"
+                    maxLength={LIMITS.email}
                     aria-invalid={errors.email ? true : undefined}
                     aria-describedby={errors.email ? "email-error" : undefined}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -131,7 +133,7 @@ export default function Contact() {
 
             {/* MESSAGE */}
             <div>
-              <div className="group relative">
+              <div className="group relative group-focus-within:outline-2 group-focus-within:outline-offset-2 group-focus-within:outline-[var(--color-focus)]">
                 <div className={`absolute inset-0 panel-clip transition-colors ${errors.message ? "bg-[var(--color-danger)]/80" : "bg-white/40 group-focus-within:bg-[var(--color-cyan)]"} `} aria-hidden="true" />
                 <div className="relative m-px panel-clip glass-panel">
                   <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-[var(--color-ink)]/10">
@@ -143,6 +145,7 @@ export default function Contact() {
                     </div>
                   </div>
                   <textarea id="message" value={form.message} rows={3} placeholder="What would you like to talk about?"
+                    maxLength={LIMITS.message}
                     aria-invalid={errors.message ? true : undefined}
                     aria-describedby={errors.message ? "message-error" : undefined}
                     onChange={(e) => setForm({ ...form, message: e.target.value })}

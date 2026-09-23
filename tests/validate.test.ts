@@ -71,3 +71,31 @@ test("does not mutate the form", () => {
   validateContact(form);
   assert.deepEqual(form, valid);
 });
+
+test("rejects overlong fields", () => {
+  const errors = validateContact({
+    name: "n".repeat(101),
+    email: valid.email,
+    message: "m".repeat(5001),
+  });
+  assert.equal(errors.name, "Name must be 100 characters or fewer");
+  assert.equal(errors.message, "Message must be 5000 characters or fewer");
+  assert.equal(errors.email, undefined);
+});
+
+test("accepts fields exactly at the limit", () => {
+  const errors = validateContact({
+    name: "n".repeat(100),
+    email: valid.email,
+    message: "m".repeat(5000),
+  });
+  assert.deepEqual(errors, {});
+});
+
+test("rejects an overlong email", () => {
+  const errors = validateContact({
+    ...valid,
+    email: `${"a".repeat(250)}@ex.com`,
+  });
+  assert.equal(errors.email, "Email must be 254 characters or fewer");
+});

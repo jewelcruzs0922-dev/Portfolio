@@ -31,7 +31,7 @@ export default function Projects() {
           {Array.from({ length: projects.length }).map((_, i) => {
             const isActive = i === selected;
             return (
-              <button key={i}
+                <button key={i}
                 onClick={() => select(i)}
                 aria-label={`Show ${projects[i].title}`}
                 aria-current={isActive ? "true" : undefined}
@@ -53,6 +53,9 @@ export default function Projects() {
 
         {/* Content container */}
         <div className="border border-white/15 bg-white/[0.08] p-4 md:p-10">
+          <div role="status" aria-live="polite" className="sr-only">
+            {`Project ${selected + 1} of ${projects.length}: ${projects[selected].title}`}
+          </div>
 
           {/* Two-column layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-12 items-center">

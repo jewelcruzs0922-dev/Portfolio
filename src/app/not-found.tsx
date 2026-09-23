@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Page Not Found",
+  description: "This page could not be found.",
+  robots: { index: false, follow: false },
+};
 
 export default function NotFound() {
   return (
@@ -14,7 +21,7 @@ export default function NotFound() {
         </p>
         <Link href="/"
           className="inline-flex items-center gap-3 px-8 py-3 border border-[var(--color-cyan)] text-[11px] tracking-[0.2em] text-[var(--color-ink)] hover:bg-[var(--color-cyan)] hover:text-white transition-all duration-300">
-          <span className="w-1.5 h-1.5 rotate-45 bg-[var(--color-cyan)] opacity-50" />
+          <span className="w-1.5 h-1.5 rotate-45 bg-[var(--color-cyan)] opacity-50" aria-hidden="true" />
           BACK HOME
         </Link>
       </div>

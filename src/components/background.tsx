@@ -21,7 +21,6 @@ export default function Background({ currentSlide }: { currentSlide: number }) {
             alt=""
             aria-hidden
             fill
-            preload
             sizes="100vw"
             className="object-cover object-top"
           />
