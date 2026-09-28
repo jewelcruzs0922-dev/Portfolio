@@ -4,9 +4,9 @@
 
 ## Sections
 
-- [Portfolio](https://jewelcruz.dev#projects): Selected work — Redwood Retreats (cabin rental), Cosmic Ray Solar (solar energy), and Emerald Garden (bonsai storefront).
-- [About](https://jewelcruz.dev#about): Skills and background — React, Next.js, TypeScript, Tailwind CSS, Node.js, Vitest, Playwright.
-- [Contact](https://jewelcruz.dev#contact): Email, GitHub, Facebook.
+- [Portfolio](https://portfolio-flame-eta-50.vercel.app#projects): Selected work — Redwood Retreats (cabin rental), Cosmic Ray Solar (solar energy), and Emerald Garden (bonsai storefront).
+- [About](https://portfolio-flame-eta-50.vercel.app#about): Skills and background — React, Next.js, TypeScript, Tailwind CSS, Node.js, Vitest, Playwright.
+- [Contact](https://portfolio-flame-eta-50.vercel.app#contact): Email, GitHub, Facebook.
 
 ## Frequently asked questions
 

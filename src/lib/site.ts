@@ -4,7 +4,7 @@ export const CONTACT = {
   facebook: "https://www.facebook.com/share/1CvHGC47uM/",
 } as const;
 
-export const SITE_URL_FALLBACK = "https://jewelcruz.dev";
+export const SITE_URL_FALLBACK = "https://portfolio-flame-eta-50.vercel.app";
 
 export const SLIDES = ["home", "about", "projects", "contact"] as const;
 
@@ -81,7 +81,7 @@ export const PROJECTS: Project[] = [
       "Lighthouse 95 · axe AA in CI",
     ],
     tech: ["Next.js", "TypeScript", "Tailwind", "Framer Motion"],
-    live: "https://hiro-azurite2.vercel.app",
+    live: "https://hiro-gray.vercel.app",
     code: "https://github.com/jewelcruzs0922-dev/HIRO",
     logo: "/hiro-logo.webp",
   },

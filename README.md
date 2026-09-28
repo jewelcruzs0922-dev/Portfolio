@@ -2,7 +2,7 @@
 
 Personal portfolio for **Jewel Cruz**, a frontend developer and web designer. A single-page, slide-based experience with a custom canvas background, built to be fast, accessible, and almost entirely static.
 
-**Live:** https://jewelcruz.dev
+**Live:** https://portfolio-flame-eta-50.vercel.app
 
 ## Lighthouse (production build, mobile)
 
@@ -60,7 +60,7 @@ npm start        # serve the production build
 ## Environment
 
 ```bash
-NEXT_PUBLIC_SITE_URL=   # canonical site URL (falls back to the Vercel URL, then jewelcruz.dev)
+NEXT_PUBLIC_SITE_URL=   # canonical site URL (falls back to the Vercel URL, then the production alias)
 ```
 
 ## Structure
