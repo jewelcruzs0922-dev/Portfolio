@@ -50,3 +50,10 @@ next-env.d.ts
 
 # debug output
 *.log
+
+.vercel
+.env*
+
+# Keep the template opt-in last: `vercel link` appends .env* above, and the
+# last matching pattern wins, so this must stay below it.
+!.env.example
