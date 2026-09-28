@@ -40,3 +40,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local job-search tooling (runs on this machine only, not part of the site)
+/scripts/bossjob-*.mjs
+/scripts/find-jobs.mjs
+/scripts/indeed-*.mjs
+/scripts/linkedin-jobs.mjs
+/scripts/oj-sweep.mjs
+
+# debug output
+*.log
