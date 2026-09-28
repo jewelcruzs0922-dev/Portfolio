@@ -1,8 +1,27 @@
 # Jewel Cruz — Portfolio
 
+[![Live](https://img.shields.io/badge/live-portfolio--flame--eta--50.vercel.app-000000?logo=vercel&logoColor=white)](https://portfolio-flame-eta-50.vercel.app)
+[![Lighthouse](https://img.shields.io/badge/Lighthouse-100%20%2F%20100%20%2F%20100%20%2F%20100-45B711)](#lighthouse-production-build-mobile)
+[![License: MIT](https://img.shields.io/badge/license-MIT-2F6FEB)](LICENSE)
+
 Personal portfolio for **Jewel Cruz**, a frontend developer and web designer. A single-page, slide-based experience with a custom canvas background, built to be fast, accessible, and almost entirely static.
 
 **Live:** https://portfolio-flame-eta-50.vercel.app
+
+![The home slide](docs/home.jpg)
+
+## A look around
+
+Four slides, navigable by keyboard (`←` / `→`), swipe, or the arrow buttons.
+
+| About                                                                       | Projects                                                                   |
+| --------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| ![About slide with bio and technology grid](docs/about.jpg)                 | ![Projects slide showing a project card with live and code links](docs/projects.jpg) |
+| <sub><b>About</b> — bio, technology grid, working style</sub>               | <sub><b>Projects</b> — live link, source link, stack and highlights</sub>  |
+
+![The contact slide](docs/contact.jpg)
+
+<sub><b>Contact</b> — validated form posting straight to Web3Forms, with no third-party script loaded</sub>
 
 ## Lighthouse (production build, mobile)
 
