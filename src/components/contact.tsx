@@ -208,6 +208,14 @@ export default function Contact() {
 
         {/* Circle hitboxes on icons */}
         <a href={`mailto:${CONTACT.email}`}
+          onClick={(e) => {
+            // Desktop (mouse/trackpad): open Gmail compose — most desktops have no
+            // mail client registered for mailto:. Touch devices keep native mailto.
+            if (window.matchMedia("(pointer: fine)").matches) {
+              e.preventDefault();
+              window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(CONTACT.email)}`, "_blank", "noopener,noreferrer");
+            }
+          }}
           className="absolute left-[29%] top-[56%] w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full cursor-pointer z-30 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-focus)]"
           aria-label="Email" />
         <a href={CONTACT.github} target="_blank" rel="noopener noreferrer"
