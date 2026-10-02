@@ -3,10 +3,13 @@
 [![Live](https://img.shields.io/badge/live-portfolio--flame--eta--50.vercel.app-000000?logo=vercel&logoColor=white)](https://portfolio-flame-eta-50.vercel.app)
 [![Lighthouse](https://img.shields.io/badge/Lighthouse-100%20%2F%20100%20%2F%20100%20%2F%20100-45B711)](#lighthouse-production-build-mobile)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2F6FEB)](LICENSE)
+[![Resume](https://img.shields.io/badge/resume-PDF%20download-E2212C?logo=adobeacrobatreader&logoColor=white)](./public/resume.pdf)
 
 Personal portfolio for **Jewel Cruz**, a frontend developer and web designer. A single-page, slide-based experience with a custom canvas background, built to be fast, accessible, and almost entirely static.
 
 **Live:** https://portfolio-flame-eta-50.vercel.app
+
+**Resume:** [one-page PDF](./public/resume.pdf) — also served at `/resume.pdf` on the live site
 
 ![The home slide](docs/home.jpg)
 
@@ -34,6 +37,7 @@ Performance 100 · Accessibility 100 · Best Practices 100 · SEO 100
 - **Custom canvas background** — a hexagon grid plus animated star trails, drawn with the Canvas API. Drawing is skipped on inactive slides, throttled on touch devices, and fully disabled under `prefers-reduced-motion`.
 - **Slide navigation** by keyboard (`←` / `→`), touch swipe, arrow buttons, and a bottom indicator.
 - **Contact form** with client-side validation that submits directly to Web3Forms from the browser (`api.web3forms.com` is the only allowed cross-origin `connect-src`). No third-party script is loaded.
+- **Email link** opens Gmail's compose window on desktop, and falls back to a plain `mailto:` on touch devices.
 - **Optimized hero** — the background image goes through `next/image` with a responsive `srcset` and a preload, instead of shipping one oversized file to every viewport.
 - **No ads, no analytics, no third-party scripts.**
 
