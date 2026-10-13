@@ -132,7 +132,7 @@ export const PROJECTS: Project[] = [
       "Demo cart · checkout disabled",
     ],
     tech: ["Shopify", "Liquid", "JavaScript", "HTML/CSS"],
-    live: "https://pet-pantry-test.myshopify.com/?preview_theme_id=188756754665",
+    live: "https://pet-pantry-test.myshopify.com/",
     code: "https://github.com/jewelcruzs0922-dev/FurBuddies",
     accessNote: "Password-protected demo — ask me for access.",
     logo: "/furbuddies-logo.webp",
