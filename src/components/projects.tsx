@@ -124,11 +124,20 @@ export default function Projects() {
                   className="px-4 md:px-8 py-2.5 md:py-3.5 border border-[var(--color-cyan)] text-[10px] md:text-[11px] tracking-[0.15em] md:tracking-[0.2em] text-[var(--color-ink)] opacity-100 hover:bg-[var(--color-cyan)] hover:text-white transition-all duration-300">
                   VIEW LIVE
                 </a>
-                <a href={projects[selected].code} target="_blank" rel="noopener noreferrer"
-                  className="px-4 md:px-8 py-2.5 md:py-3.5 border border-white/20 text-[10px] md:text-[11px] tracking-[0.15em] md:tracking-[0.2em] text-[var(--color-ink)] opacity-100 hover:border-[var(--color-cyan)] transition-all duration-300">
-                  VIEW CODE
-                </a>
+                {projects[selected].code && (
+                  <a href={projects[selected].code} target="_blank" rel="noopener noreferrer"
+                    className="px-4 md:px-8 py-2.5 md:py-3.5 border border-white/20 text-[10px] md:text-[11px] tracking-[0.15em] md:tracking-[0.2em] text-[var(--color-ink)] opacity-100 hover:border-[var(--color-cyan)] transition-all duration-300">
+                    VIEW CODE
+                  </a>
+                )}
               </div>
+
+              {/* Access note (e.g. password-gated demos) — never contains credentials */}
+              {projects[selected].accessNote && (
+                <p className="text-center text-[10px] md:text-[12px] tracking-[0.03em] text-[var(--color-ink)] opacity-70">
+                  {projects[selected].accessNote}
+                </p>
+              )}
 
               {/* Highlights */}
               <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 md:gap-x-6 md:gap-y-2">

@@ -22,7 +22,8 @@ test("every project is complete and points at a real host", () => {
     assert.ok(p.highlights.length > 0, `${p.title} has no highlights`);
     assert.ok(p.tech.length > 0, `${p.title} has no tech list`);
     assert.ok(p.live.startsWith("https://"), `${p.title} live URL`);
-    assert.ok(p.code.startsWith("https://github.com/"), `${p.title} code URL`);
+    // code is optional: some projects (e.g. a Shopify theme demo) have no public repo
+    if (p.code) assert.ok(p.code.startsWith("https://github.com/"), `${p.title} code URL`);
     assert.ok(p.logo.startsWith("/"), `${p.title} logo should be a local path`);
   }
 });

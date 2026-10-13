@@ -16,7 +16,10 @@ export interface Project {
   highlights: string[];
   tech: string[];
   live: string;
-  code: string;
+  /** Public source repo. Optional: some projects (e.g. a Shopify theme demo) have none. */
+  code?: string;
+  /** Optional short note rendered under the action buttons (e.g. gated access). */
+  accessNote?: string;
   logo: string;
 }
 
@@ -116,5 +119,22 @@ export const PROJECTS: Project[] = [
     live: "https://computeph.vercel.app",
     code: "https://github.com/jewelcruzs0922-dev/ComputePH",
     logo: "/computeph-logo.webp",
+  },
+  {
+    id: "007",
+    title: "FurBuddies — Shopify Pet Supplies Store",
+    cat: "SHOPIFY STOREFRONT DEMO",
+    desc: "A portfolio-only Shopify storefront demo built on Online Store 2.0. Hand-written Liquid sections — a custom cross-fade hero and a benefits bar — plus a fade-on-hover product-card treatment, collection filters and sorting, and a demo cart. Checkout is intentionally disabled and the storefront is password-protected.",
+    highlights: [
+      "Custom Liquid sections",
+      "Cross-fade hero · hover cards",
+      "Collection filters & sort",
+      "Demo cart · checkout disabled",
+    ],
+    tech: ["Shopify", "Liquid", "JavaScript", "HTML/CSS"],
+    live: "https://pet-pantry-test.myshopify.com/?preview_theme_id=188756754665",
+    code: "https://github.com/jewelcruzs0922-dev/FurBuddies",
+    accessNote: "Password-protected demo — ask me for access.",
+    logo: "/furbuddies-logo.webp",
   },
 ];
