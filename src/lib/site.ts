@@ -137,4 +137,21 @@ export const PROJECTS: Project[] = [
     accessNote: "Password-protected demo — ask me for access.",
     logo: "/furbuddies-logo.webp",
   },
+  {
+    id: "008",
+    title: "Alegria — Shopify Furniture & Interiors Store",
+    cat: "SHOPIFY STOREFRONT DEMO",
+    desc: "A portfolio-only Shopify storefront for a fictional premium furniture brand, built on Online Store 2.0 with a hand-written theme. Custom Liquid sections — a position-aware editorial hero, a values row, testimonials and a journal feed — plus 16 products across 5 collections with variant-specific imagery, a linked metaobject for materials, collection filters and sorting, an Ajax cart drawer, and on-brand 404, password and article pages. Checkout is disabled and the storefront is password-protected.",
+    highlights: [
+      "Custom Liquid sections",
+      "16 products · 5 collections",
+      "Metaobjects + variant images",
+      "Filters · Ajax cart · a11y",
+    ],
+    tech: ["Shopify", "Liquid", "JSON templates", "JavaScript", "HTML/CSS"],
+    live: "https://alegria-desoau8q.myshopify.com/",
+    code: "https://github.com/jewelcruzs0922-dev/Alegria",
+    accessNote: "Password-protected demo — ask me for access.",
+    logo: "/alegria-logo.png",
+  },
 ];
