@@ -141,7 +141,7 @@ export const PROJECTS: Project[] = [
     id: "008",
     title: "Alegria — Shopify Furniture & Interiors Store",
     cat: "SHOPIFY STOREFRONT DEMO",
-    desc: "A portfolio-only Shopify storefront for a fictional premium furniture brand, built on Online Store 2.0 with a hand-written theme. Custom Liquid sections — a position-aware editorial hero, a values row, testimonials and a journal feed — plus 16 products across 5 collections with variant-specific imagery, a linked metaobject for materials, collection filters and sorting, an Ajax cart drawer, and on-brand 404, password and article pages. Checkout is disabled and the storefront is password-protected.",
+    desc: "A portfolio-only Shopify storefront for a fictional premium furniture brand, built on Online Store 2.0 with a hand-written theme — custom Liquid sections, 16 products with variant-specific imagery, a materials metaobject, collection filters and an Ajax cart. Password-protected, with checkout disabled.",
     highlights: [
       "Custom Liquid sections",
       "16 products · 5 collections",
