@@ -8,7 +8,7 @@ const technologies = [
   { name: "Node.js" },
   { name: "Vitest" },
   { name: "Playwright" },
-  { name: "Sanity" },
+  { name: "Shopify" },
 ];
 
 export default function About() {
@@ -75,7 +75,7 @@ export default function About() {
 
             {/* Tags */}
             <div className="mt-6 md:mt-10 hidden md:flex flex-wrap justify-center gap-4">
-              {["UI/UX", "Responsive", "Animations", "Performance", "Testing"].map((tag) => (
+              {["UI/UX", "Responsive", "Animations", "Performance", "Testing", "Liquid"].map((tag) => (
                 <span key={tag} className="text-[14px] tracking-[0.1em] text-[var(--color-ink)]">
                   {tag}
                 </span>
