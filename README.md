@@ -19,8 +19,8 @@ Four slides, navigable by keyboard (`←` / `→`), swipe, or the arrow buttons.
 
 | About                                                                       | Projects                                                                   |
 | --------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| ![About slide with bio and technology grid](docs/about.jpg)                 | ![Projects slide showing a project card with live and code links](docs/projects.jpg) |
-| <sub><b>About</b> — bio, technology grid, working style</sub>               | <sub><b>Projects</b> — live link, source link, stack and highlights</sub>  |
+| ![About slide with bio and technology grid](docs/about.jpg)                 | ![Projects slide showing the Gardner project card](docs/projects.jpg) |
+| <sub><b>About</b> — bio, technology grid, working style</sub>               | <sub><b>Projects</b> — live link, access note, stack and highlights</sub>  |
 
 ![The contact slide](docs/contact.jpg)
 

@@ -154,4 +154,20 @@ export const PROJECTS: Project[] = [
     accessNote: "Password-protected demo — ask me for access.",
     logo: "/alegria-logo.png",
   },
+  {
+    id: "009",
+    title: "Gardner",
+    cat: "SHOPIFY GARDEN-TOOLS STOREFRONT",
+    desc: "A private Shopify Online Store 2.0 storefront for a garden-tools brand, built on Dawn 16.0.0 with a custom editorial homepage, mega menu, predictive search, collection filters, cart drawer and a browser-local wishlist. Includes a 32-product demo catalog, structured data, and a documented responsive and accessibility QA pass.",
+    highlights: [
+      "Custom Dawn-based theme",
+      "32 products · 10 collections",
+      "Cart, filters, search, wishlist",
+      "Responsive QA · 0 axe violations",
+    ],
+    tech: ["Shopify", "Liquid", "Dawn", "JavaScript", "Playwright"],
+    live: "https://gardner-dev-zwlohenx.myshopify.com/?preview_theme_id=191259083065",
+    accessNote: "Password-protected demo — ask me for access. Private source available on request.",
+    logo: "/gardner-logo.svg",
+  },
 ];

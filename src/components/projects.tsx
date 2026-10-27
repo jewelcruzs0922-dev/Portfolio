@@ -27,7 +27,7 @@ export default function Projects() {
         </div>
 
         {/* Circle indicators */}
-        <div className="flex items-center justify-center gap-1 mb-1 md:mb-5">
+        <div className="flex items-center justify-center gap-0 md:gap-1 mb-1 md:mb-5">
           {Array.from({ length: projects.length }).map((_, i) => {
             const isActive = i === selected;
             return (
@@ -35,7 +35,7 @@ export default function Projects() {
                 onClick={() => select(i)}
                 aria-label={`Show ${projects[i].title}`}
                 aria-current={isActive ? "true" : undefined}
-                className="group/dot flex items-center justify-center w-11 h-11 cursor-pointer">
+                className="group/dot flex items-center justify-center w-8 h-11 md:w-11 md:h-11 cursor-pointer">
                 <span className="relative block w-2.5 h-2.5 md:w-3 md:h-3 rounded-full transition-all duration-400">
                   {isActive && (
                     <span className="absolute inset-0 rounded-full bg-[var(--color-cyan)] opacity-30 blur-sm" />
